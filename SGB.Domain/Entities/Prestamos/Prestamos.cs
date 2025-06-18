@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SGB.Domain.Base;
 
-namespace SGB.Domain.Entities
+namespace SGB.Domain.Entities.Prestamos
 {
     public class Prestamo : BaseEntity
     {
@@ -44,7 +44,7 @@ namespace SGB.Domain.Entities
 
             FechaDevolucion = DateTime.UtcNow;
 
-            Estado = (FechaDevolucion > FechaVencimiento) ? EstadoPrestamo.DevueltoConAtraso : EstadoPrestamo.Devuelto;
+            Estado = FechaDevolucion > FechaVencimiento ? EstadoPrestamo.DevueltoConAtraso : EstadoPrestamo.Devuelto;
         }
 
         public void ActualizarEstadoSiEstaAtrasado()
