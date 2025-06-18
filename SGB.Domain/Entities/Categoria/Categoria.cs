@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Domain.Entities
+namespace SGB.Domain.Entities.Categoria
 {
     public class Categoria : BaseEntity
     {
