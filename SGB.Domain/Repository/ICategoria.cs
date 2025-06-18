@@ -7,18 +7,8 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Repository
 {
-    public interface ICategoria
+    public interface ICategoria: IRepository<Categoria>
     {
-        Task<Categoria> GetByIdAsync(int id);
-
-        Task<IEnumerable<Categoria>> GetAllAsync();
-
-        Task AddAsync(Categoria categoria);
-
-        Task UpdateAsync(Categoria categoria);
-
-        Task DeleteAsync(int id);
-
         Task<Categoria> GetByNameAsync(string name);
     }
 }

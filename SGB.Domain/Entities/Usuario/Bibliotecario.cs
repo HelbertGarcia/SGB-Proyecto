@@ -12,11 +12,13 @@ namespace SGB.Domain.Entities.Usuario
         public Bibliotecario(string nombre, string apellido, string correo, string contraseña, int idRol)
             : base(nombre, apellido, correo, contraseña, idRol)
         {
+
         }
 
         protected Bibliotecario(int id, string nombre, string apellido, string correo, string contraseña, int idRol)
             : base(id, nombre, apellido, correo, contraseña, idRol)
         {
+
         }
     }
 }
