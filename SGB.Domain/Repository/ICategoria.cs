@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SGB.Domain.Entities.Categoria;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Repository
 {
-    public interface ICategoria
+    public interface ICategoria: IRepository<Categoria>
     {
+        Task<Categoria> GetByNameAsync(string name);
     }
 }
