@@ -7,18 +7,8 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Repository
 {
-    public interface IRol
+    public interface IRol: IRepository<Rol>
     {
-        Task<Rol> GetByIdAsync(int id);
-
-        Task<IEnumerable<Rol>> GetAllAsync();
-
-        Task AddAsync(Rol rol);
-
-        Task UpdateAsync(Rol rol);
-
-        Task DeleteAsync(int id);
-
         Task<Rol> GetByNameAsync(string name);
     }
 }
