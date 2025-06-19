@@ -7,83 +7,72 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Base
 {
-    public abstract class Persona : BaseEntity
+    public abstract class Persona : BaseEntityFecha, IEstaActivo
     {
-        protected Persona(int id, string nombre, string apellido, string correo, string contraseña, int idRol) : base(id)
-        {
-            Nombre = nombre;
-            Apellido = apellido;
-            Correo = correo;
-            Contraseña = contraseña;
-            IdRol = idRol;
-        }
+        public string Nombre { get; private set; }
+        public string Apellido { get; private set; }
+        public string Email { get; private set; }
+        public string PasswordHash { get; private set; }
+        public int IdRol { get; private set; }
+        public bool EstaActivo { get ; set ; }
 
-        public Persona(string nombre, string apellido, string correo, string contraseña, int idRol) : base(0)
+        private Persona() : base() { }
+
+        public Persona(string nombre, string apellido, string email, string passwordHash, int idRol) : base()
         {
             ValidarYAsignarNombre(nombre);
             ValidarYAsignarApellido(apellido);
-            ValidarYAsignarCorreo(correo);
-            ValidarYAsignarContraseña(contraseña);
+            ValidarYAsignarEmail(email);
+            AsignarPasswordHash(passwordHash);
             ValidarYAsignarRol(idRol);
         }
 
-        public string Nombre { get; private set; }
-        public string Apellido { get; private set; }
-        public string Correo { get; private set; }
-        public string Contraseña { get; private set; }
-        public int IdRol { get; private set; }
-
-        public void ActualizarDatos(string nuevoNombre, string nuevoApellido, string nuevoCorreo)
+        public void ActualizarDatos(string nuevoNombre, string nuevoApellido, string nuevoEmail)
         {
             ValidarYAsignarNombre(nuevoNombre);
             ValidarYAsignarApellido(nuevoApellido);
-            ValidarYAsignarCorreo(nuevoCorreo);
+            ValidarYAsignarEmail(nuevoEmail);
+            ActualizarFechaModificacion(); 
         }
 
-        public void CambiarContraseña(string nuevaContraseña)
+        public void CambiarPasswordHash(string nuevoPasswordHash)
         {
-            ValidarYAsignarContraseña(nuevaContraseña);
+            AsignarPasswordHash(nuevoPasswordHash);
+            ActualizarFechaModificacion();
         }
 
         public void CambiarRol(int nuevoIdRol)
         {
             ValidarYAsignarRol(nuevoIdRol);
+            ActualizarFechaModificacion(); 
         }
 
         private void ValidarYAsignarNombre(string nombre)
         {
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre no puede estar vacío.", nameof(nombre));
-            if (nombre.Length > 50)
-                throw new ArgumentException("El nombre no puede tener más de 50 caracteres.", nameof(nombre));
+            if (string.IsNullOrWhiteSpace(nombre) || nombre.Length > 100)
+                throw new ArgumentException("El nombre es inválido.", nameof(nombre));
             Nombre = nombre;
         }
 
         private void ValidarYAsignarApellido(string apellido)
         {
-            if (string.IsNullOrWhiteSpace(apellido))
-                throw new ArgumentException("El apellido no puede estar vacío.", nameof(apellido));
-            if (apellido.Length > 50)
-                throw new ArgumentException("El apellido no puede tener más de 50 caracteres.", nameof(apellido));
+            if (string.IsNullOrWhiteSpace(apellido) || apellido.Length > 100)
+                throw new ArgumentException("El apellido es inválido.", nameof(apellido));
             Apellido = apellido;
         }
 
-        private void ValidarYAsignarCorreo(string correo)
+        private void ValidarYAsignarEmail(string email)
         {
-            if (string.IsNullOrWhiteSpace(correo))
-                throw new ArgumentException("El correo no puede estar vacío.", nameof(correo));
-            if (!Regex.IsMatch(correo, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-                throw new ArgumentException("El correo electrónico no tiene un formato válido.", nameof(correo));
-            Correo = correo;
+            if (string.IsNullOrWhiteSpace(email) || !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                throw new ArgumentException("El correo electrónico no tiene un formato válido.", nameof(email));
+            Email = email;
         }
 
-        private void ValidarYAsignarContraseña(string contraseña)
+        private void AsignarPasswordHash(string passwordHash)
         {
-            if (string.IsNullOrWhiteSpace(contraseña))
-                throw new ArgumentException("La contraseña no puede estar vacía.", nameof(contraseña));
-            if (contraseña.Length < 6)
-                throw new ArgumentException("La contraseña debe tener al menos 6 caracteres.", nameof(contraseña));
-            Contraseña = contraseña;
+            if (string.IsNullOrWhiteSpace(passwordHash))
+                throw new ArgumentException("El hash de la contraseña no puede estar vacío.", nameof(passwordHash));
+            PasswordHash = passwordHash;
         }
 
         private void ValidarYAsignarRol(int idRol)
@@ -91,6 +80,16 @@ namespace SGB.Domain.Base
             if (idRol <= 0)
                 throw new ArgumentException("El Id del rol es inválido.", nameof(idRol));
             IdRol = idRol;
+        }
+
+        public void Deshabilitar()
+        {
+            EstaActivo = false;
+        }
+
+        public void Habilitar()
+        {
+            EstaActivo = true;
         }
     }
 }

@@ -3,35 +3,67 @@ using System;
 
 namespace SGB.Domain.Entities.Libro
 {
-    public class Libro : BaseEntity
+    public class Libro: IEstaActivo
     {
+        public string ISBN { get; private set; }
         public string Titulo { get; private set; }
         public string Autor { get; private set; }
         public string Editorial { get; private set; }
-        public DateOnly FechaPublicacion { get; private set; }
-        public int CategoriaId { get; private set; }
+        public DateTime? FechaPublicacion { get; private set; } 
 
-        private Libro() : base() { }
+        public int IDCategoria { get; private set; }
+        public DateTime FechaRegistro { get; private set; } 
+        public DateTime FechaActualizacion { get; private set; }
 
-        public Libro(string titulo, string autor, string editorial, DateOnly fechaPublicacion, int categoriaId) : base()
+        public bool EstaActivo { get ; set ; }
+
+        private Libro() { }
+
+        public Libro(string isbn, string titulo, string autor, string editorial, DateTime? fechaPublicacion, int idCategoria)
         {
+            ValidarYAsignarISBN(isbn);
             ValidarYAsignarTitulo(titulo);
             ValidarYAsignarAutor(autor);
-            ValidarYAsignarFechaPublicacion(fechaPublicacion);
-            ValidarYAsignarCategoria(categoriaId);
+            ValidarYAsignarCategoria(idCategoria);
+            Habilitar();
+
+            if (fechaPublicacion.HasValue)
+            {
+                ValidarYAsignarFechaPublicacion(fechaPublicacion.Value);
+            }
+
             Editorial = editorial;
+            FechaRegistro = DateTime.UtcNow;
+            FechaActualizacion = DateTime.UtcNow;
         }
 
-        public void ActualizarDetalles(string nuevoTitulo, string nuevoAutor, string nuevaEditorial)
+        public void ActualizarDetalles(string nuevoTitulo, string nuevoAutor, string nuevaEditorial, DateTime? nuevaFecha, int nuevaCategoriaId)
         {
             ValidarYAsignarTitulo(nuevoTitulo);
             ValidarYAsignarAutor(nuevoAutor);
+            ValidarYAsignarCategoria(nuevaCategoriaId);
+
+            if (nuevaFecha.HasValue)
+            {
+                ValidarYAsignarFechaPublicacion(nuevaFecha.Value);
+            }
+
             Editorial = nuevaEditorial;
+
+            ActualizarFechaModificacion();
         }
 
-        public void CambiarCategoria(int nuevaCategoriaId)
+        private void ActualizarFechaModificacion()
         {
-            ValidarYAsignarCategoria(nuevaCategoriaId);
+            FechaActualizacion = DateTime.UtcNow;
+        }
+
+
+        private void ValidarYAsignarISBN(string isbn)
+        {
+            if (string.IsNullOrWhiteSpace(isbn) || (isbn.Length != 10 && isbn.Length != 13))
+                throw new ArgumentException("El ISBN debe tener 10 o 13 caracteres.", nameof(isbn));
+            ISBN = isbn;
         }
 
         private void ValidarYAsignarTitulo(string titulo)
@@ -48,23 +80,30 @@ namespace SGB.Domain.Entities.Libro
             Autor = autor;
         }
 
-        private void ValidarYAsignarFechaPublicacion(DateOnly fechaPublicacion)
+        private void ValidarYAsignarFechaPublicacion(DateTime fechaPublicacion)
         {
-            TimeZoneInfo zonaHorariaSantoDomingo = TimeZoneInfo.FindSystemTimeZoneById("SA Western Standard Time");
-            DateTime ahoraEnSantoDomingo = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zonaHorariaSantoDomingo);
-
-            if (fechaPublicacion > DateOnly.FromDateTime(ahoraEnSantoDomingo))
+            if (fechaPublicacion.Date > DateTime.UtcNow.Date)
             {
                 throw new ArgumentException("La fecha de publicación no puede ser una fecha futura.", nameof(fechaPublicacion));
             }
             FechaPublicacion = fechaPublicacion;
         }
 
-        private void ValidarYAsignarCategoria(int categoriaId)
+        private void ValidarYAsignarCategoria(int idCategoria)
         {
-            if (categoriaId <= 0)
-                throw new ArgumentException("El Id de la categoría es inválido.", nameof(categoriaId));
-            CategoriaId = categoriaId;
+            if (idCategoria <= 0)
+                throw new ArgumentException("El Id de la categoría es inválido.", nameof(idCategoria));
+            IDCategoria = idCategoria;
+        }
+
+        public void Deshabilitar()
+        {
+            EstaActivo = false;
+        }
+
+        public void Habilitar()
+        {
+            EstaActivo = true;
         }
     }
 }
