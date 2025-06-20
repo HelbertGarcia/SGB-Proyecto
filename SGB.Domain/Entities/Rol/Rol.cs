@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Entities.Rol
 {
-    public class Rol: BaseEntity
+    public class Rol: BaseEntityFecha, IEstaActivo
     {
         public string Nombre { get; private set; }
         public string Descripcion { get; private set; }
+        public bool EstaActivo { get; set; }
 
         private Rol() : base() { }
 
@@ -18,6 +19,7 @@ namespace SGB.Domain.Entities.Rol
         {
             ValidarYAsignarNombre(nombre);
             Descripcion = descripcion;
+            Habilitar();
         }
 
         public void ActualizarDescripcion(string nuevaDescripcion)
@@ -37,6 +39,16 @@ namespace SGB.Domain.Entities.Rol
                 throw new ArgumentException("El nombre del rol es obligatorio.", nameof(nombre));
             }
             Nombre = nombre;
+        }
+
+        public void Deshabilitar()
+        {
+            EstaActivo = false;
+        }
+
+        public void Habilitar()
+        {
+            EstaActivo = true;
         }
     }
 }
