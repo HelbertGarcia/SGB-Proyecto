@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Persistence.Interfaces
 {
-    public interface IEstaActivo
+    internal interface IAdministradorRepository
     {
-        public bool EstaActivo { get; set; }
     }
 }

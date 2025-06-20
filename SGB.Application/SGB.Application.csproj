@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SGB.Domain\SGB.Domain.csproj" />
     <ProjectReference Include="..\SGB.Persistence\SGB.Persistence.csproj" />
   </ItemGroup>
 

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.DTO.dtoUsuario.dtoAdministrador
 {
-    internal class DeleteAdministradorDto
+    public class DeleteAdministradorDto
     {
+        public int IDUsuario { get; set; }
     }
 }

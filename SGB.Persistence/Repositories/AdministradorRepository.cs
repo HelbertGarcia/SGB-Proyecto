@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Persistence.Interfaces
+namespace SGB.Persistence.Repositories
 {
-    public interface IFechaActualizacion
+    internal class AdministradorRepository
     {
-        public DateTime FechaActualizacion { get; set; }
     }
 }
