@@ -1,14 +1,14 @@
 ﻿using SGB.Domain.Entities.Categoria;
+using SGB.Domain.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Domain.Repository
+namespace SGB.Persistence.Interfaces
 {
-    public interface ICategoria: IRepository<Categoria>
+    public interface ICategoriaRepository: IBaseRepository<Categoria>
     {
-        Task<Categoria> GetByNameAsync(string name);
     }
 }

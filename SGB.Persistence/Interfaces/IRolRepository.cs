@@ -1,14 +1,14 @@
 ﻿using SGB.Domain.Entities.Rol;
+using SGB.Domain.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Domain.Repository
+namespace SGB.Persistence.Interfaces
 {
-    public interface IRol: IRepository<Rol>
+    public interface IRolRepository: IBaseRepository<Rol>
     {
-        Task<Rol> GetByNameAsync(string name);
     }
 }
