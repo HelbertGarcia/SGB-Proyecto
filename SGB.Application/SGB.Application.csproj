@@ -12,6 +12,7 @@
     <Folder Include="DTO\Notificaciones\" />
     <Folder Include="DTO\Reporte y Estadistica\" />
     <Folder Include="DTO\Usuarios\" />
+    <Folder Include="interfaces\" />
   </ItemGroup>
 
 </Project>
