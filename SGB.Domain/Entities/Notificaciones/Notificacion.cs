@@ -9,12 +9,12 @@ namespace SGB.Domain.Entities.Notificaciones
 {
     public class Notificacion: BaseEntity
     {
-        public int IDNotificacion { get; private set; }
-        public int IDUsuario { get; private set; }
-        public string Mensaje { get; private set; }
-        public string TipoNotificacion { get; private set; }
-        public DateTime FechaCreacion { get; private set; }
-        public DateTime? FechaEnvio { get; private set; }
+        public int IDNotificacion { get;  set; }
+        public int IDUsuario { get;  set; }
+        public string Mensaje { get;  set; }
+        public string TipoNotificacion { get;  set; }
+        public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaEnvio { get; set; }
 
         private Notificacion() { }
 
