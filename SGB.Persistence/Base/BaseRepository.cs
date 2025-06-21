@@ -14,7 +14,7 @@ namespace SGB.Persistence.Base
     public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         private readonly SGBContext _context;
-        private DbSet<T> Entity { get; set; }
+        protected DbSet<T> Entity { get; set; }
 
         public BaseRepository(SGBContext context)
         {
@@ -87,7 +87,7 @@ namespace SGB.Persistence.Base
             return result;
         }
 
-        public virtual async Task<OperationResult> GetAllAsync(Expression<Func<T, bool>> filter)
+        public virtual async Task<OperationResult> FindByConditionAsync(Expression<Func<T, bool>> filter)
         {
             OperationResult result = new OperationResult();
 
