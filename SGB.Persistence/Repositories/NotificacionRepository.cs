@@ -120,7 +120,7 @@ namespace SGB.Persistence.Repositories
 
         public override async Task<OperationResult> FindByConditionAsync(Expression<Func<Notificacion, bool>> filter = null)
         {
-            var result = await base.GetAllAsync(filter);
+            var result = await base.FindByConditionAsync(filter);
             if (!result.Success)
             {
                 _logger.LogError("Fallo al obtener notificaciones. Mensaje del repositorio base: {BaseMessage}", result.Message);
