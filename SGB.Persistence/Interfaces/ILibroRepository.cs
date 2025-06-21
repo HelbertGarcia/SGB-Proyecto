@@ -1,4 +1,4 @@
-﻿using SGB.Domain.Entities.Prestamos;
+﻿using SGB.Domain.Entities.Libro;
 using SGB.Domain.Repository;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Persistence.Interfaces
 {
-    public interface IPrestamoRepository: IBaseRepository<Prestamo>
+    public interface ILibroRepository: IBaseRepository<Libro>
     {
     }
 }
