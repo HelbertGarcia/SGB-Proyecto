@@ -15,6 +15,6 @@ namespace SGB.Domain.Repository
         Task<OperationResult> AddAsync(T entity);
         Task<OperationResult> UpdateAsync(T entity);
         Task<OperationResult> DeleteAsync(int id);
-        Task<OperationResult> GetAllAsync(Expression<Func<T, bool>> filter);
+        Task<OperationResult> FindByConditionAsync(Expression<Func<T, bool>> filter);
     }
 }
