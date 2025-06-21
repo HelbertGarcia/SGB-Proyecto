@@ -11,11 +11,11 @@ namespace SGB.Persistence.Interfaces
 {
     public interface ILibroRepository: IBaseRepository<Libro>
     {
-        public Task<OperationResult> BuscarPorAutor(string autor);
+        Task<OperationResult> BuscarPorAutorAsync(string autor);
 
-        public Task<OperationResult> BuscarPorTitulo(string titulo);
+        Task<OperationResult> BuscarPorTituloAsync(string titulo);
 
-        public Task<OperationResult> BuscarPorEditorial(string editorial);
+        Task<OperationResult> BuscarPorEditorialAsync(string editorial);
 
         Task<OperationResult> BuscarPorIsbnAsync(string isbn);
 

@@ -9,8 +9,6 @@ using SGB.Persistence.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SGB.Persistence.Repositories
@@ -30,81 +28,156 @@ namespace SGB.Persistence.Repositories
             _configuration = configuration;
         }
 
-        // aqui estan todos los metodos que se heredan de BaseRepository<T>
+        #region "Métodos Heredados Sobrescritos (Solo los necesarios)"
 
-        public override Task<OperationResult> AddAsync(Libro entity)
+        public override Task<Libro> GetByIdAsync(int id)
         {
-            return base.AddAsync(entity);
+            _logger.LogError("Se intentó usar GetByIdAsync(int) en LibroRepository, que usa ISBN (string) como clave.");
+            throw new NotSupportedException("La entidad Libro utiliza un ISBN (string) como clave primaria. Utilice el método BuscarPorIsbnAsync.");
         }
 
         public override Task<OperationResult> DeleteAsync(int id)
         {
-            return base.DeleteAsync(id);
+            _logger.LogError("Se intentó usar DeleteAsync(int) en LibroRepository, que usa ISBN (string) como clave.");
+            throw new NotSupportedException("La entidad Libro utiliza un ISBN (string) como clave primaria. Utilice el método DeleteLogicoAsync.");
         }
 
-        public override Task<IEnumerable<Libro>> GetAllAsync()
-        {
-            return base.GetAllAsync();
-        }
+        #endregion
 
-        public override Task<OperationResult> FindByConditionAsync(Expression<Func<Libro, bool>> filter)
-        {
-            return base.FindByConditionAsync(filter);
-        }
+        #region "Métodos Propios de ILibroRepository"
 
-        public override Task<Libro> GetByIdAsync(int id)
+        public async Task<OperationResult> DeleteLogicoAsync(string isbn)
         {
-            return base.GetByIdAsync(id);
-        }
-
-        public override Task<OperationResult> UpdateAsync(Libro entity)
-        {
-            return base.UpdateAsync(entity);
-        }
-
-        //aqui van los metodos propios de LibroRepository
-
-        public async Task<OperationResult> BuscarPorAutor(string autor)
-        {
-            if (string.IsNullOrWhiteSpace(autor))
+            if (string.IsNullOrWhiteSpace(isbn))
             {
-                return new OperationResult { Success = false, Message = "El autor no puede estar vacío." };
+                return await Task.FromResult(new OperationResult { Success = false, Message = "El ISBN no puede estar vacío." });
             }
 
             try
             {
-                var data = await Entity.Where(l => l.Autor.Contains(autor) && l.EstaActivo)
-                                       .AsNoTracking()
-                                       .ToListAsync();
+                var libroParaEliminar = await Entity.FirstOrDefaultAsync(l => l.ISBN == isbn);
 
+                if (libroParaEliminar == null)
+                {
+                    return new OperationResult { Success = false, Message = "Libro no encontrado." };
+                }
+
+                libroParaEliminar.Deshabilitar();
+
+                return await base.UpdateAsync(libroParaEliminar);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en la eliminación lógica del libro con ISBN: {ISBN}", isbn);
+                var errorMessage = _configuration["ErrorMessages:LibroRepository:DeleteLogico"];
+                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error al eliminar el libro." };
+            }
+        }
+
+        public async Task<OperationResult> BuscarPorAutorAsync(string autor)
+        {
+            if (string.IsNullOrWhiteSpace(autor))
+            {
+                return await Task.FromResult(new OperationResult { Success = false, Message = "El autor no puede estar vacío." });
+            }
+            try
+            {
+                var data = await Entity.Where(l => l.Autor.Contains(autor) && l.EstaActivo).AsNoTracking().ToListAsync();
                 return new OperationResult { Data = data };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ocurrió un error al buscar libros por autor: {Autor}", autor);
-                return new OperationResult { Success = false, Message = "Ocurrió un error inesperado al buscar por autor." };
+                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorAutor"];
+                _logger.LogError(ex, errorMessage, autor);
+                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por autor." };
             }
         }
 
-        public Task<OperationResult> BuscarPorTitulo(string titulo)
+        public async Task<OperationResult> BuscarPorTituloAsync(string titulo)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(titulo))
+            {
+                return await Task.FromResult(new OperationResult { Success = false, Message = "El título no puede estar vacío." });
+            }
+
+            try
+            {
+                var data = await Entity.Where(l => l.Titulo.Contains(titulo) && l.EstaActivo).AsNoTracking().ToListAsync();
+                return new OperationResult { Data = data };
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorTitulo"];
+                _logger.LogError(ex, errorMessage, titulo);
+                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por título." };
+            }
         }
 
-        public Task<OperationResult> BuscarPorEditorial(string editorial)
+        public async Task<OperationResult> BuscarPorEditorialAsync(string editorial)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(editorial))
+            {
+                return await Task.FromResult(new OperationResult { Success = false, Message = "La editorial no puede estar vacía." });
+            }
+
+            try
+            {
+                var data = await Entity.Where(l => l.Editorial.Contains(editorial) && l.EstaActivo).AsNoTracking().ToListAsync();
+                return new OperationResult { Data = data };
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorEditorial"];
+                _logger.LogError(ex, errorMessage, editorial);
+                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por editorial." };
+            }
         }
 
-        public Task<OperationResult> BuscarPorIsbnAsync(string isbn)
+        public async Task<OperationResult> BuscarPorIsbnAsync(string isbn)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(isbn))
+            {
+                return await Task.FromResult(new OperationResult { Success = false, Message = "El ISBN no puede estar vacío." });
+            }
+
+            try
+            {
+                var data = await Entity.AsNoTracking().FirstOrDefaultAsync(l => l.ISBN == isbn && l.EstaActivo);
+                return new OperationResult { Data = data };
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorIsbn"];
+                _logger.LogError(ex, errorMessage, isbn);
+                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por ISBN." };
+            }
         }
 
-        public Task<OperationResult> BuscarPorCategoriaAsync(string nombreCategoria)
+        public async Task<OperationResult> BuscarPorCategoriaAsync(string nombreCategoria)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(nombreCategoria))
+            {
+                return await Task.FromResult(new OperationResult { Success = false, Message = "El nombre de la categoría no puede estar vacío." });
+            }
+
+            try
+            {
+                var data = await (from libro in Entity
+                                  join categoria in _context.Categoria on libro.IDCategoria equals categoria.Id
+                                  where categoria.Nombre == nombreCategoria && libro.EstaActivo
+                                  select libro)
+                                  .AsNoTracking()
+                                  .ToListAsync();
+                return new OperationResult { Data = data };
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorCategoria"];
+                _logger.LogError(ex, errorMessage, nombreCategoria);
+                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por categoría." };
+            }
         }
 
+        #endregion
     }
 }
