@@ -1,4 +1,5 @@
-﻿using SGB.Domain.Entities.Penalizaciones;
+﻿using SGB.Domain.Base;
+using SGB.Domain.Entities.Penalizaciones;
 using SGB.Domain.Repository;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,11 @@ using System.Threading.Tasks;
 
 namespace SGB.Persistence.Interfaces
 {
-    public interface IPenalizacionRepository: IBaseRepository<Penalizacion>
+    public interface IPenalizacionRepository : IBaseRepository<Penalizacion>
     {
+
+       Task<OperationResult> GetActivePenalizacionesAsync();
+        Task<OperationResult> GetMotivosPenalizacionesPorUsuarioAsync(int usuarioId);
+
     }
 }
