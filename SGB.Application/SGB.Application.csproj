@@ -10,8 +10,11 @@
     <Folder Include="DTO\Libros\" />
     <Folder Include="DTO\Admin Sistema\" />
     <Folder Include="DTO\Notificaciones\" />
+    <Folder Include="DTO\Prestamo y Penalizacion\PenalizacionDto\" />
+    <Folder Include="DTO\Prestamo y Penalizacion\PrestamoDto\" />
     <Folder Include="DTO\Reporte y Estadistica\" />
     <Folder Include="DTO\Usuarios\" />
+    <Folder Include="interfaces\" />
   </ItemGroup>
 
 </Project>
