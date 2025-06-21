@@ -1,4 +1,5 @@
-﻿using SGB.Domain.Entities.Categoria;
+﻿using SGB.Domain.Base;
+using SGB.Domain.Entities.Categoria;
 using SGB.Domain.Repository;
 using System;
 using System.Collections.Generic;
@@ -10,5 +11,6 @@ namespace SGB.Persistence.Interfaces
 {
     public interface ICategoriaRepository: IBaseRepository<Categoria>
     {
+        Task<OperationResult> ObtenerPorNombreAsync(string nombreCategoria);
     }
 }
