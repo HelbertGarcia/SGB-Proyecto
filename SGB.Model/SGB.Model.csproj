@@ -9,8 +9,6 @@
   <ItemGroup>
     <Folder Include="Models\models Libros\" />
     <Folder Include="Models\models admin Sistema\" />
-    <Folder Include="Models\models Prestamos y Penalizacion\Models prestamos\" />
-    <Folder Include="Models\models Prestamos y Penalizacion\Models Penalizacion\" />
     <Folder Include="Models\models Usuario\" />
     <Folder Include="Models\Models Reporte Estadistica\" />
     <Folder Include="Models\models Notificaciones\" />
