@@ -199,13 +199,13 @@ namespace SGB.Persistence.Repositories
             }
         }
 
-        public override async Task<OperationResult> GetAllAsync(Expression<Func<Penalizacion, bool>> filter = null)
+        public override async Task<OperationResult> FindByConditionAsync(Expression<Func<Penalizacion, bool>> filter = null)
         {
             var result = new OperationResult();
 
             try
             {
-                result = await base.GetAllAsync(filter);
+                result = await base.FindByConditionAsync(filter);
                 _logger.LogInformation("Se recuperaron penalizaciones con filtro. ¿Filtro aplicado?: {Filtro}", filter != null);
             }
             catch (Exception ex)
