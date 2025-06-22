@@ -142,8 +142,6 @@ namespace SGB.Persistence.Repositories
             return await _context.Notificacion.FindAsync(id);
         }
 
-
-        //Contar notificaciones por tipo desde un usuario
         public async Task<Dictionary<string, int>> ContarPorTipoAsync(int idUsuario)
         {
             if (idUsuario <= 0)
@@ -152,10 +150,6 @@ namespace SGB.Persistence.Repositories
             }
             return await _context.Notificacion.Where(n => n.IDUsuario == idUsuario) .GroupBy(n => n.TipoNotificacion) .ToDictionaryAsync(g => g.Key, g => g.Count());
         }
-
-
-
-
     }
 }
 

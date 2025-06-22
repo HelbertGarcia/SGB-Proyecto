@@ -207,13 +207,13 @@ namespace SGB.Persistence.Repositories
             }
         }
 
-        public override async Task<OperationResult> GetAllAsync(Expression<Func<Prestamo, bool>> filter = null)
+        public override async Task<OperationResult> FindByConditionAsync(Expression<Func<Prestamo, bool>> filter = null)
         {
             var result = new OperationResult();
 
             try
             {
-                result = await base.GetAllAsync(filter);
+                result = await base.FindByConditionAsync(filter);
                 _logger.LogInformation("Se obtuvieron préstamos filtrados. ¿Filtro aplicado?: {Filtro}", filter != null);
             }
             catch (Exception ex)
