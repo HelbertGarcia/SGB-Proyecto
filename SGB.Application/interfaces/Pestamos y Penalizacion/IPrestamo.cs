@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
+namespace SGB.Application.interfaces.Pestamos_y_Penalizacion
 {
-    internal class PenalizacionDto
+    internal class IPrestamo
     {
     }
 }
