@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.LibrosDto
+namespace SGB.Application.Dtos.LibrosDto.CategoriaDto
 {
-    internal class UpdateLibrosDto
+    internal class DeleteCategoriaDto
     {
     }
 }

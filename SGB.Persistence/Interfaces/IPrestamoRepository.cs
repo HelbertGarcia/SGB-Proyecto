@@ -12,18 +12,8 @@ namespace SGB.Persistence.Interfaces
 {
     public interface IPrestamoRepository: IBaseRepository<Prestamo>
     {
-
-        // Aquí puedes agregar métodos específicos para el repositorio de Prestamo si es necesario.
-        // Por ejemplo, si necesitas un método para obtener préstamos por un criterio específico.
-        // Task<IEnumerable<Prestamo>> GetPrestamosByCriteriaAsync(Expression<Func<Prestamo, bool>> criteria);
-
-       
-         Task<OperationResult> GetFechaVencimientoByPrestamoIdAsync(int prestamoId);
+        Task<OperationResult> GetFechaVencimientoByPrestamoIdAsync(int prestamoId);
 
         Task<OperationResult> GetEstadosPrestamosPorUsuarioAsync(int usuarioId);
-
-
-
-
     }
 }
