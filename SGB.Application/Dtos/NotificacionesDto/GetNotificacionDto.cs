@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.NotificacionesDto
 {
-    internal class DeleteNotificacionDto
-    {
-    }
+    public record GetNotificacionDto(
+        int Id,
+        string Tipo,
+        string Mensaje,
+        DateTime Fecha,
+        bool Leida
+    );
 }
