@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SGB.Domain.Base;
 using SGB.Domain.Repository;
 using SGB.Persistence.Context;
@@ -6,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SGB.Persistence.Base
@@ -14,53 +15,84 @@ namespace SGB.Persistence.Base
     public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         private readonly SGBContext _context;
-        protected DbSet<T> Entity { get; set; }
+        private readonly ILogger _logger; 
+        private readonly IConfiguration _configuration;
+        protected readonly DbSet<T> Entity;
 
-        public BaseRepository(SGBContext context)
+        public BaseRepository(SGBContext context, ILoggerFactory loggerFactory, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
+            _logger = loggerFactory.CreateLogger($"SGB.Persistence.Base.BaseRepository<{typeof(T).Name}>");
             Entity = _context.Set<T>();
         }
 
+
         public virtual async Task<OperationResult> AddAsync(T entity)
         {
-            OperationResult result = new OperationResult();
-            try 
+            try
             {
                 await Entity.AddAsync(entity);
                 await _context.SaveChangesAsync();
+                return new OperationResult();
             }
-            catch(Exception ex) {
-            result.Success = false;
-            result.Message = "Error al agregar la entidad.";
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:BaseRepository:AddError"];
+                _logger.LogError(ex, "{ErrorMessage}", errorMessage);
+                return new OperationResult { Success = false, Message = errorMessage };
             }
-            return result;
+        }
+
+        public virtual async Task<OperationResult> UpdateAsync(T entity)
+        {
+            try
+            {
+                Entity.Update(entity);
+                await _context.SaveChangesAsync();
+                return new OperationResult();
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:BaseRepository:UpdateError"];
+                _logger.LogError(ex, "{ErrorMessage}", errorMessage);
+                return new OperationResult { Success = false, Message = errorMessage };
+            }
         }
 
         public virtual async Task<OperationResult> DeleteAsync(int id)
         {
-            OperationResult result = new OperationResult();
-
-            try {
+            try
+            {
                 var entityToDelete = await Entity.FindAsync(id);
-                if (entityToDelete != null)
-                {
-                    Entity.Remove(entityToDelete);
-                }
+                if (entityToDelete == null)
+                    return new OperationResult { Success = false, Message = "Entidad no encontrada para eliminar." };
+
+                Entity.Remove(entityToDelete);
                 await _context.SaveChangesAsync();
+                return new OperationResult();
             }
             catch (Exception ex)
             {
-                result.Success = false;
-                result.Message = "Error al eliminar la entidad.";
+                var errorMessage = _configuration["ErrorMessages:BaseRepository:DeleteError"];
+                _logger.LogError(ex, "{ErrorMessage} - ID: {Id}", errorMessage, id);
+                return new OperationResult { Success = false, Message = errorMessage };
             }
-            return result;
         }
-        
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<OperationResult> FindByConditionAsync(Expression<Func<T, bool>> filter)
         {
-            return await Entity.ToListAsync();
+            try
+            {
+                var data = await Entity.Where(filter).AsNoTracking().ToListAsync();
+                return new OperationResult { Data = data };
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:BaseRepository:GetError"];
+                _logger.LogError(ex, errorMessage);
+                return new OperationResult { Success = false, Message = errorMessage };
+            }
         }
 
         public virtual async Task<T> GetByIdAsync(int id)
@@ -68,43 +100,9 @@ namespace SGB.Persistence.Base
             return await Entity.FindAsync(id);
         }
 
-        public virtual async Task<OperationResult> UpdateAsync(T entity)
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            OperationResult result = new OperationResult();
-            try { 
-                Entity.Update(entity);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "Error al actualizar la entidad."
-                };
-            }
-
-            return result;
-        }
-
-        public virtual async Task<OperationResult> FindByConditionAsync(Expression<Func<T, bool>> filter)
-        {
-            OperationResult result = new OperationResult();
-
-            try
-            {
-                var datos = Entity.Where(filter).ToListAsync();
-
-                result.Data = datos;
-            }
-            catch (Exception ex)
-            {
-
-                result.Success = false;
-                result.Message = "Ocurrio un error obteniendo los datos.";
-            }
-
-            return result;
+            return await Entity.AsNoTracking().ToListAsync();
         }
     }
 }
