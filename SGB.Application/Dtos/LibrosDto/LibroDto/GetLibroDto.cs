@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.LibrosDto
+namespace SGB.Application.Dtos.LibrosDto.LibroDto
 {
-    internal class LibrosDto
+    public record GetLibroDto
     {
+
     }
 }

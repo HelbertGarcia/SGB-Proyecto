@@ -20,16 +20,16 @@ namespace SGB.Persistence.Repositories
         private readonly IConfiguration _configuration;
 
         public LibroRepository(SGBContext context,
-                               ILogger<LibroRepository> logger,
-                               IConfiguration configuration) : base(context)
+                               ILoggerFactory loggerFactory,
+                               IConfiguration configuration)
+            : base(context, loggerFactory, configuration)
         {
             _context = context;
-            _logger = logger;
             _configuration = configuration;
+            _logger = loggerFactory.CreateLogger<LibroRepository>();
         }
 
-        #region "Métodos Heredados Sobrescritos (Solo los necesarios)"
-
+        #region "Métodos Heredados Sobrescritos"
         public override Task<Libro> GetByIdAsync(int id)
         {
             _logger.LogError("Se intentó usar GetByIdAsync(int) en LibroRepository, que usa ISBN (string) como clave.");
@@ -41,7 +41,6 @@ namespace SGB.Persistence.Repositories
             _logger.LogError("Se intentó usar DeleteAsync(int) en LibroRepository, que usa ISBN (string) como clave.");
             throw new NotSupportedException("La entidad Libro utiliza un ISBN (string) como clave primaria. Utilice el método DeleteLogicoAsync.");
         }
-
         #endregion
 
         #region "Métodos Propios de ILibroRepository"
@@ -59,17 +58,16 @@ namespace SGB.Persistence.Repositories
 
                 if (libroParaEliminar == null)
                 {
-                    return new OperationResult { Success = false, Message = "Libro no encontrado." };
+                    return await Task.FromResult(new OperationResult { Success = false, Message = "Libro no encontrado." });
                 }
 
                 libroParaEliminar.Deshabilitar();
-
                 return await base.UpdateAsync(libroParaEliminar);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en la eliminación lógica del libro con ISBN: {ISBN}", isbn);
-                var errorMessage = _configuration["ErrorMessages:LibroRepository:DeleteLogico"];
+                var errorMessage = _configuration["ErrorMessages:Libros:Delete"];
                 return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error al eliminar el libro." };
             }
         }
@@ -87,7 +85,7 @@ namespace SGB.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorAutor"];
+                var errorMessage = _configuration["ErrorMessages:Libros:GetAll"]; 
                 _logger.LogError(ex, errorMessage, autor);
                 return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por autor." };
             }
