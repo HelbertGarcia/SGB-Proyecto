@@ -15,10 +15,6 @@
   <ItemGroup>
     <Folder Include="Base\" />
     <Folder Include="Dtos\BaseDto\" />
-    <Folder Include="interfaces\Libro\" />
-    <Folder Include="interfaces\Reporte_Estadistica\" />
-    <Folder Include="interfaces\Notificaciones\" />
-    <Folder Include="interfaces\Usuario\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
