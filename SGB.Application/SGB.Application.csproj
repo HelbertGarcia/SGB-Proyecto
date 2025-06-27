@@ -22,7 +22,8 @@
     <Folder Include="Contracts\Service\IPrestamos_y_ PenalizacionServices\" />
     <Folder Include="Dtos\BaseDto\" />
     <Folder Include="Services\LibrosServices\" />
-    <Folder Include="Services\Prestamos_y_PenalizacionServices\" />
+    <Folder Include="Services\Prestamos_y_PenalizacionServices\PenalizacionServices\" />
+    <Folder Include="Services\Prestamos_y_PenalizacionServices\PrestamoServices\" />
     <Folder Include="Services\UsuarioServices\" />
     <Folder Include="Services\Reporte_EstaditicaServices\" />
     <Folder Include="Services\NotificacionesServices\" />
