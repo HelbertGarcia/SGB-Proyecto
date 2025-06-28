@@ -9,6 +9,7 @@ namespace SGB.Domain.Entities.Categoria
 {
     public class Categoria : BaseEntityFecha, IEstaActivo
     {
+        public int id { get; set; }
         public string Nombre { get; private set; }
 
         public bool EstaActivo { get; set; }

@@ -5,6 +5,7 @@ namespace SGB.Domain.Entities.Libro
 {
     public class Libro: IEstaActivo
     {
+        public int Id { get; set; }
         public string ISBN { get; private set; }
         public string Titulo { get; private set; }
         public string Autor { get; private set; }

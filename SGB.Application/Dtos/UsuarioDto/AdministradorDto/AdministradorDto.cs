@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.UsuarioDto.AdministradorDto
 {
-    internal class AdministradorDto
+    public record AdministradorDto
     {
+        public int IDAdmin { get; set; }
+        public int IDUsuario { get; set; }
+        public DateTime FechaAsignacion { get; set; }
+        public bool EstaActivo { get; set; }
+        public DateTime FechaActualizacion { get; set; }
     }
 }

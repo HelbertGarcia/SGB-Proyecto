@@ -9,6 +9,7 @@ namespace SGB.Domain.Entities.Rol
 {
     public class Rol: BaseEntityFecha, IEstaActivo
     {
+        public int id { get; set; }
         public string Nombre { get; private set; }
         public string Descripcion { get; private set; }
         public bool EstaActivo { get; set; }

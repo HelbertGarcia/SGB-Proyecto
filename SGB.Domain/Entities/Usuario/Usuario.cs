@@ -10,13 +10,13 @@ namespace SGB.Domain.Entities.Usuario
 
     public class Usuario : Persona
     {
-        public Usuario(string nombre, string apellido, string correo, string contraseña, int idRol)
-            : base(nombre, apellido, correo, contraseña, idRol)
+        
+        public Usuario(string nombre, string apellido, string email, string passwordHash, int idRol)
+            : base(nombre, apellido, email, passwordHash, idRol) 
         {
-
         }
-
     }
+
 
 }
 

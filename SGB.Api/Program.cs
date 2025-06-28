@@ -1,4 +1,9 @@
 
+using Microsoft.EntityFrameworkCore;
+using SGB.Persistence.Context;
+using SGB.Persistence.Interfaces;
+using SGB.Persistence.Repositories;
+
 namespace SGB.Api
 {
     public class Program
@@ -8,6 +13,11 @@ namespace SGB.Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("")));
+
+            builder.Services.AddScoped<IPersonaRepository, PersonaRepository>();
+            builder.Services.AddTransient<IPersonaRepository, PersonaRepository>();
+
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
