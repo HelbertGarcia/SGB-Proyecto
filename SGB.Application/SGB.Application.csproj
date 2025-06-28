@@ -19,7 +19,6 @@
     <Folder Include="Contratos\interfaces\NotificacionesServices\" />
     <Folder Include="Contratos\interfaces\UsuariosServices\" />
     <Folder Include="Contratos\Servicios\Administracion\" />
-    <Folder Include="Contratos\Servicios\Libros\" />
     <Folder Include="Contratos\Servicios\ReporteYEstadistica\" />
     <Folder Include="Contratos\Servicios\Notificaciones\" />
     <Folder Include="Contratos\Servicios\PrestamosYPenalizaciones\" />
