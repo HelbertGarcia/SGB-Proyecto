@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Base
 {
-    public interface IBaseService
+    public interface IBaseService<TAddDTO, TUpdateDTO, TRemoveDTO>
     {
         Task<OperationResult> AddAsync<T>(T entity) where T : class;
 

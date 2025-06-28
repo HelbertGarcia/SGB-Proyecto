@@ -13,12 +13,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="interfaces\LibrosServices\" />
-    <Folder Include="interfaces\AdministracionServices\" />
-    <Folder Include="interfaces\ReporteYEstadisticasServices\" />
-    <Folder Include="interfaces\PrestamosYpenalizacionesServices\" />
-    <Folder Include="interfaces\NotificacionesServices\" />
-    <Folder Include="interfaces\UsuariosServices\" />
+    <Folder Include="Contratos\interfaces\AdministracionServices\" />
+    <Folder Include="Contratos\interfaces\ReporteYEstadisticasServices\" />
+    <Folder Include="Contratos\interfaces\PrestamosYpenalizacionesServices\" />
+    <Folder Include="Contratos\interfaces\NotificacionesServices\" />
+    <Folder Include="Contratos\interfaces\UsuariosServices\" />
+    <Folder Include="Contratos\Servicios\Administracion\" />
+    <Folder Include="Contratos\Servicios\Libros\" />
+    <Folder Include="Contratos\Servicios\ReporteYEstadistica\" />
+    <Folder Include="Contratos\Servicios\Notificaciones\" />
+    <Folder Include="Contratos\Servicios\PrestamosYPenalizaciones\" />
+    <Folder Include="Contratos\Servicios\Usuarios\" />
   </ItemGroup>
 
   <ItemGroup>
