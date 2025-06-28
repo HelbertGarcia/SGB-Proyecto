@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.AdministracionDto
+namespace SGB.Application.Contracts.Service.IConfiguracionService
 {
-    internal class DeleteAdministradorDto
+    internal interface IConfiguracionService
     {
     }
 }

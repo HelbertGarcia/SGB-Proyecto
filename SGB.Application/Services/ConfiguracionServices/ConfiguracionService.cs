@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.AdministracionDto
+namespace SGB.Application.Services.ConfiguracionServices
 {
-    internal class AdministradorDto
+    public class ConfiguracionService 
     {
     }
 }
