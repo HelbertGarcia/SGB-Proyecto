@@ -11,6 +11,7 @@ using SGB.Domain.Entities.Notificaciones;
 using SGB.Domain.Entities.Categoria;
 using SGB.Domain.Entities.Penalizaciones;
 using SGB.Domain.Entities.Rol;
+using SGB.Domain.Entities.Configuracion;
 
 namespace SGB.Persistence.Context
 {
@@ -28,6 +29,7 @@ namespace SGB.Persistence.Context
         public DbSet<Categoria> Categoria { get; set; }
         public DbSet<Penalizacion> Penalizacion { get; set; }
         public DbSet<Rol> Rol { get; set; }
+        public DbSet<Configuracion> Configuracion { get; set; }
 
     }
 }
