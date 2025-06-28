@@ -7,14 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Contracts\Repositorio\**" />
     <Compile Remove="Dtos\RolDto\**" />
+    <EmbeddedResource Remove="Contracts\Repositorio\**" />
     <EmbeddedResource Remove="Dtos\RolDto\**" />
+    <None Remove="Contracts\Repositorio\**" />
     <None Remove="Dtos\RolDto\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Base\" />
-    <Folder Include="Contracts\Repositorio\" />
     <Folder Include="Contracts\Service\ILibroServices\" />
     <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
     <Folder Include="Contracts\Service\IUsuarioServices\" />
@@ -27,6 +29,13 @@
     <Folder Include="Services\UsuarioServices\" />
     <Folder Include="Services\Reporte_EstaditicaServices\" />
     <Folder Include="Services\NotificacionesServices\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SGB.Api\SGB.Api.csproj" />
+    <ProjectReference Include="..\SGB.Domain\SGB.Domain.csproj" />
+    <ProjectReference Include="..\SGB.Persistence\SGB.Persistence.csproj" />
+    <ProjectReference Include="..\SGB.Presentation\SGB.Presentation.csproj" />
   </ItemGroup>
 
 </Project>
