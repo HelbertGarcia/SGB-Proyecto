@@ -1,83 +1,69 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SGB.Application.Contracts.Service.IConfiguracionService;
+using SGB.Application.Dtos.AdministracionDto;
+using SGB.Application.Dtos.ConfiguracionDto;
 
 namespace SGB.Api.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class AdminController : Controller
     {
-        // GET: AdminController
-        public ActionResult Index()
+        private readonly IConfiguracionService _configuracionService;
+
+        public AdminController(IConfiguracionService configuracionService)
         {
-            return View();
+            _configuracionService = configuracionService;
         }
 
-        // GET: AdminController/Details/5
-        public ActionResult Details(int id)
+        // GET: api/admin/configuraciones
+        [HttpGet("configuraciones")]
+        public async Task<IActionResult> ObtenerTodas()
         {
-            return View();
+            var resultado = await _configuracionService.GetAllAsync();
+            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
         }
 
-        // GET: AdminController/Create
-        public ActionResult Create()
+        // GET: api/admin/configuraciones/{id}
+        [HttpGet("configuraciones/{id}")]
+        public async Task<IActionResult> ObtenerPorId(int id)
         {
-            return View();
+            var resultado = await _configuracionService.GetByIdAsync(id);
+            return resultado.Success ? Ok(resultado) : NotFound(resultado);
         }
 
-        // POST: AdminController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        // POST: api/admin/configuraciones
+        [HttpPost("configuraciones")]
+        public async Task<IActionResult> Crear([FromBody] AddConfiguracionDto dto)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var resultado = await _configuracionService.SaveAsync(dto);
+            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
         }
 
-        // GET: AdminController/Edit/5
-        public ActionResult Edit(int id)
+        // PUT: api/admin/configuraciones
+        [HttpPut("configuraciones")]
+        public async Task<IActionResult> Actualizar([FromBody] UpdateConfiguracionDto dto)
         {
-            return View();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var resultado = await _configuracionService.UpdateAsync(dto);
+            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
         }
 
-        // POST: AdminController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        // DELETE (soft): api/admin/configuraciones
+        [HttpDelete("configuraciones")]
+        public async Task<IActionResult> Eliminar([FromBody] DeleteConfiguracionDto dto)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        // GET: AdminController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: AdminController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            var resultado = await _configuracionService.DeleteAsync(dto);
+            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
         }
     }
 }

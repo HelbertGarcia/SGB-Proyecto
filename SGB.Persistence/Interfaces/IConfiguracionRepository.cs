@@ -16,5 +16,6 @@ namespace SGB.Persistence.Interfaces
         Task AddAsync(Configuracion entity);
         Task UpdateEntityAsync(Configuracion entity);
         Task DeleteEntityAsync(Configuracion entity);
+
     }
 }

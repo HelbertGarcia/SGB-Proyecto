@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +11,6 @@ using SGB.Persistence.Base;
 using SGB.Persistence.Context;
 using SGB.Persistence.Interfaces;
 
-
 namespace SGB.Persistence.Repositories
 {
     public class ConfiguracionRepository : BaseRepository<Configuracion>, IConfiguracionRepository
@@ -18,16 +19,16 @@ namespace SGB.Persistence.Repositories
         private readonly ILogger<LibroRepository> _logger;
         private readonly IConfiguration _configuration;
 
-
-        public ConfiguracionRepository(SGBContext context,ILoggerFactory loggerFactory, IConfiguration configuration)
-       : base(context, loggerFactory, configuration)
+        public ConfiguracionRepository(SGBContext context, ILoggerFactory loggerFactory, IConfiguration configuration)
+            : base(context, loggerFactory, configuration)
         {
             _context = context;
             _configuration = configuration;
             _logger = loggerFactory.CreateLogger<LibroRepository>();
         }
 
-        #region "Metodos Heredados BaseRepository"
+        #region "Métodos de ConfiguracionRepository"
+
         public async Task<OperationResult> ActualizarConfiguracionAsync(int id, string valor, string descripcion = null, bool? estaActivo = null)
         {
             try
@@ -94,11 +95,35 @@ namespace SGB.Persistence.Repositories
                 return new OperationResult { Success = false, Message = errorMsg };
             }
         }
-        #endregion
 
+        public async Task<Configuracion> GetEntityByIdAsync(int id)
+        {
+            return await Entity.FindAsync(id);
+        }
 
+        public async Task AddAsync(Configuracion config)
+        {
+            await Entity.AddAsync(config);
+            await _context.SaveChangesAsync();
+        }
 
-        #region "Implementación de IConfiguracionRepository"
+        public async Task DeleteEntityAsync(Configuracion config)
+        {
+            Entity.Remove(config);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Configuracion>> GetAllAsync()
+        {
+            return await Entity.AsNoTracking().ToListAsync();
+        }
+
+        public async Task UpdateEntityAsync(Configuracion entity)
+        {
+            Entity.Update(entity);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<OperationResult> ObtenerPorNombreAsync(string nombre)
         {
             try
@@ -106,7 +131,6 @@ namespace SGB.Persistence.Repositories
                 var result = await Entity.AsNoTracking()
                                          .Where(c => c.Nombre == nombre)
                                          .ToListAsync();
-
                 return new OperationResult { Data = result };
             }
             catch (Exception ex)
@@ -117,10 +141,5 @@ namespace SGB.Persistence.Repositories
             }
         }
         #endregion
-
     }
-
-
-
-
 }
