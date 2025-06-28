@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
-    internal class DeletePrestamoDto
+    public record DeletePrestamoDto
     {
+        public int IdPrestamo { get; set; }
     }
 }
