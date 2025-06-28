@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
-    internal class DeletePenalizacionDto
+    public record DeletePenalizacionDto
     {
+
+        public int IdPrestamo { get; set; }
+
+      
+
+
     }
 }

@@ -13,7 +13,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="interfaces\" />
+    <Folder Include="Base\" />
+    <Folder Include="Contracts\Repositorio\" />
+    <Folder Include="Contracts\Service\ILibroServices\" />
+    <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
+    <Folder Include="Contracts\Service\IUsuarioServices\" />
+    <Folder Include="Contracts\Service\INotificacionesServices\" />
+    <Folder Include="Contracts\Service\IPrestamos_y_ PenalizacionServices\" />
+    <Folder Include="Dtos\BaseDto\" />
+    <Folder Include="Services\LibrosServices\" />
+    <Folder Include="Services\Prestamos_y_PenalizacionServices\PenalizacionServices\" />
+    <Folder Include="Services\Prestamos_y_PenalizacionServices\PrestamoServices\" />
+    <Folder Include="Services\UsuarioServices\" />
+    <Folder Include="Services\Reporte_EstaditicaServices\" />
+    <Folder Include="Services\NotificacionesServices\" />
   </ItemGroup>
 
 </Project>
