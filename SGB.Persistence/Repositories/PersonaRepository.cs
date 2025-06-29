@@ -14,7 +14,7 @@ namespace SGB.Persistence.Repositories
 {
     public class PersonaRepository : BaseRepository<Persona>, IPersonaRepository
     {   
-        private readonly String _connectionString;
+       
         private readonly ILogger<PersonaRepository> _logger;
         private readonly IConfiguration _configuration;
 
@@ -23,7 +23,7 @@ namespace SGB.Persistence.Repositories
                                  IConfiguration configuration)
             : base(context, loggerFactory, configuration)
         {
-            _connectionString = _configuration[""];
+            
             _configuration = configuration;
             _logger = loggerFactory.CreateLogger<PersonaRepository>();
         }

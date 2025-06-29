@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SGB.Application.Contracts.Service.IUsuarioServices;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -8,33 +9,42 @@ namespace SGB.Api.Controllers
     [ApiController]
     public class UsuarioController : ControllerBase
     {
-        // GET: api/<UsuarioController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly IUsuarioServices _usuarioServices;
+
+        public UsuarioController(IUsuarioServices usuarioServices) 
         {
+            _usuarioServices = usuarioServices;
+        }
+
+
+        
+        [HttpGet("")]
+        public async Task<IActionResult> Get()
+        {
+            var result = await _usuarioServices.ObtenerDetallesUsuarioAsync();
             return new string[] { "value1", "value2" };
         }
 
-        // GET api/<UsuarioController>/5
+       
         [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
         }
 
-        // POST api/<UsuarioController>
+       
         [HttpPost]
         public void Post([FromBody] string value)
         {
         }
 
-        // PUT api/<UsuarioController>/5
+       
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
         }
 
-        // DELETE api/<UsuarioController>/5
+       
         [HttpDelete("{id}")]
         public void Delete(int id)
         {

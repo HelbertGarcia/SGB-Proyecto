@@ -13,10 +13,10 @@ namespace SGB.Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("")));
+            //builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("")));
 
-            builder.Services.AddScoped<IPersonaRepository, PersonaRepository>();
-            builder.Services.AddTransient<IPersonaRepository, PersonaRepository>();
+            //builder.Services.AddScoped<IPersonaRepository, PersonaRepository>();
+            //builder.Services.AddTransient<IPersonaRepository, PersonaRepository>();
 
 
             builder.Services.AddControllers();
