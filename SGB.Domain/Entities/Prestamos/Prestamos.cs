@@ -9,12 +9,14 @@ namespace SGB.Domain.Entities.Prestamos
 {
     public class Prestamo : BaseEntity
     {
+        public string ISBN { get; set; }
         public int EjemplarId { get; private set; }
-        public int UsuarioId { get; private set; }
-        public DateTime FechaPrestamo { get; private set; }
-        public DateTime FechaVencimiento { get; private set; }
-        public DateTime? FechaDevolucion { get; private set; }
-        public EstadoPrestamo Estado { get; private set; }
+        public int UsuarioId { get; set; }
+        public DateTime FechaPrestamo { get; set; }
+        public DateTime FechaVencimiento { get; set; }
+        public DateTime? FechaDevolucion { get; set; }
+        public EstadoPrestamo Estado { get; set; }
+        
 
         private Prestamo() : base() { }
 

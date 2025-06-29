@@ -9,10 +9,9 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
     public record UpdatePrestamoDto
     {
-        public DataSetDateTime FechaVencimiento { get; set; }
-
+        public int IDPrestamo { get; set; }
+        public DateTime FechaVencimiento { get; set; }  // corregido
         public DateTime? FechaDevolucion { get; set; }
-
         public string Estado { get; set; }
     }
 }

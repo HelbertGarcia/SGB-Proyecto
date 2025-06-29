@@ -83,6 +83,9 @@ namespace SGB.Persistence.Repositories
             return await CambiarEstadoCuentaAsync(idUsuario, false);
         }
 
+
+
+
         private async Task<OperationResult> CambiarEstadoCuentaAsync(int idUsuario, bool estado)
         {
             if (idUsuario <= 0)
@@ -108,6 +111,8 @@ namespace SGB.Persistence.Repositories
                 return new OperationResult { Success = false, Message = errorMessage };
             }
         }
+
+
         #endregion
     }
 }

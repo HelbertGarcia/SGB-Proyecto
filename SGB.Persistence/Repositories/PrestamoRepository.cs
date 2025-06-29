@@ -5,10 +5,10 @@ using SGB.Domain.Base;
 using SGB.Domain.Entities.Prestamos;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
-using SGB.Persistence.Interfaces;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using SGB.Application.Contracts.Repository.Interfaces;
 
 namespace SGB.Persistence.Repositories
 {

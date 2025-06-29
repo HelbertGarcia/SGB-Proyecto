@@ -9,13 +9,14 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
     public record  GetPenalizacionDto
     {
 
-        public int IdPrestamo { get; set; }
+        public int IDPenalizacion { get; set; }
         public int IdUsuario { get; set; }
-        public string ISBN { get; set; }
+
+        public string Motivo { get; set; } = string.Empty;
+        
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }
-        public DateTime Fechadevolucion { get; set; }
 
-        public string Estado { get; set; }
+        public bool EstaActiva { get; set; }
     }
 }

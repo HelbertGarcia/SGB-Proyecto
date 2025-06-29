@@ -9,9 +9,9 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
     public record DeletePenalizacionDto
     {
 
-        public int IdPrestamo { get; set; }
+        public int IDPenalizacion { get; set; }
 
-      
+
 
 
     }

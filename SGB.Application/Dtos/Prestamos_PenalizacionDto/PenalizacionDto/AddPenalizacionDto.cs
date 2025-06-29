@@ -8,12 +8,15 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
     public record  AddPenalizacionDto
     {
-        public string ISBN { get; set; }
+       
         public int UsuarioId { get; set; }
+
+        public string Motivo { get; set; } = string.Empty;
 
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }
 
+        public bool EstaActiva { get; set; }
 
 
 

@@ -14,10 +14,15 @@ namespace SGB.Domain.Entities.Penalizaciones
         public DateTime FechaInicio { get; private set; }
         public DateTime FechaFin { get; private set; }
         public bool EstaActivo { get; set; }
+        public DateTime FechaVencimiento { get; set; }
+        public DateTime? FechaDevolucion { get; set; }
+        public string Estado { get; set; }
+
+
 
         private Penalizacion() { }
 
-        public Penalizacion(int idUsuario, string motivo, DateTime fechaInicio, DateTime fechaFin)
+        public Penalizacion(int idUsuario, string motivo, DateTime fechaInicio, DateTime fechaFin, bool estaActiva)
         {
             ValidarYAsignarIdUsuario(idUsuario);
             ValidarYAsignarMotivo(motivo);

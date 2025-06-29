@@ -17,7 +17,7 @@ namespace SGB.Domain.Entities.Libro
 
         public bool EstaActivo { get ; set ; }
 
-        private Libro() { }
+       
 
         public Libro(string isbn, string titulo, string autor, string editorial, DateTime? fechaPublicacion, int idCategoria)
         {
