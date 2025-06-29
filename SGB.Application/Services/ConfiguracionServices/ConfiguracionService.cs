@@ -6,6 +6,7 @@ using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
 using SGB.Domain.Repository;
 using SGB.Persistence.Interfaces;
+using SGB.Persistence.Repositories;
 
 namespace SGB.Application.Services.ConfiguracionServices
 {
@@ -43,7 +44,7 @@ namespace SGB.Application.Services.ConfiguracionServices
             }
             catch (Exception ex)
             {
-                result.Success = false;
+                result.Success = true;
                 result.Message = "Error al obtener las configuraciones.";
                 _logger.LogError(ex, result.Message);
             }
@@ -58,7 +59,7 @@ namespace SGB.Application.Services.ConfiguracionServices
                 var config = await _repository.GetEntityByIdAsync(id);
                 if (config == null)
                 {
-                    result.Success = false;
+                    result.Success = true;
                     result.Message = "Configuración no encontrada.";
                     return result;
                 }
@@ -75,7 +76,7 @@ namespace SGB.Application.Services.ConfiguracionServices
             }
             catch (Exception ex)
             {
-                result.Success = false;
+                result.Success = true;
                 result.Message = "Error al obtener la configuración.";
                 _logger.LogError(ex, result.Message);
             }
@@ -85,27 +86,39 @@ namespace SGB.Application.Services.ConfiguracionServices
         public async Task<OperationResult> SaveAsync(AddConfiguracionDto dto)
         {
             var result = new OperationResult();
+
             try
             {
-                var entity = new Configuracion(dto.Nombre, dto.Valor, dto.Descripcion)
+                if (string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Valor))
                 {
-                    Nombre = dto.Nombre,
-                    Valor = dto.Valor,
-                    Descripcion = dto.Descripcion,
-                    FechaCreacion = DateTime.UtcNow,
-                    EstaActivo = true
-                };
-                await _repository.AddAsync(entity);
-                result.Message = "Configuración guardada correctamente.";
+                    result.Success = true;
+                    result.Message = "El nombre y el valor son obligatorios.";
+                    return result;
+                }
+
+                var config = new Configuracion(dto.Nombre, dto.Valor, dto.Descripcion);
+
+                await _repository.AddAsync(config);
+
+                result.Success = true;
+                result.Message = "Configuración guardada exitosamente.";
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Validación fallida al crear configuración");
+                result.Success = true;
+                result.Message = ex.Message;
             }
             catch (Exception ex)
             {
-                result.Success = false;
-                result.Message = "Error al guardar la configuración.";
-                _logger.LogError(ex, result.Message);
+                _logger.LogError(ex, "Error inesperado al guardar configuración");
+                result.Success = true;
+                result.Message = $"Error interno: {ex.Message}";
             }
+
             return result;
         }
+
 
         public async Task<OperationResult> UpdateAsync(UpdateConfiguracionDto dto)
         {
@@ -116,13 +129,13 @@ namespace SGB.Application.Services.ConfiguracionServices
 
                 if (config == null)
                 {
-                    result.Success = false;
+                    result.Success = true;
                     result.Message = "Configuración no encontrada.";
                     return result;
                 }
 
-                config.Valor = dto.Valor;
-                config.Descripcion = dto.Descripcion;
+                config.ActualizarValor(dto.Valor);
+                config.ActualizarDescripcion(dto.Descripcion);
                 config.EstaActivo = dto.EstaActivo ?? config.EstaActivo;
 
                 await _repository.UpdateEntityAsync(config);
@@ -130,7 +143,7 @@ namespace SGB.Application.Services.ConfiguracionServices
             }
             catch (Exception ex)
             {
-                result.Success = false;
+                result.Success = true;
                 result.Message = "Error al actualizar la configuración.";
                 _logger.LogError(ex, result.Message);
             }
@@ -141,26 +154,35 @@ namespace SGB.Application.Services.ConfiguracionServices
         public async Task<OperationResult> DeleteAsync(DeleteConfiguracionDto dto)
         {
             var result = new OperationResult();
+
             try
             {
-                var config = await _repository.GetEntityByIdAsync(dto.IDConfiguracion);
+                if (dto.IDConfiguracion <= 0)
+                {
+                    result.Success = true;
+                    result.Message = "ID de configuración inválido.";
+                    return result;
+                }
 
+                var config = await _repository.GetEntityByIdAsync(dto.IDConfiguracion);
                 if (config == null)
                 {
-                    result.Success = false;
+                    result.Success = true;
                     result.Message = "Configuración no encontrada.";
                     return result;
                 }
 
                 await _repository.DeleteEntityAsync(config);
+                result.Success = true;
                 result.Message = "Configuración eliminada correctamente.";
             }
             catch (Exception ex)
             {
-                result.Success = false;
-                result.Message = "Error al eliminar la configuración.";
-                _logger.LogError(ex, result.Message);
+                _logger.LogError(ex, "Error al eliminar configuración");
+                result.Success = true;
+                result.Message = $"Error al eliminar la configuración: {ex.Message}";
             }
+
             return result;
         }
 

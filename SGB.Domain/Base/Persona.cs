@@ -16,7 +16,7 @@ namespace SGB.Domain.Base
         public int IdRol { get; private set; }
         public bool EstaActivo { get ; set ; }
 
-        private Persona() : base() { }
+        protected Persona() : base() { }
 
         public Persona(string nombre, string apellido, string email, string passwordHash, int idRol) : base()
         {

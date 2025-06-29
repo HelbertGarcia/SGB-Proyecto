@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Contracts.Service.IConfiguracionService;
 using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
+using SGB.Domain.Base;
 
 namespace SGB.Api.Controllers
 {
@@ -11,6 +12,7 @@ namespace SGB.Api.Controllers
     public class AdminController : Controller
     {
         private readonly IConfiguracionService _configuracionService;
+
 
         public AdminController(IConfiguracionService configuracionService)
         {
@@ -31,17 +33,6 @@ namespace SGB.Api.Controllers
         {
             var resultado = await _configuracionService.GetByIdAsync(id);
             return resultado.Success ? Ok(resultado) : NotFound(resultado);
-        }
-
-        // POST: api/admin/configuraciones
-        [HttpPost("configuraciones")]
-        public async Task<IActionResult> Crear([FromBody] AddConfiguracionDto dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var resultado = await _configuracionService.SaveAsync(dto);
-            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
         }
 
         // PUT: api/admin/configuraciones
@@ -65,5 +56,21 @@ namespace SGB.Api.Controllers
             var resultado = await _configuracionService.DeleteAsync(dto);
             return resultado.Success ? Ok(resultado) : BadRequest(resultado);
         }
+
+
+        // POST: api/admin/configuraciones
+        [HttpPost("configuraciones")]
+        public async Task<IActionResult> Crear([FromBody] AddConfiguracionDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var resultado = await _configuracionService.SaveAsync(dto);
+            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
+        }
+
+
+
+
     }
 }

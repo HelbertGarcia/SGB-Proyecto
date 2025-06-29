@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,16 +10,18 @@ namespace SGB.Domain.Entities.Configuracion
 {
     public class Configuracion : IEstaActivo
     {
+
+        [Key]
         public int IDConfiguracion { get; set; }
-        public string Nombre { get;  set; }
-        public string Valor { get; set; }
-        public string Descripcion { get; set; }
+        public string Nombre { get; private set; }
+        public string Valor { get; private set; }
+        public string Descripcion { get; private set; }
         public DateTime FechaCreacion { get; set; }
 
         public bool EstaActivo { get; set; }
 
 
-        private Configuracion() { }
+        protected Configuracion() { }
         public Configuracion(string nombre, string valor, string descripcion = null)
         {
             ValidarYAsignarNombre(nombre);
@@ -28,6 +31,7 @@ namespace SGB.Domain.Entities.Configuracion
             Habilitar();
         }
 
+
         public void ActualizarValor(string nuevoValor)
         {
             ValidarYAsignarValor(nuevoValor);
@@ -36,7 +40,7 @@ namespace SGB.Domain.Entities.Configuracion
         public void ActualizarDescripcion(string nuevaDescripcion)
         {
             if (!string.IsNullOrWhiteSpace(nuevaDescripcion) && nuevaDescripcion.Length > 255)
-                throw new ArgumentException("La descripción no puede exceder los 255 caracteres.", nameof(nuevaDescripcion));
+                throw new ArgumentException("La descripción no puede exceder los 255 caracteres.");
 
             Descripcion = nuevaDescripcion;
         }

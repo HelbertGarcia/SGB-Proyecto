@@ -9,8 +9,6 @@ namespace SGB.Application.Dtos.AdministracionDto
 {
     public record DeleteConfiguracionDto
     {
-        [Required(ErrorMessage = "El ID de configuración es obligatorio para eliminar.")]
-        [Range(1, int.MaxValue, ErrorMessage = "El ID debe ser mayor que cero.")]
-        public int IDConfiguracion { get; init; }
+        public int IDConfiguracion { get; set; }
     }
 }
