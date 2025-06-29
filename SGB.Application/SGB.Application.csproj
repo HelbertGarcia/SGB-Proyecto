@@ -16,14 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Base\" />
-    <Folder Include="Contracts\Service\ILibroServices\" />
     <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
     <Folder Include="Contracts\Service\INotificacionesServices\" />
     <Folder Include="Contracts\Service\IPrestamos_y_ PenalizacionServices\" />
     <Folder Include="Contracts\Service\IUsuarioServices\" />
     <Folder Include="Dtos\BaseDto\" />
-    <Folder Include="Services\LibrosServices\" />
     <Folder Include="Services\ConfiguracionServices\" />
     <Folder Include="Services\Prestamos_y_PenalizacionServices\PenalizacionServices\" />
     <Folder Include="Services\Prestamos_y_PenalizacionServices\PrestamoServices\" />
@@ -33,9 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SGB.Api\SGB.Api.csproj" />
     <ProjectReference Include="..\SGB.Domain\SGB.Domain.csproj" />
-    <ProjectReference Include="..\SGB.Persistence\SGB.Persistence.csproj" />
     <ProjectReference Include="..\SGB.Presentation\SGB.Presentation.csproj" />
   </ItemGroup>
 

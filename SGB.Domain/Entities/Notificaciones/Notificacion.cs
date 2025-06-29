@@ -1,6 +1,7 @@
 ﻿using SGB.Domain.Base;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace SGB.Domain.Entities.Notificaciones
 {
     public class Notificacion: BaseEntity
     {
+        [Key]
         public int IDNotificacion { get;  set; }
         public int IDUsuario { get;  set; }
         public string Mensaje { get;  set; }

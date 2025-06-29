@@ -1,9 +1,9 @@
 ﻿using SGB.Domain.Base;
 using SGB.Domain.Entities.Rol;
-using SGB.Domain.Repository;
+
 using System.Threading.Tasks;
 
-namespace SGB.Persistence.Interfaces
+namespace SGB.Application.Contracts.Repository.Interfaces
 {
 
     public interface IRolRepository : IBaseRepository<Rol> 

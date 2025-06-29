@@ -1,11 +1,9 @@
-﻿// Ubicación: SGB.Persistence/Interfaces/IPersonaRepository.cs
-using SGB.Domain.Base;
-using SGB.Domain.Repository;
+﻿using SGB.Domain.Base;
 using System.Threading.Tasks;
 
-namespace SGB.Persistence.Interfaces
+namespace SGB.Application.Contracts.Repository.Interfaces
 {
-    public interface IPersonaRepository : IBaseRepository<Persona> // Se asume que IBaseRepository se llama IRepository
+    public interface IPersonaRepository : IBaseRepository<Persona> 
     {
         Task<OperationResult> ObtenerPorEmailAsync(string email);
 

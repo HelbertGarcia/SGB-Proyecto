@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Application.Contracts.Repository.Interfaces;
+using SGB.Application.Dtos.LibrosDto.LibroDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Libro;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
-using SGB.Persistence.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,25 +25,47 @@ namespace SGB.Persistence.Repositories
             : base(context, loggerFactory, configuration)
         {
             _context = context;
-            _configuration = configuration;
             _logger = loggerFactory.CreateLogger<LibroRepository>();
+            _configuration = configuration;
         }
 
-        #region "Métodos Heredados Sobrescritos"
-        public override Task<Libro> GetByIdAsync(int id)
+        #region "Métodos Optimizados Corregidos"
+
+        public async Task<Libro> ObtenerParaActualizacionAsync(string isbn)
         {
-            _logger.LogError("Se intentó usar GetByIdAsync(int) en LibroRepository, que usa ISBN (string) como clave.");
-            throw new NotSupportedException("La entidad Libro utiliza un ISBN (string) como clave primaria. Utilice el método BuscarPorIsbnAsync.");
+            return await Entity.FirstOrDefaultAsync(l => l.ISBN == isbn);
         }
 
-        public override Task<OperationResult> DeleteAsync(int id)
+        public async Task<OperationResult> ObtenerDetallesDTOPorIsbnAsync(string isbn)
         {
-            _logger.LogError("Se intentó usar DeleteAsync(int) en LibroRepository, que usa ISBN (string) como clave.");
-            throw new NotSupportedException("La entidad Libro utiliza un ISBN (string) como clave primaria. Utilice el método DeleteLogicoAsync.");
-        }
-        #endregion
+            try
+            {
+                var libroDto = await (from libro in Entity
+                                      join categoria in _context.Categoria on libro.IDCategoria equals categoria.Id
+                                      where libro.ISBN == isbn
+                                      select new LibroDto 
+                                      {
+                                          ISBN = libro.ISBN,
+                                          Titulo = libro.Titulo,
+                                          Autor = libro.Autor,
+                                          Editorial = libro.Editorial,
+                                          FechaPublicacion = libro.FechaPublicacion,
+                                          NombreCategoria = categoria.Nombre,
+                                          Estado = libro.EstaActivo ? "Disponible" : "Inactivo",
+                                          FechaRegistro = libro.FechaRegistro
+                                      })
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync();
 
-        #region "Métodos Propios de ILibroRepository"
+                return new OperationResult { Data = libroDto };
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:Libros:GetById"];
+                _logger.LogError(ex, "{ErrorMessage} para el ISBN: {ISBN}", errorMessage, isbn);
+                return new OperationResult { Success = false, Message = errorMessage };
+            }
+        }
 
         public async Task<OperationResult> DeleteLogicoAsync(string isbn)
         {
@@ -62,12 +84,13 @@ namespace SGB.Persistence.Repositories
                 }
 
                 libroParaEliminar.Deshabilitar();
+
                 return await base.UpdateAsync(libroParaEliminar);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en la eliminación lógica del libro con ISBN: {ISBN}", isbn);
                 var errorMessage = _configuration["ErrorMessages:Libros:Delete"];
+                _logger.LogError(ex, "{ErrorMessage} para el ISBN: {ISBN}", errorMessage, isbn);
                 return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error al eliminar el libro." };
             }
         }
@@ -78,17 +101,8 @@ namespace SGB.Persistence.Repositories
             {
                 return await Task.FromResult(new OperationResult { Success = false, Message = "El autor no puede estar vacío." });
             }
-            try
-            {
-                var data = await Entity.Where(l => l.Autor.Contains(autor) && l.EstaActivo).AsNoTracking().ToListAsync();
-                return new OperationResult { Data = data };
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:Libros:GetAll"]; 
-                _logger.LogError(ex, errorMessage, autor);
-                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por autor." };
-            }
+
+            return await base.FindByConditionAsync(l => l.Autor.Contains(autor) && l.EstaActivo);
         }
 
         public async Task<OperationResult> BuscarPorTituloAsync(string titulo)
@@ -98,17 +112,7 @@ namespace SGB.Persistence.Repositories
                 return await Task.FromResult(new OperationResult { Success = false, Message = "El título no puede estar vacío." });
             }
 
-            try
-            {
-                var data = await Entity.Where(l => l.Titulo.Contains(titulo) && l.EstaActivo).AsNoTracking().ToListAsync();
-                return new OperationResult { Data = data };
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorTitulo"];
-                _logger.LogError(ex, errorMessage, titulo);
-                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por título." };
-            }
+            return await base.FindByConditionAsync(l => l.Titulo.Contains(titulo) && l.EstaActivo);
         }
 
         public async Task<OperationResult> BuscarPorEditorialAsync(string editorial)
@@ -118,17 +122,7 @@ namespace SGB.Persistence.Repositories
                 return await Task.FromResult(new OperationResult { Success = false, Message = "La editorial no puede estar vacía." });
             }
 
-            try
-            {
-                var data = await Entity.Where(l => l.Editorial.Contains(editorial) && l.EstaActivo).AsNoTracking().ToListAsync();
-                return new OperationResult { Data = data };
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorEditorial"];
-                _logger.LogError(ex, errorMessage, editorial);
-                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por editorial." };
-            }
+            return await base.FindByConditionAsync(l => l.Editorial.Contains(editorial) && l.EstaActivo);
         }
 
         public async Task<OperationResult> BuscarPorIsbnAsync(string isbn)
@@ -138,17 +132,7 @@ namespace SGB.Persistence.Repositories
                 return await Task.FromResult(new OperationResult { Success = false, Message = "El ISBN no puede estar vacío." });
             }
 
-            try
-            {
-                var data = await Entity.AsNoTracking().FirstOrDefaultAsync(l => l.ISBN == isbn && l.EstaActivo);
-                return new OperationResult { Data = data };
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorIsbn"];
-                _logger.LogError(ex, errorMessage, isbn);
-                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por ISBN." };
-            }
+            return await base.FindByConditionAsync(l => l.ISBN == isbn && l.EstaActivo);
         }
 
         public async Task<OperationResult> BuscarPorCategoriaAsync(string nombreCategoria)
@@ -166,12 +150,13 @@ namespace SGB.Persistence.Repositories
                                   select libro)
                                   .AsNoTracking()
                                   .ToListAsync();
+
                 return new OperationResult { Data = data };
             }
             catch (Exception ex)
             {
-                var errorMessage = _configuration["ErrorMessages:LibroRepository:BuscarPorCategoria"];
-                _logger.LogError(ex, errorMessage, nombreCategoria);
+                var errorMessage = _configuration["ErrorMessages:Libros:BuscarPorCategoria"];
+                _logger.LogError(ex, "{ErrorMessage} para la categoría: {Categoria}", errorMessage, nombreCategoria);
                 return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por categoría." };
             }
         }

@@ -1,6 +1,7 @@
 ﻿using SGB.Domain.Base;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,8 @@ namespace SGB.Domain.Entities.Penalizaciones
 {
     public class Penalizacion: BaseEntityFecha, IEstaActivo
     {
+        [Key]
+        public int Id { get; private set; }
         public int IDUsuario { get; private set; }
         public string Motivo { get; private set; }
         public DateTime FechaInicio { get; private set; }

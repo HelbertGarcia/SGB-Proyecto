@@ -1,14 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SGB.Domain.Base;
-using SGB.Domain.Repository;
 using SGB.Persistence.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using SGB.Application.Contracts;
+using SGB.Domain.Base;
+using SGB.Application.Contracts.Repository;
 
 namespace SGB.Persistence.Base
 {

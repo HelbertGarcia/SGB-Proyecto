@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Contracts.Service.IAdminServices
 {
-    internal interface IAdminService
+    public interface IAdminService
     {
     }
 }

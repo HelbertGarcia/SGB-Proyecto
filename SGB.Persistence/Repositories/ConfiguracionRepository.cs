@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
-using SGB.Persistence.Interfaces;
 
 
 namespace SGB.Persistence.Repositories
