@@ -13,31 +13,24 @@ namespace SGB.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // --- 1. CONFIGURACIÓN DE LA BASE DE DATOS ---
             var connectionString = builder.Configuration.GetConnectionString("SGBDatabase");
             builder.Services.AddDbContext<SGBContext>(options =>
                 options.UseSqlServer(connectionString)
             );
 
-            // --- 2. REGISTRO DE DEPENDENCIAS (Módulos Libro y Categoría) ---
-
-            // Repositorios (Scoped: una instancia por petición HTTP)
             builder.Services.AddScoped<ILibroRepository, LibroRepository>();
             builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
             builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>();
 
-            // Servicios (Transient: una nueva instancia cada vez que se solicita)
             builder.Services.AddTransient<ILibroService, LibroService>();
             builder.Services.AddTransient<ICategoriaService, CategoriaService>();
 
-            // --- SERVICIOS ESTÁNDAR DE LA API ---
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // --- CONFIGURACIÓN DEL PIPELINE HTTP ---
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
