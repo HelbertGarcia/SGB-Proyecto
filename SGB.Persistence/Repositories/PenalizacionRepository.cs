@@ -17,6 +17,8 @@ namespace SGB.Persistence.Repositories
     {
         private readonly SGBContext _context;
         private readonly ILogger<PenalizacionRepository> _logger;
+        private readonly String? _ConnectionStrings;
+
         private readonly IConfiguration _configuration;
 
         public PenalizacionRepository(SGBContext context,
@@ -27,7 +29,9 @@ namespace SGB.Persistence.Repositories
             _context = context;
             _configuration = configuration;
             _logger = loggerFactory.CreateLogger<PenalizacionRepository>();
+            _ConnectionStrings = _configuration.GetConnectionString("SGBDatabase")!;
         }
+
 
         #region "Métodos Propios de IPenalizacionRepository"
 
@@ -81,5 +85,9 @@ namespace SGB.Persistence.Repositories
         }
 
         #endregion
+        
+
+
+
     }
 }

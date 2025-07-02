@@ -43,7 +43,32 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                 };
             }
 
-            _logger.LogInformation("Iniciando proceso para agregar penalización al usuario ID: {UsuarioId}", addPenalizacionDto.UsuarioId);
+            if (addPenalizacionDto.UsuarioId <= 0)
+            {
+                return new OperationResult
+                {
+                    Success = false,
+                    Message = "El ID de usuario no es válido."
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(addPenalizacionDto.Motivo) || addPenalizacionDto.Motivo.Length > 200)
+            {
+                return new OperationResult
+                {
+                    Success = false,
+                    Message = "El motivo de la penalización es inválido, pasa el liminte de letras."
+                };
+            }
+
+            if (addPenalizacionDto.FechaInicio >= addPenalizacionDto.FechaFin)
+            {
+                return new OperationResult
+                {
+                    Success = false,
+                    Message = "La fecha de inicio debe ser anterior a la fecha de fin."
+                };
+            }
 
             try
             {
@@ -51,8 +76,8 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                     addPenalizacionDto.UsuarioId,
                     addPenalizacionDto.Motivo,
                     addPenalizacionDto.FechaInicio,
-                    addPenalizacionDto.FechaFin,
-                    addPenalizacionDto.EstaActiva
+                    addPenalizacionDto.FechaFin
+                   
                 );
 
                 var result = await _PenalizacionRepository.AddAsync(penalizacion);
@@ -87,26 +112,27 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             }
         }
 
-        public async Task<OperationResult> DeletePenalizacionAsync(DeletePenalizacionDto deletePenalizacionDto)
+
+        public async Task<OperationResult> DisablePenalizacionAsync(DisablePenalizacionDto disablePenalizacionDto)
         {
-            if (deletePenalizacionDto == null)
+            if (disablePenalizacionDto == null)
             {
                 return new OperationResult
                 {
                     Success = false,
-                    Message = "El objeto DeletePenalizacionDto no puede ser nulo."
+                    Message = "El objeto DisablePenalizacionDto no puede ser nulo."
                 };
             }
 
-            _logger.LogInformation("Iniciando eliminación de penalización con ID: {Id}", deletePenalizacionDto.IDPenalizacion);
+            _logger.LogInformation("Iniciando desactivación de penalización con ID: {Id}", disablePenalizacionDto.IDPenalizacion);
 
             try
             {
-                var result = await _PenalizacionRepository.DeleteAsync(deletePenalizacionDto.IDPenalizacion);
+                var result = await _PenalizacionRepository.DisableAsync(disablePenalizacionDto.IDPenalizacion);
 
                 if (!result.Success)
                 {
-                    _logger.LogError("Error al eliminar la penalización: {Mensaje}", result.Message);
+                    _logger.LogError("Error al desactivar la penalización: {Mensaje}", result.Message);
                     return new OperationResult
                     {
                         Success = false,
@@ -114,17 +140,17 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                     };
                 }
 
-                _logger.LogInformation("Penalización con ID: {Id} eliminada correctamente.", deletePenalizacionDto.IDPenalizacion);
+                _logger.LogInformation("Penalización con ID: {Id} desactivada correctamente.", disablePenalizacionDto.IDPenalizacion);
 
                 return new OperationResult
                 {
                     Success = true,
-                    Message = "Penalización eliminada correctamente."
+                    Message = "Penalización desactivada correctamente."
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Excepción al eliminar penalización.");
+                _logger.LogError(ex, "Excepción al desactivar penalización.");
                 return new OperationResult
                 {
                     Success = false,
@@ -132,6 +158,11 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                 };
             }
         }
+
+
+
+
+
 
         public async Task<OperationResult> GetAllPenalizacionesAsync(GetPenalizacionDto getPenalizacionDto)
         {
@@ -242,7 +273,6 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             {
                 _logger.LogInformation("Actualizando penalización con ID: {Id}", updatePenalizacionDto.IDPenalizacion);
 
-                // Obtienes directamente la entidad penalización o null
                 var penalizacionExistente = await _PenalizacionRepository.GetByIdAsync(updatePenalizacionDto.IDPenalizacion);
 
                 if (penalizacionExistente == null)
@@ -254,10 +284,35 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                     };
                 }
 
-                // Actualizas los campos directamente
-                penalizacionExistente.FechaVencimiento = updatePenalizacionDto.FechaVencimiento;
-                penalizacionExistente.FechaDevolucion = updatePenalizacionDto.FechaDevolucion;
-                penalizacionExistente.Estado = updatePenalizacionDto.Estado;
+                // Solo actualiza campos si vienen en el DTO
+
+                if (!string.IsNullOrWhiteSpace(updatePenalizacionDto.Motivo))
+                {
+                    penalizacionExistente.CambiarMotivo(updatePenalizacionDto.Motivo);
+                }
+
+                if (updatePenalizacionDto.FechaInicio.HasValue)
+                {
+                    penalizacionExistente.FechaInicio = updatePenalizacionDto.FechaInicio.Value;
+                }
+
+                if (updatePenalizacionDto.FechaVencimiento.HasValue)
+                {
+                    penalizacionExistente.ExtenderPenalizacion(updatePenalizacionDto.FechaVencimiento.Value);
+                }
+
+                if (updatePenalizacionDto.FechaDevolucion.HasValue)
+                {
+                    penalizacionExistente.FechaDevolucion = updatePenalizacionDto.FechaDevolucion.Value;
+                }
+
+                if (updatePenalizacionDto.EstaActivo.HasValue)
+                {
+                    if (updatePenalizacionDto.EstaActivo.Value)
+                        penalizacionExistente.Habilitar();
+                    else
+                        penalizacionExistente.Deshabilitar();
+                }
 
                 var result = await _PenalizacionRepository.UpdateAsync(penalizacionExistente);
 
@@ -289,6 +344,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                     Message = $"Error inesperado al actualizar la penalización: {ex.Message}"
                 };
             }
-        }
+      
+       }
     }
-}
+
+ }
+

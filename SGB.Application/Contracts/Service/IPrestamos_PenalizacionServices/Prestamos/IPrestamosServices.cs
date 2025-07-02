@@ -13,8 +13,10 @@ namespace SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Pres
 
         Task<OperationResult> AddPrestamoAsync(AddPrestamoDto addPrestamoDto);
         Task<OperationResult> UpdatePrestamoAsync(UpdatePrestamoDto updatePrestamoDto);
-        Task<OperationResult> DeletePrestamoAsync(DeletePrestamoDto deletePrestamoDto);
-        Task<OperationResult> GetAllPrestamosAsync(GetPrestamoDto getPrestamoDto);
+
+        Task<OperationResult> DisablePrestamoAsync(int idPrestamo);
+
+        Task<OperationResult> GetAllPrestamosAsync();
        Task<OperationResult> GetPrestamoByIdAsync(int idPrestamo);
 
        

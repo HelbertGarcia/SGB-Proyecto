@@ -13,8 +13,9 @@ namespace SGB.Application.Contracts.Repository
         Task<T> GetByIdAsync(int id);
         Task<IEnumerable<T>> GetAllAsync();
         Task<OperationResult> AddAsync(T entity);
+
+        Task<OperationResult> DisableAsync(int id);
         Task<OperationResult> UpdateAsync(T entity);
-        Task<OperationResult> DeleteAsync(int id);
         Task<OperationResult> FindByConditionAsync(Expression<Func<T, bool>> filter);
     }
 }

@@ -15,5 +15,7 @@ namespace SGB.Application.Contracts.Repository.Interfaces
         Task<OperationResult> GetActivePenalizacionesAsync();
         Task<OperationResult> GetMotivosPenalizacionesPorUsuarioAsync(int usuarioId);
 
+      
+
     }
 }

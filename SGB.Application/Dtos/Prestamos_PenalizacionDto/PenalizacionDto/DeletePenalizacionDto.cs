@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
-    public record DeletePenalizacionDto
+    public record DisablePenalizacionDto
     {
 
         public int IDPenalizacion { get; set; }

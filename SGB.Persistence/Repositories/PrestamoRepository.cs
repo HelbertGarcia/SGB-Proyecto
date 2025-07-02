@@ -15,6 +15,7 @@ namespace SGB.Persistence.Repositories
     public class PrestamoRepository : BaseRepository<Prestamo>, IPrestamoRepository
     {
         private readonly ILogger<PrestamoRepository> _logger;
+        private readonly String? _ConnectionStrings;
         private readonly IConfiguration _configuration;
 
         public PrestamoRepository(SGBContext context,
@@ -24,6 +25,7 @@ namespace SGB.Persistence.Repositories
         {
             _configuration = configuration;
             _logger = loggerFactory.CreateLogger<PrestamoRepository>();
+            _ConnectionStrings = _configuration.GetConnectionString("SGBDatabase")!;
         }
 
         #region "Implementación de IPrestamoRepository"
@@ -37,23 +39,27 @@ namespace SGB.Persistence.Repositories
 
             try
             {
-                var fechaVencimiento = await Entity
-                                           .Where(p => p.Id == prestamoId)
-                                           .Select(p => p.FechaVencimiento)
-                                           .FirstOrDefaultAsync();
+                var fechaFin = await Entity
+                    .Where(p => p.Id == prestamoId)
+                    .Select(p => p.FechaFin)
+                    .FirstOrDefaultAsync();
 
-                if (fechaVencimiento != default(DateTime))
+                if (fechaFin != default(DateTime))
                 {
-                    return new OperationResult { Data = fechaVencimiento };
+                    return new OperationResult { Data = fechaFin };
                 }
                 else
                 {
-                    return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Prestamos:LoanNotFound"] ?? "Préstamo no encontrado." };
+                    return new OperationResult
+                    {
+                        Success = false,
+                        Message = _configuration["ErrorMessages:Prestamos:LoanNotFound"] ?? "Préstamo no encontrado."
+                    };
                 }
             }
             catch (Exception ex)
             {
-                var errorMessage = _configuration["ErrorMessages:Prestamos:GetFechaVencimientoError"] ?? "Error al obtener la fecha de vencimiento.";
+                var errorMessage = _configuration["ErrorMessages:Prestamos:GetFechaFinError"] ?? "Error al obtener la fecha de fin.";
                 _logger.LogError(ex, "{ErrorMessage} - ID de Préstamo: {PrestamoId}", errorMessage, prestamoId);
                 return new OperationResult { Success = false, Message = errorMessage };
             }
@@ -70,7 +76,7 @@ namespace SGB.Persistence.Repositories
             {
                 var estados = await Entity
                     .AsNoTracking()
-                    .Where(p => p.Id == usuarioId) 
+                    .Where(p => p.UsuarioId == usuarioId) 
                     .Select(p => new
                     {
                         PrestamoId = p.Id,
@@ -87,6 +93,7 @@ namespace SGB.Persistence.Repositories
                 return new OperationResult { Success = false, Message = errorMessage };
             }
         }
+
         #endregion
     }
 }

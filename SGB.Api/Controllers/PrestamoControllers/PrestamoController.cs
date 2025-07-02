@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using System.Threading.Tasks;
+using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos;
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
+using SGB.Domain.Base;
+using System;
+using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
 
 namespace SGB.Api.Controllers
 {
@@ -8,36 +12,106 @@ namespace SGB.Api.Controllers
     [ApiController]
     public class PrestamoController : ControllerBase
     {
-        // GET: api/<PrestamoController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly IPrestamosServices _prestamosService;
+
+        public PrestamoController(IPrestamosServices prestamosService)
         {
-            return new string[] { "value1", "value2" };
+            _prestamosService = prestamosService;
         }
 
-        // GET api/<PrestamoController>/5
+        [HttpGet("GetAllPrestamos")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetAllPrestamos()
+        {
+            var resultado = await _prestamosService.GetAllPrestamosAsync(); 
+
+            if (!resultado.Success)
+                return BadRequest(resultado);
+
+            return Ok(resultado.Data);
+        }
+
         [HttpGet("{id}")]
-        public string Get(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetPrestamoById(int id)
         {
-            return "value";
+            var resultado = await _prestamosService.GetPrestamoByIdAsync(id);
+
+            if (!resultado.Success)
+            {
+                if (resultado.Message.Contains("no existe", StringComparison.OrdinalIgnoreCase) ||
+                    resultado.Message.Contains("no encontrado", StringComparison.OrdinalIgnoreCase) ||
+                    resultado.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                {
+                    return NotFound(resultado);
+                }
+                return BadRequest(resultado);
+            }
+
+            return Ok(resultado.Data);
         }
 
-        // POST api/<PrestamoController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddPrestamo([FromBody] AddPrestamoDto addPrestamoDto)
         {
+            var result = await _prestamosService.AddPrestamoAsync(addPrestamoDto);
+
+            if (!result.Success)
+                return BadRequest(new { success = false, message = result.Message });
+
+            return Ok(new { success = true, message = "Préstamo creado correctamente.", data = result.Data });
         }
 
-        // PUT api/<PrestamoController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdatePrestamo(int id, [FromBody] UpdatePrestamoDto updatePrestamoDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (id != updatePrestamoDto.IDPrestamo)
+                return BadRequest(new { Message = "El ID de la ruta no coincide con el ID del préstamo en el cuerpo de la solicitud." });
+
+            var resultado = await _prestamosService.UpdatePrestamoAsync(updatePrestamoDto);
+
+            if (!resultado.Success)
+            {
+                if (resultado.Message.Contains("no existe", StringComparison.OrdinalIgnoreCase) ||
+                    resultado.Message.Contains("no encontrado", StringComparison.OrdinalIgnoreCase) ||
+                    resultado.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                {
+                    return NotFound(resultado);
+                }
+                return BadRequest(resultado);
+            }
+
+            return Ok(resultado.Data);
         }
 
-        // DELETE api/<PrestamoController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        
+        public async Task<IActionResult> DeletePrestamo(int id)
         {
+            var result = await _prestamosService.DisablePrestamoAsync(id);
+
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(new
+            {
+                success = true,
+                message = "Préstamo eliminado (desactivado) correctamente."
+            });
         }
     }
 }

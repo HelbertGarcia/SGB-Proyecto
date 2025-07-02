@@ -13,8 +13,10 @@ namespace SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Pena
     {
         Task<OperationResult> AddPenalizacionAsync(AddPenalizacionDto addPenalizacionDto);
         Task<OperationResult> UpdatePenalizacionAsync(UpdatePenalizacionDto updatePenalizacionDto);
-        Task<OperationResult> DeletePenalizacionAsync(DeletePenalizacionDto deletePenalizacionDto);
+        Task<OperationResult> DisablePenalizacionAsync(DisablePenalizacionDto disablePenalizacionDto);
         Task<OperationResult> GetAllPenalizacionesAsync(GetPenalizacionDto getPenalizacionDto);
         Task<OperationResult> GetPenalizacionByIdAsync(int idPenalizacion);
+        
+
     }
 }

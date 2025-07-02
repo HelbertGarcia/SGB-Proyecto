@@ -26,7 +26,7 @@ namespace SGB.Persistence.Context
         public DbSet<Libro> Ejemplares { get; set; }
         public DbSet<Notificacion> Notificacion { get; set; }
         public DbSet<Categoria> Categoria { get; set; }
-        public DbSet<Penalizacion> Penalizacion { get; set; }
+        public DbSet<Penalizacion> Penalizaciones { get; set; }
         public DbSet<Rol> Rol { get; set; }
 
     }

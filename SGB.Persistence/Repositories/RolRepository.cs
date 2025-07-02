@@ -25,12 +25,7 @@ namespace SGB.Persistence.Repositories
             _logger = loggerFactory.CreateLogger<RolRepository>();
         }
 
-        #region "Métodos Heredados Sobrescritos"
-
-        public override async Task<OperationResult> DeleteAsync(int id)
-        {
-            return await DesactivarRolAsync(id);
-        }
+        #region "Métodos Heredados Sobrescritos"  
 
         #endregion
 

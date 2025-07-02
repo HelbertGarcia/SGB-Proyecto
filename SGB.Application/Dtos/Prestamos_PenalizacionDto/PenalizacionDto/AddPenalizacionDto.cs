@@ -16,7 +16,7 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }
 
-        public bool EstaActiva { get; set; }
+      
 
 
 

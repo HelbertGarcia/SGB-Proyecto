@@ -14,7 +14,8 @@ namespace SGB.Domain.Repository
         Task<IEnumerable<T>> GetAllAsync();
         Task<OperationResult> AddAsync(T entity);
         Task<OperationResult> UpdateAsync(T entity);
-        Task<OperationResult> DeleteAsync(int id);
+        
         Task<OperationResult> FindByConditionAsync(Expression<Func<T, bool>> filter);
+        Task<OperationResult> DisableAsync(int idPenalizacion);
     }
 }

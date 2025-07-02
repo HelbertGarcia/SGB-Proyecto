@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SGB.Domain.Base;
+using SGB.Domain.Entities.Prestamos;
 using SGB.Domain.Repository;
 using SGB.Persistence.Context;
 using System;
@@ -44,6 +45,7 @@ namespace SGB.Persistence.Base
             }
         }
 
+
         public virtual async Task<OperationResult> UpdateAsync(T entity)
         {
             try
@@ -60,25 +62,7 @@ namespace SGB.Persistence.Base
             }
         }
 
-        public virtual async Task<OperationResult> DeleteAsync(int id)
-        {
-            try
-            {
-                var entityToDelete = await Entity.FindAsync(id);
-                if (entityToDelete == null)
-                    return new OperationResult { Success = false, Message = "Entidad no encontrada para eliminar." };
-
-                Entity.Remove(entityToDelete);
-                await _context.SaveChangesAsync();
-                return new OperationResult();
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:BaseRepository:DeleteError"];
-                _logger.LogError(ex, "{ErrorMessage} - ID: {Id}", errorMessage, id);
-                return new OperationResult { Success = false, Message = errorMessage };
-            }
-        }
+       
 
         public virtual async Task<OperationResult> FindByConditionAsync(Expression<Func<T, bool>> filter)
         {
@@ -104,5 +88,42 @@ namespace SGB.Persistence.Base
         {
             return await Entity.AsNoTracking().ToListAsync();
         }
+
+        public virtual async Task<OperationResult> DisableAsync(int id)
+        {
+            try
+            {
+                var entityToDisable = await Entity.FindAsync(id);
+                if (entityToDisable == null)
+                    return new OperationResult { Success = false, Message = "Entidad no encontrada para desactivar." };
+
+                if (entityToDisable is IEstaActivo estaActivoEntity)
+                {
+                    // Usa método de dominio si existe
+                    if (entityToDisable is Prestamo prestamo)
+                    {
+                        prestamo.Deshabilitar();
+                    }
+                    else
+                    {
+                        estaActivoEntity.EstaActivo = false;
+                    }
+                }
+                else
+                {
+                    return new OperationResult { Success = false, Message = "Entidad no implementa IEstaActivo." };
+                }
+
+                await _context.SaveChangesAsync();
+                return new OperationResult();
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:BaseRepository:DisableError"] ?? "Error al desactivar la entidad.";
+                _logger.LogError(ex, "{ErrorMessage} - ID: {Id}", errorMessage, id);
+                return new OperationResult { Success = false, Message = errorMessage };
+            }
+        }
+
     }
 }
