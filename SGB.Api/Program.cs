@@ -5,6 +5,7 @@ using SGB.Application.Contracts.Service.IConfiguracionService;
 using SGB.Application.Services.ConfiguracionServices;
 using SGB.Persistence.Interfaces;
 using SGB.Persistence.Repositories;
+using SGB.IOC.Dependencies.ConfiguracionDependency;
 
 namespace SGB.Api
 {
@@ -20,6 +21,9 @@ namespace SGB.Api
             builder.Services.AddControllers();
             builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
             builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
+
+            //Dependencia
+            builder.Services.AddConfiguracionDependency();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
