@@ -13,12 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Base\" />
+    <Folder Include="Base\Validator\Penalizacion\" />
+    <Folder Include="Base\Validator\Prestamos\" />
     <Folder Include="Contracts\Service\ILibroServices\" />
     <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
     <Folder Include="Contracts\Service\IUsuarioServices\" />
     <Folder Include="Contracts\Service\INotificacionesServices\" />
-    <Folder Include="Dtos\BaseDto\" />
     <Folder Include="Services\LibrosServices\" />
     <Folder Include="Services\UsuarioServices\" />
     <Folder Include="Services\Reporte_EstaditicaServices\" />

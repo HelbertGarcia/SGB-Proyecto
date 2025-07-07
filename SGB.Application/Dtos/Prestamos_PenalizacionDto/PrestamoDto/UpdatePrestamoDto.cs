@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
-    public record UpdatePrestamoDto
+    public  class UpdatePrestamoDto : PrestamoDTO
     {
         public int IDPrestamo { get; set; }
         public DateTime FechaFin { get; set; } 

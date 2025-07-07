@@ -6,19 +6,11 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
-    public record  AddPenalizacionDto
+    public class  AddPenalizacionDto : PenalizacionDTO
     {
-       
-        public int UsuarioId { get; set; }
-
-        public string Motivo { get; set; } = string.Empty;
-
-        public DateTime FechaInicio { get; set; }
-        public DateTime FechaFin { get; set; }
-
-      
 
 
-
+        
+        
     }
 }

@@ -1,0 +1,26 @@
+﻿using Microsoft.Extensions.DependencyInjection;
+using SGB.Application.Contracts.Repository.Interfaces;
+using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion;
+using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos;
+using SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices;
+using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
+using SGB.Persistence.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia
+{
+    public static class PrestamoDependency
+    {
+        public static void AddPrestamoDependency(this IServiceCollection services)
+        {
+
+          
+            services.AddScoped<IPrestamoRepository, PrestamoRepository>();
+            services.AddTransient<IPrestamosServices, PrestamoService>();
+        }
+    }
+}

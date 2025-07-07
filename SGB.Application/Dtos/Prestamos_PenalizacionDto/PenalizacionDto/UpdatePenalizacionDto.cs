@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SGB.Application.Dtos.LibrosDto.CategoriaDto;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -7,15 +8,11 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
-    public record UpdatePenalizacionDto
+    public class UpdatePenalizacionDto : PenalizacionDTO
     {
         public int IDPenalizacion { get; set; }
-
-        public string? Motivo { get; set; }  // Puede ser opcional, o requerido
-
         public DateTime? FechaInicio { get; set; }
-
-        public DateTime? FechaVencimiento { get; set; }
+        public DateTime? FechaFin { get; set; }
 
         public DateTime? FechaDevolucion { get; set; }
 

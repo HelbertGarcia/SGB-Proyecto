@@ -8,6 +8,10 @@ using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices
 using SGB.Persistence.Context;
 using SGB.Persistence.Interfaces;
 using SGB.Persistence.Repositories;
+using SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PenalizacionDependencia;
+using SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia;
+
+
 
 namespace SGB.Api
 {
@@ -25,9 +29,10 @@ namespace SGB.Api
                 options.UseSqlServer(connectionString)
             );
 
+            builder.Services.AddPenalizacionDependency();
+            builder.Services.AddPrestamoDependency();
 
-
-
+            /*
             // Prestamos
             builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>();
             builder.Services.AddTransient<IPrestamosServices, PrestamoService>();
@@ -36,7 +41,7 @@ namespace SGB.Api
             builder.Services.AddScoped<IPenalizacionRepository, PenalizacionRepository>();
             builder.Services.AddTransient<IPenalizacionServices, PenalizacionServices>();
 
-
+            */
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

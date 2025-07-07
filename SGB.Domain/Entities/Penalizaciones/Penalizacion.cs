@@ -37,6 +37,8 @@ namespace SGB.Domain.Entities.Penalizaciones
         [Column("FechaDevolucion")]
         public DateTime? FechaDevolucion { get; set; }
 
+
+
     
 
         // 👇 Constructor sin parámetros para EF Core

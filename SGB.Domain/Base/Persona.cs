@@ -14,7 +14,7 @@ namespace SGB.Domain.Base
         public string Email { get; private set; }
         public string PasswordHash { get; private set; }
         public int IdRol { get; private set; }
-        public bool EstaActivo { get ; set ; }
+        public bool EstaActivo { get; set; }
 
         private Persona() : base() { }
 
@@ -32,7 +32,7 @@ namespace SGB.Domain.Base
             ValidarYAsignarNombre(nuevoNombre);
             ValidarYAsignarApellido(nuevoApellido);
             ValidarYAsignarEmail(nuevoEmail);
-            ActualizarFechaModificacion(); 
+            ActualizarFechaModificacion();
         }
 
         public void CambiarPasswordHash(string nuevoPasswordHash)
@@ -44,7 +44,7 @@ namespace SGB.Domain.Base
         public void CambiarRol(int nuevoIdRol)
         {
             ValidarYAsignarRol(nuevoIdRol);
-            ActualizarFechaModificacion(); 
+            ActualizarFechaModificacion();
         }
 
         private void ValidarYAsignarNombre(string nombre)

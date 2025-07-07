@@ -1,4 +1,5 @@
-﻿using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
+﻿using SGB.Application.Base;
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Base;
 using System;
 using System.Collections.Generic;
@@ -8,16 +9,10 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos
 {
-     public interface IPrestamosServices
+     public interface IPrestamosServices : IBaseService<AddPrestamoDto, UpdatePrestamoDto, DisablePrestamoDto>
     {
 
-        Task<OperationResult> AddPrestamoAsync(AddPrestamoDto addPrestamoDto);
-        Task<OperationResult> UpdatePrestamoAsync(UpdatePrestamoDto updatePrestamoDto);
-
-        Task<OperationResult> DisablePrestamoAsync(int idPrestamo);
-
-        Task<OperationResult> GetAllPrestamosAsync();
-       Task<OperationResult> GetPrestamoByIdAsync(int idPrestamo);
+      
 
        
 

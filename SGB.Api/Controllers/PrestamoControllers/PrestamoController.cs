@@ -5,6 +5,7 @@ using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Base;
 using System;
 using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
+using SGB.Domain.Entities.Prestamos;
 
 namespace SGB.Api.Controllers
 {
@@ -24,7 +25,7 @@ namespace SGB.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllPrestamos()
         {
-            var resultado = await _prestamosService.GetAllPrestamosAsync(); 
+            var resultado = await _prestamosService.GetAllAsync(); 
 
             if (!resultado.Success)
                 return BadRequest(resultado);
@@ -38,7 +39,7 @@ namespace SGB.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetPrestamoById(int id)
         {
-            var resultado = await _prestamosService.GetPrestamoByIdAsync(id);
+            var resultado = await _prestamosService.GetByIdAsync(id);
 
             if (!resultado.Success)
             {
@@ -59,7 +60,7 @@ namespace SGB.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddPrestamo([FromBody] AddPrestamoDto addPrestamoDto)
         {
-            var result = await _prestamosService.AddPrestamoAsync(addPrestamoDto);
+            var result = await _prestamosService.AddAsync(addPrestamoDto);
 
             if (!result.Success)
                 return BadRequest(new { success = false, message = result.Message });
@@ -79,7 +80,7 @@ namespace SGB.Api.Controllers
             if (id != updatePrestamoDto.IDPrestamo)
                 return BadRequest(new { Message = "El ID de la ruta no coincide con el ID del préstamo en el cuerpo de la solicitud." });
 
-            var resultado = await _prestamosService.UpdatePrestamoAsync(updatePrestamoDto);
+            var resultado = await _prestamosService.UpdateAsync(updatePrestamoDto);
 
             if (!resultado.Success)
             {
@@ -96,16 +97,26 @@ namespace SGB.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        
         public async Task<IActionResult> DeletePrestamo(int id)
         {
-            var result = await _prestamosService.DisablePrestamoAsync(id);
+            var dto = new DisablePrestamoDto { IdPrestamo = id };
+
+            var result = await _prestamosService.DeleteAsync(dto);
 
             if (!result.Success)
-                return BadRequest(result.Message);
+            {
+                if (result.Message.Contains("no existe", StringComparison.OrdinalIgnoreCase) ||
+                    result.Message.Contains("no encontrado", StringComparison.OrdinalIgnoreCase) ||
+                    result.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                {
+                    return NotFound(result);
+                }
+
+                return BadRequest(result);
+            }
 
             return Ok(new
             {
@@ -113,5 +124,7 @@ namespace SGB.Api.Controllers
                 message = "Préstamo eliminado (desactivado) correctamente."
             });
         }
+
     }
 }
+

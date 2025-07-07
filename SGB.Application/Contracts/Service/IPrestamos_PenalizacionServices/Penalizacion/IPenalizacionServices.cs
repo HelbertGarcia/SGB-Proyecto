@@ -1,4 +1,5 @@
-﻿using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
+﻿using SGB.Application.Base;
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Base;
 using System;
 using System.Collections.Generic;
@@ -9,13 +10,9 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion
 {
-    public interface IPenalizacionServices  
+    public interface IPenalizacionServices  : IBaseService<AddPenalizacionDto, UpdatePenalizacionDto, DisablePenalizacionDto>
     {
-        Task<OperationResult> AddPenalizacionAsync(AddPenalizacionDto addPenalizacionDto);
-        Task<OperationResult> UpdatePenalizacionAsync(UpdatePenalizacionDto updatePenalizacionDto);
-        Task<OperationResult> DisablePenalizacionAsync(DisablePenalizacionDto disablePenalizacionDto);
-        Task<OperationResult> GetAllPenalizacionesAsync(GetPenalizacionDto getPenalizacionDto);
-        Task<OperationResult> GetPenalizacionByIdAsync(int idPenalizacion);
+       
         
 
     }

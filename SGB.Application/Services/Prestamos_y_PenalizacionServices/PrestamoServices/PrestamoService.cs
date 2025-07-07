@@ -22,7 +22,8 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServ
             _configuration = configuration;
         }
 
-        public async Task<OperationResult> AddPrestamoAsync(AddPrestamoDto addPrestamoDto)
+      
+        public async Task<OperationResult> AddAsync(AddPrestamoDto addPrestamoDto)
         {
             if (addPrestamoDto == null)
                 return new OperationResult { Success = false, Message = "El objeto AddPrestamoDto no puede ser nulo." };
@@ -85,9 +86,22 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServ
             }
         }
 
-        public async Task<OperationResult> DisablePrestamoAsync(int idPrestamo)
+
+
+
+
+        public async Task<OperationResult> DeleteAsync(DisablePrestamoDto disablePrestamoDto)
         {
-            if (idPrestamo <= 0)
+            if (disablePrestamoDto == null)
+            {
+                return new OperationResult
+                {
+                    Success = false,
+                    Message = "El objeto DisablePrestamoDto no puede ser nulo."
+                };
+            }
+
+            if (disablePrestamoDto.IdPrestamo <= 0)
             {
                 return new OperationResult
                 {
@@ -98,9 +112,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServ
 
             try
             {
-                _logger.LogInformation("Desactivando préstamo con ID: {Id}", idPrestamo);
+                _logger.LogInformation("Desactivando préstamo con ID: {Id}", disablePrestamoDto.IdPrestamo);
 
-                var result = await _PrestamoRepository.DisableAsync(idPrestamo);
+                var result = await _PrestamoRepository.DisableAsync(disablePrestamoDto.IdPrestamo);
 
                 if (!result.Success)
                 {
@@ -108,7 +122,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServ
                     return result;
                 }
 
-                _logger.LogInformation("Préstamo con ID {Id} desactivado correctamente.", idPrestamo);
+                _logger.LogInformation("Préstamo con ID {Id} desactivado correctamente.", disablePrestamoDto.IdPrestamo);
 
                 return new OperationResult
                 {
@@ -128,7 +142,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServ
         }
 
 
-        public async Task<OperationResult> GetAllPrestamosAsync()
+        public async Task<OperationResult> GetAllAsync()
         {
             try
             {
@@ -170,7 +184,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServ
             }
         }
 
-        public async Task<OperationResult> GetPrestamoByIdAsync(int idPrestamo)
+       
+
+        public async Task<OperationResult> GetByIdAsync(int idPrestamo)
         {
             if (idPrestamo <= 0)
                 return new OperationResult { Success = false, Message = "El ID del préstamo debe ser mayor a 0." };
@@ -214,7 +230,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServ
             }
         }
 
-        public async Task<OperationResult> UpdatePrestamoAsync(UpdatePrestamoDto updatePrestamoDto)
+      
+
+        public async Task<OperationResult> UpdateAsync(UpdatePrestamoDto updatePrestamoDto)
         {
             if (updatePrestamoDto == null)
                 return new OperationResult { Success = false, Message = "El objeto UpdatePrestamoDto no puede ser nulo." };

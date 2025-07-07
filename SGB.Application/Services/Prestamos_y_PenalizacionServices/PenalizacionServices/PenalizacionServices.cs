@@ -32,7 +32,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
 
         }
 
-        public async Task<OperationResult> AddPenalizacionAsync(AddPenalizacionDto addPenalizacionDto)
+       
+
+        public async Task<OperationResult> AddAsync(AddPenalizacionDto addPenalizacionDto)
         {
             if (addPenalizacionDto == null)
             {
@@ -112,8 +114,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             }
         }
 
+        
 
-        public async Task<OperationResult> DisablePenalizacionAsync(DisablePenalizacionDto disablePenalizacionDto)
+        public async Task<OperationResult> DeleteAsync(DisablePenalizacionDto disablePenalizacionDto)
         {
             if (disablePenalizacionDto == null)
             {
@@ -159,14 +162,11 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             }
         }
 
+        
 
-
-
-
-
-        public async Task<OperationResult> GetAllPenalizacionesAsync(GetPenalizacionDto getPenalizacionDto)
+        public async Task<OperationResult> GetAllAsync( )
         {
-            if (getPenalizacionDto == null)
+            if (GetAllAsync == null)
             {
                 return new OperationResult
                 {
@@ -211,7 +211,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             }
         }
 
-        public async Task<OperationResult> GetPenalizacionByIdAsync(int idPenalizacion)
+       
+
+        public async Task<OperationResult> GetByIdAsync(int idPenalizacion)
         {
             if (idPenalizacion <= 0)
             {
@@ -258,7 +260,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             }
         }
 
-        public async Task<OperationResult> UpdatePenalizacionAsync(UpdatePenalizacionDto updatePenalizacionDto)
+       
+
+        public async Task<OperationResult> UpdateAsync(UpdatePenalizacionDto updatePenalizacionDto)
         {
             if (updatePenalizacionDto == null)
             {
@@ -296,9 +300,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                     penalizacionExistente.FechaInicio = updatePenalizacionDto.FechaInicio.Value;
                 }
 
-                if (updatePenalizacionDto.FechaVencimiento.HasValue)
+                if (updatePenalizacionDto.FechaFin.HasValue)
                 {
-                    penalizacionExistente.ExtenderPenalizacion(updatePenalizacionDto.FechaVencimiento.Value);
+                    penalizacionExistente.ExtenderPenalizacion(updatePenalizacionDto.FechaFin.Value);
                 }
 
                 if (updatePenalizacionDto.FechaDevolucion.HasValue)
