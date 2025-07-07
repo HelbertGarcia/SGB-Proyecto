@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using SGB.Application.Base;
 
 namespace SGB.Application.Dtos.ConfiguracionDto
 {
-    public record AddConfiguracionDto
+    public record AddConfiguracionDto : BaseConfiguracion
     {
+        [Required]
         public string Nombre { get; set; }
-        public string Valor { get; set; }
-        public string? Descripcion { get; set; }
     }
 }

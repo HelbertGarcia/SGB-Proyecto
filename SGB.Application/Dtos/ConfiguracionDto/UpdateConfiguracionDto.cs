@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SGB.Application.Base;
 
 namespace SGB.Application.Dtos.AdministracionDto
 {
-    public record UpdateConfiguracionDto
+    public record UpdateConfiguracionDto : BaseConfiguracion
     {
-        public int IDConfiguracion { get; init; }
-        public string Valor { get; set; }
-        public string? Descripcion { get; set; }
+        public int IDConfiguracion { get; set; }
         public bool? EstaActivo { get; set; }
     }
 }

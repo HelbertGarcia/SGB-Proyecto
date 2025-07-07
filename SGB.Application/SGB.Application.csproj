@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Base\" />
     <Folder Include="Contracts\Repositorio\" />
     <Folder Include="Contracts\Service\ILibroServices\" />
     <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />

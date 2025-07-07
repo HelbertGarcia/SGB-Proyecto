@@ -4,9 +4,7 @@ using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
-using SGB.Domain.Repository;
 using SGB.Persistence.Interfaces;
-using SGB.Persistence.Repositories;
 
 namespace SGB.Application.Services.ConfiguracionServices
 {
@@ -39,7 +37,6 @@ namespace SGB.Application.Services.ConfiguracionServices
                     })
                     .OrderByDescending(c => c.FechaCreacion)
                     .ToList();
-
                 result.Message = "Configuraciones obtenidas correctamente.";
             }
             catch (Exception ex)
@@ -56,7 +53,7 @@ namespace SGB.Application.Services.ConfiguracionServices
             var result = new OperationResult();
             try
             {
-                var config = await _repository.GetEntityByIdAsync(id);
+                var config = await _repository.GetByIdAsync(id);
                 if (config == null)
                 {
                     result.Success = true;
@@ -97,11 +94,10 @@ namespace SGB.Application.Services.ConfiguracionServices
                 }
 
                 var config = new Configuracion(dto.Nombre, dto.Valor, dto.Descripcion);
+                result = await _repository.AddAsync(config);
 
-                await _repository.AddAsync(config);
-
-                result.Success = true;
-                result.Message = "Configuración guardada exitosamente.";
+                if (result.Success)
+                    result.Message = "Configuración guardada exitosamente.";
             }
             catch (ArgumentException ex)
             {
@@ -119,27 +115,25 @@ namespace SGB.Application.Services.ConfiguracionServices
             return result;
         }
 
-
         public async Task<OperationResult> UpdateAsync(UpdateConfiguracionDto dto)
         {
             var result = new OperationResult();
             try
             {
-                var config = await _repository.GetEntityByIdAsync(dto.IDConfiguracion);
-
+                var config = await _repository.GetByIdAsync(dto.IDConfiguracion);
                 if (config == null)
                 {
                     result.Success = true;
                     result.Message = "Configuración no encontrada.";
                     return result;
                 }
-
-                config.ActualizarValor(dto.Valor);
-                config.ActualizarDescripcion(dto.Descripcion);
+                config.Valor = dto.Valor;
+                config.Descripcion = dto.Descripcion;
                 config.EstaActivo = dto.EstaActivo ?? config.EstaActivo;
 
-                await _repository.UpdateEntityAsync(config);
-                result.Message = "Configuración actualizada correctamente.";
+                result = await _repository.UpdateAsync(config);
+                if (result.Success)
+                    result.Message = "Configuración actualizada correctamente.";
             }
             catch (Exception ex)
             {
@@ -147,7 +141,6 @@ namespace SGB.Application.Services.ConfiguracionServices
                 result.Message = "Error al actualizar la configuración.";
                 _logger.LogError(ex, result.Message);
             }
-
             return result;
         }
 
@@ -163,18 +156,17 @@ namespace SGB.Application.Services.ConfiguracionServices
                     result.Message = "ID de configuración inválido.";
                     return result;
                 }
-
-                var config = await _repository.GetEntityByIdAsync(dto.IDConfiguracion);
+                var config = await _repository.GetByIdAsync(dto.IDConfiguracion);
                 if (config == null)
                 {
                     result.Success = true;
                     result.Message = "Configuración no encontrada.";
                     return result;
                 }
+                result = await _repository.DeleteAsync(config.IDConfiguracion);
 
-                await _repository.DeleteEntityAsync(config);
-                result.Success = true;
-                result.Message = "Configuración eliminada correctamente.";
+                if (result.Success)
+                    result.Message = "Configuración eliminada correctamente.";
             }
             catch (Exception ex)
             {
@@ -182,10 +174,8 @@ namespace SGB.Application.Services.ConfiguracionServices
                 result.Success = true;
                 result.Message = $"Error al eliminar la configuración: {ex.Message}";
             }
-
             return result;
         }
-
 
 
 
