@@ -24,7 +24,6 @@ namespace SGB.Persistence.Context
         public DbSet<Penalizacion> Penalizaciones { get; set; }
         public DbSet<Rol> Roles { get; set; }
         public DbSet<Configuracion> Configuraciones { get; set; }
-
         public DbSet<Persona> Personas { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Administrador> Administradores { get; set; }
@@ -34,19 +33,15 @@ namespace SGB.Persistence.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            // --- Configuración para Libro ---
             modelBuilder.Entity<Libro>(entity =>
             {
                 entity.HasKey(l => l.Id);
                 entity.Property(l => l.Id).HasColumnName("IDLibro");
 
-                // --- CORRECCIÓN CLAVE ---
-                // Se define explícitamente el tipo y la longitud de la columna ISBN.
                 entity.Property(l => l.ISBN).HasColumnType("nvarchar(13)").IsRequired();
                 entity.HasIndex(l => l.ISBN).IsUnique();
             });
 
-            // --- Configuración para Prestamo ---
             modelBuilder.Entity<Prestamo>(entity =>
             {
                 entity.ToTable("Prestamos");

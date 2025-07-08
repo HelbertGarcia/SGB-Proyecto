@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Validator\" />
     <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
     <Folder Include="Contracts\Service\INotificacionesServices\" />
     <Folder Include="Contracts\Service\IPrestamos_y_ PenalizacionServices\" />
@@ -27,6 +26,10 @@
     <Folder Include="Services\UsuarioServices\" />
     <Folder Include="Services\Reporte_EstaditicaServices\" />
     <Folder Include="Services\NotificacionesServices\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
   </ItemGroup>
 
   <ItemGroup>
