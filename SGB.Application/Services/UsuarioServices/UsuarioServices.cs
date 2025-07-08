@@ -30,7 +30,7 @@ namespace SGB.Application.Services.UsuarioServices
             _configuration = configuration;
         }
 
-        
+
 
         public async Task<OperationResult> AddUsuarioAsync(SaveUsuarioDto usuarioDto)
         {
@@ -168,15 +168,9 @@ namespace SGB.Application.Services.UsuarioServices
             return result;
         }
 
-       
-
-
-
-
-
-
-
-  
+        public Task<object?> GetAllUsuario()
+        {
+            throw new NotImplementedException();
+        }
     }
-
 }

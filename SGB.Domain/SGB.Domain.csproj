@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\Configuration\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="Base\BaseEntity.cs" />
   </ItemGroup>
 

@@ -12,6 +12,8 @@ namespace SGB.Application.Contracts.Service.IUsuarioServices
 {
   public interface IUsuarioServices
     {
+        Task<object?> GetAllUsuario();
+
         public interface IUsuarioService
         {
             Task<OperationResult> AddUsuarioAsync(SaveUsuarioDto usuarioDto);
@@ -27,8 +29,6 @@ namespace SGB.Application.Contracts.Service.IUsuarioServices
             Task<OperationResult> AddAsync(UsuarioDto usuarioDto);
             Task<OperationResult> UpdateAsync(UsuarioDto usuarioDto);
         }
-
-
 
 
 
