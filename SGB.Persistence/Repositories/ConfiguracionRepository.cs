@@ -42,6 +42,41 @@ namespace SGB.Persistence.Repositories
                 return new OperationResult { Success = false, Message = msg };
             }
         }
+
+        public async Task<OperationResult> ObtenerPorIdAsync(int id)
+        {
+            try
+            {
+                var configuracion = await Entity.AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.IDConfiguracion == id);
+
+                if (configuracion == null)
+                {
+                    return new OperationResult
+                    {
+                        Success = false,
+                        Message = "Configuración no encontrada."
+                    };
+                }
+
+                return new OperationResult
+                {
+                    Success = true,
+                    Data = configuracion
+                };
+            }
+            catch (Exception ex)
+            {
+                const string errorMsg = "Error al obtener configuración por ID.";
+                _logger.LogError(ex, errorMsg);
+                return new OperationResult
+                {
+                    Success = false,
+                    Message = errorMsg
+                };
+            }
+        }
+
         #endregion
 
         #region Metodo de la interface

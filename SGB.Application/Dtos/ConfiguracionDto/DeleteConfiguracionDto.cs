@@ -1,6 +1,6 @@
 ﻿namespace SGB.Application.Dtos.AdministracionDto
 {
-    public record DeleteConfiguracionDto
+    public class DeleteConfiguracionDto
     {
         public int IDConfiguracion { get; set; }
     }

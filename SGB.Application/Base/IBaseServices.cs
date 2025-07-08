@@ -1,12 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SGB.Domain.Base;
 
 namespace SGB.Application.Base
 {
-    internal class IBaseServices
+    
+    public interface IBaseService<TAddDto, TUpdateDto>
     {
+        Task<OperationResult> AddAsync(TAddDto dto);
+
+       
+        Task<OperationResult> UpdateAsync(int id, TUpdateDto dto);
+
+     
+        Task<OperationResult> DeleteAsync(int id);
+
+        Task<OperationResult> GetAllAsync();
+
+        Task<OperationResult> GetByIdAsync(int id);
     }
 }
