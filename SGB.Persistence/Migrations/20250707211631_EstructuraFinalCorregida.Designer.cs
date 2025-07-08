@@ -12,8 +12,8 @@ using SGB.Persistence.Context;
 namespace SGB.Persistence.Migrations
 {
     [DbContext(typeof(SGBContext))]
-    [Migration("20250629004154_AlineandoNombreTablaLibros")]
-    partial class AlineandoNombreTablaLibros
+    [Migration("20250707211631_EstructuraFinalCorregida")]
+    partial class EstructuraFinalCorregida
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,56 @@ namespace SGB.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("SGB.Domain.Base.Persona", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EstaActivo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdRol")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Personas");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Persona");
+
+                    b.UseTphMappingStrategy();
+                });
 
             modelBuilder.Entity("SGB.Domain.Entities.Categoria.Categoria", b =>
                 {
@@ -48,7 +98,7 @@ namespace SGB.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categoria");
+                    b.ToTable("Categorias");
                 });
 
             modelBuilder.Entity("SGB.Domain.Entities.Configuracion.Configuracion", b =>
@@ -79,13 +129,17 @@ namespace SGB.Persistence.Migrations
 
                     b.HasKey("IDConfiguracion");
 
-                    b.ToTable("Configuracion");
+                    b.ToTable("Configuraciones");
                 });
 
             modelBuilder.Entity("SGB.Domain.Entities.Libro.Libro", b =>
                 {
-                    b.Property<string>("ISBN")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("IDLibro");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Autor")
                         .IsRequired()
@@ -110,13 +164,20 @@ namespace SGB.Persistence.Migrations
                     b.Property<int>("IDCategoria")
                         .HasColumnType("int");
 
+                    b.Property<string>("ISBN")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(13)");
+
                     b.Property<string>("Titulo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ISBN");
+                    b.HasKey("Id");
 
-                    b.ToTable("Ejemplares");
+                    b.HasIndex("ISBN")
+                        .IsUnique();
+
+                    b.ToTable("Libros");
                 });
 
             modelBuilder.Entity("SGB.Domain.Entities.Notificaciones.Notificacion", b =>
@@ -149,7 +210,7 @@ namespace SGB.Persistence.Migrations
 
                     b.HasKey("IDNotificacion");
 
-                    b.ToTable("Notificacion");
+                    b.ToTable("Notificaciones");
                 });
 
             modelBuilder.Entity("SGB.Domain.Entities.Penalizaciones.Penalizacion", b =>
@@ -184,23 +245,27 @@ namespace SGB.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Penalizacion");
+                    b.ToTable("Penalizaciones");
                 });
 
             modelBuilder.Entity("SGB.Domain.Entities.Prestamos.Prestamo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IDPrestamo");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("EjemplarId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(13)")
+                        .HasColumnName("ISBN");
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("FechaDevolucion")
                         .HasColumnType("datetime2");
@@ -212,11 +277,16 @@ namespace SGB.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("UsuarioId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("IDUsuario");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Prestamos");
+                    b.HasIndex("EjemplarId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Prestamos", (string)null);
                 });
 
             modelBuilder.Entity("SGB.Domain.Entities.Rol.Rol", b =>
@@ -246,48 +316,44 @@ namespace SGB.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Rol");
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("SGB.Domain.Entities.Usuario.Administrador", b =>
+                {
+                    b.HasBaseType("SGB.Domain.Base.Persona");
+
+                    b.HasDiscriminator().HasValue("Administrador");
+                });
+
+            modelBuilder.Entity("SGB.Domain.Entities.Usuario.Bibliotecario", b =>
+                {
+                    b.HasBaseType("SGB.Domain.Base.Persona");
+
+                    b.HasDiscriminator().HasValue("Bibliotecario");
                 });
 
             modelBuilder.Entity("SGB.Domain.Entities.Usuario.Usuario", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.HasBaseType("SGB.Domain.Base.Persona");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.HasDiscriminator().HasValue("Usuario");
+                });
 
-                    b.Property<string>("Apellido")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+            modelBuilder.Entity("SGB.Domain.Entities.Prestamos.Prestamo", b =>
+                {
+                    b.HasOne("SGB.Domain.Entities.Libro.Libro", null)
+                        .WithMany()
+                        .HasForeignKey("EjemplarId")
+                        .HasPrincipalKey("ISBN")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("EstaActivo")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("FechaActualizacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("IdRol")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Usuarios");
+                    b.HasOne("SGB.Domain.Entities.Usuario.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

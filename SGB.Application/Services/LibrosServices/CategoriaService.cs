@@ -5,10 +5,10 @@ using SGB.Application.Contracts.Service.ILibroServices;
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Categoria;
+using SGB.Application.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SGB.Application.Services.LibrosServices
@@ -32,45 +32,37 @@ namespace SGB.Application.Services.LibrosServices
             _configuration = configuration;
         }
 
-        public async Task<OperationResult> AddCategoriaAsync(AddCategoriaDto addCategoriaDto)
+        public async Task<OperationResult> AddAsync(AddCategoriaDto addCategoriaDto)
         {
             try
             {
-                try
+                var resultadoExistencia = await _categoriaRepository.ObtenerPorNombreAsync(addCategoriaDto.Nombre);
+                if (resultadoExistencia.Success && resultadoExistencia.Data != null)
                 {
-                    var resultadoExistencia = await _categoriaRepository.ObtenerPorNombreAsync(addCategoriaDto.Nombre);
-                    if (resultadoExistencia.Data != null)
-                    {
-                        return await Task.FromResult(new OperationResult { Success = false, Message = "Ya existe una categoría con ese nombre." });
-                    }
-
-                    var nuevaCategoria = new Categoria(addCategoriaDto.Nombre);
-
-                    var resultadoRepo = await _categoriaRepository.AddAsync(nuevaCategoria);
-                    if (!resultadoRepo.Success) return resultadoRepo;
-
-                    var categoriaDto = new CategoriaDto(
-                        nuevaCategoria.Id,
-                        nuevaCategoria.Nombre,
-                        nuevaCategoria.EstaActivo
-                    );
-
-                    return new OperationResult { Success = true, Data = categoriaDto, Message = "Categoría creada exitosamente." };
+                    return await Task.FromResult(new OperationResult { Success = false, Message = "Ya existe una categoría con ese nombre." });
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error al crear la categoría: {Nombre}", addCategoriaDto?.Nombre);
-                    return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
-                }
+
+                var nuevaCategoria = new Categoria(addCategoriaDto.Nombre);
+
+                var resultadoRepo = await _categoriaRepository.AddAsync(nuevaCategoria);
+                if (!resultadoRepo.Success) return resultadoRepo;
+
+                var categoriaDto = new CategoriaDto(
+                    nuevaCategoria.Id,
+                    nuevaCategoria.Nombre,
+                    nuevaCategoria.EstaActivo
+                );
+
+                return new OperationResult { Success = true, Data = categoriaDto, Message = "Categoría creada exitosamente." };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear la categoría: {Nombre}", addCategoriaDto?.Nombre);
+                _logger.LogErrorWithConfigurationMessage(_configuration, ex, "ErrorMessages:Categorias:Add", addCategoriaDto?.Nombre);
                 return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
             }
         }
 
-        public async Task<OperationResult> UpdateCategoriaAsync(int id, UpdateCategoriaDto updateCategoriaDto)
+        public async Task<OperationResult> UpdateAsync(int id, UpdateCategoriaDto updateCategoriaDto)
         {
             try
             {
@@ -81,17 +73,16 @@ namespace SGB.Application.Services.LibrosServices
                 }
 
                 categoriaEntidad.ActualizarNombre(updateCategoriaDto.Nombre);
-
                 return await _categoriaRepository.UpdateAsync(categoriaEntidad);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar la categoría con ID: {Id}", id);
+                _logger.LogErrorWithConfigurationMessage(_configuration, ex, "ErrorMessages:Categorias:Update", id);
                 return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
             }
         }
 
-        public async Task<OperationResult> DeleteCategoriaAsync(int id)
+        public async Task<OperationResult> DeleteAsync(int id)
         {
             try
             {
@@ -105,12 +96,12 @@ namespace SGB.Application.Services.LibrosServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar la categoría con ID: {Id}", id);
+                _logger.LogErrorWithConfigurationMessage(_configuration, ex, "ErrorMessages:Categorias:Delete", id);
                 return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
             }
         }
 
-        public async Task<OperationResult> GetCategoriaAsync(int id)
+        public async Task<OperationResult> GetByIdAsync(int id)
         {
             try
             {
@@ -129,12 +120,12 @@ namespace SGB.Application.Services.LibrosServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener la categoría con ID: {Id}", id);
+                _logger.LogErrorWithConfigurationMessage(_configuration, ex, "ErrorMessages:Categorias:GetById", id);
                 return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
             }
         }
 
-        public async Task<OperationResult> GetAllCategoriasAsync()
+        public async Task<OperationResult> GetAllAsync()
         {
             try
             {
@@ -153,7 +144,7 @@ namespace SGB.Application.Services.LibrosServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener todas las categorías activas.");
+                _logger.LogErrorWithConfigurationMessage(_configuration, ex, "ErrorMessages:Categorias:GetAll");
                 return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
             }
         }

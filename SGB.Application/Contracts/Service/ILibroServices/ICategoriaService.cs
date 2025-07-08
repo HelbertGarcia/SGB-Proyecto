@@ -1,19 +1,15 @@
-﻿using SGB.Application.Dtos.LibrosDto.CategoriaDto;
+﻿using SGB.Application.Base;
+using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using SGB.Domain.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SGB.Application.Contracts.Service.ILibroServices
 {
-    public interface ICategoriaService
+    /// <summary>
+    /// Defines the contract for category-related business operations.
+    /// Inherits all standard CRUD operations from IBaseService.
+    /// </summary>
+    public interface ICategoriaService : IBaseService<AddCategoriaDto, UpdateCategoriaDto>
     {
-        Task<OperationResult> AddCategoriaAsync(AddCategoriaDto addCategoriaDto);
-        Task<OperationResult> UpdateCategoriaAsync(int id, UpdateCategoriaDto updateCategoriaDto);
-        Task<OperationResult> DeleteCategoriaAsync(int id);
-        Task<OperationResult> GetCategoriaAsync(int id);
-        Task<OperationResult> GetAllCategoriasAsync();
     }
 }

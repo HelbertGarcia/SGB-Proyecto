@@ -8,6 +8,7 @@ using SGB.Domain.Entities.Libro;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,22 +30,63 @@ namespace SGB.Persistence.Repositories
             _configuration = configuration;
         }
 
-        #region "Métodos Optimizados Corregidos"
+        #region "Métodos Heredados Sobrescritos"
 
-        public async Task<Libro> ObtenerParaActualizacionAsync(string isbn)
+        public override async Task<OperationResult> DeleteAsync(int id)
         {
-            return await Entity.FirstOrDefaultAsync(l => l.ISBN == isbn);
+            try
+            {
+                var libroParaEliminar = await Entity.FindAsync(id);
+                if (libroParaEliminar == null)
+                {
+                    return await Task.FromResult(new OperationResult { Success = false, Message = "Libro no encontrado." });
+                }
+                libroParaEliminar.Deshabilitar();
+                return await base.UpdateAsync(libroParaEliminar);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:Libros:Delete"];
+                _logger.LogError(ex, "{ErrorMessage} para el Libro con ID: {LibroID}", errorMessage, id);
+                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error al eliminar el libro." };
+            }
         }
 
-        public async Task<OperationResult> ObtenerDetallesDTOPorIsbnAsync(string isbn)
+        #endregion
+
+        #region "Implementación de ILibroRepository"
+
+        public async Task<OperationResult> BuscarPorAutorAsync(string autor)
+        {
+            if (string.IsNullOrWhiteSpace(autor))
+                return await Task.FromResult(new OperationResult { Success = false, Message = "El autor no puede estar vacío." });
+            return await base.FindByConditionAsync(l => l.Autor.Contains(autor) && l.EstaActivo);
+        }
+
+        public async Task<OperationResult> BuscarPorTituloAsync(string titulo)
+        {
+            if (string.IsNullOrWhiteSpace(titulo))
+                return await Task.FromResult(new OperationResult { Success = false, Message = "El título no puede estar vacío." });
+            return await base.FindByConditionAsync(l => l.Titulo.Contains(titulo) && l.EstaActivo);
+        }
+
+        public async Task<OperationResult> BuscarPorIsbnAsync(string isbn)
+        {
+            if (string.IsNullOrWhiteSpace(isbn))
+                return await Task.FromResult(new OperationResult { Success = false, Message = "El ISBN no puede estar vacío." });
+            return await base.FindByConditionAsync(l => l.ISBN == isbn && l.EstaActivo);
+        }
+
+        public async Task<OperationResult> ObtenerDetallesDTOPorIdAsync(int id)
         {
             try
             {
                 var libroDto = await (from libro in Entity
-                                      join categoria in _context.Categoria on libro.IDCategoria equals categoria.Id
-                                      where libro.ISBN == isbn
-                                      select new LibroDto 
+                                      join categoria in _context.Categorias on libro.IDCategoria equals categoria.Id
+                                      where libro.Id == id
+                                      select new LibroDto
                                       {
+                                          Id = libro.Id,
                                           ISBN = libro.ISBN,
                                           Titulo = libro.Titulo,
                                           Autor = libro.Autor,
@@ -56,108 +98,59 @@ namespace SGB.Persistence.Repositories
                                       })
                                       .AsNoTracking()
                                       .FirstOrDefaultAsync();
-
                 return new OperationResult { Data = libroDto };
             }
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:Libros:GetById"];
-                _logger.LogError(ex, "{ErrorMessage} para el ISBN: {ISBN}", errorMessage, isbn);
+                _logger.LogError(ex, "{ErrorMessage} para el ID: {LibroID}", errorMessage, id);
                 return new OperationResult { Success = false, Message = errorMessage };
             }
         }
 
-        public async Task<OperationResult> DeleteLogicoAsync(string isbn)
-        {
-            if (string.IsNullOrWhiteSpace(isbn))
-            {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "El ISBN no puede estar vacío." });
-            }
+        // --- IMPLEMENTACIÓN DE MÉTODOS FALTANTES ---
 
+        /// <summary>
+        /// Obtiene una entidad Libro con seguimiento para ser actualizada.
+        /// </summary>
+        public async Task<Libro> ObtenerParaActualizacionAsync(int id)
+        {
+            // No se usa AsNoTracking() porque necesitamos que EF Core rastree la entidad.
+            return await Entity.FindAsync(id);
+        }
+
+        /// <summary>
+        /// Obtiene una lista de todos los libros activos, proyectada directamente a DTOs.
+        /// </summary>
+        public async Task<OperationResult> ObtenerTodosConDetallesAsync()
+        {
             try
             {
-                var libroParaEliminar = await Entity.FirstOrDefaultAsync(l => l.ISBN == isbn);
+                var listaDto = await (from libro in Entity
+                                      join categoria in _context.Categorias on libro.IDCategoria equals categoria.Id
+                                      where libro.EstaActivo
+                                      select new LibroDto
+                                      {
+                                          Id = libro.Id,
+                                          ISBN = libro.ISBN,
+                                          Titulo = libro.Titulo,
+                                          Autor = libro.Autor,
+                                          Editorial = libro.Editorial,
+                                          FechaPublicacion = libro.FechaPublicacion,
+                                          NombreCategoria = categoria.Nombre,
+                                          Estado = "Disponible",
+                                          FechaRegistro = libro.FechaRegistro
+                                      })
+                                      .AsNoTracking()
+                                      .ToListAsync();
 
-                if (libroParaEliminar == null)
-                {
-                    return await Task.FromResult(new OperationResult { Success = false, Message = "Libro no encontrado." });
-                }
-
-                libroParaEliminar.Deshabilitar();
-
-                return await base.UpdateAsync(libroParaEliminar);
+                return new OperationResult { Data = listaDto };
             }
             catch (Exception ex)
             {
-                var errorMessage = _configuration["ErrorMessages:Libros:Delete"];
-                _logger.LogError(ex, "{ErrorMessage} para el ISBN: {ISBN}", errorMessage, isbn);
-                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error al eliminar el libro." };
-            }
-        }
-
-        public async Task<OperationResult> BuscarPorAutorAsync(string autor)
-        {
-            if (string.IsNullOrWhiteSpace(autor))
-            {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "El autor no puede estar vacío." });
-            }
-
-            return await base.FindByConditionAsync(l => l.Autor.Contains(autor) && l.EstaActivo);
-        }
-
-        public async Task<OperationResult> BuscarPorTituloAsync(string titulo)
-        {
-            if (string.IsNullOrWhiteSpace(titulo))
-            {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "El título no puede estar vacío." });
-            }
-
-            return await base.FindByConditionAsync(l => l.Titulo.Contains(titulo) && l.EstaActivo);
-        }
-
-        public async Task<OperationResult> BuscarPorEditorialAsync(string editorial)
-        {
-            if (string.IsNullOrWhiteSpace(editorial))
-            {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "La editorial no puede estar vacía." });
-            }
-
-            return await base.FindByConditionAsync(l => l.Editorial.Contains(editorial) && l.EstaActivo);
-        }
-
-        public async Task<OperationResult> BuscarPorIsbnAsync(string isbn)
-        {
-            if (string.IsNullOrWhiteSpace(isbn))
-            {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "El ISBN no puede estar vacío." });
-            }
-
-            return await base.FindByConditionAsync(l => l.ISBN == isbn && l.EstaActivo);
-        }
-
-        public async Task<OperationResult> BuscarPorCategoriaAsync(string nombreCategoria)
-        {
-            if (string.IsNullOrWhiteSpace(nombreCategoria))
-            {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "El nombre de la categoría no puede estar vacío." });
-            }
-
-            try
-            {
-                var data = await (from libro in Entity
-                                  join categoria in _context.Categoria on libro.IDCategoria equals categoria.Id
-                                  where categoria.Nombre == nombreCategoria && libro.EstaActivo
-                                  select libro)
-                                  .AsNoTracking()
-                                  .ToListAsync();
-
-                return new OperationResult { Data = data };
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:Libros:BuscarPorCategoria"];
-                _logger.LogError(ex, "{ErrorMessage} para la categoría: {Categoria}", errorMessage, nombreCategoria);
-                return new OperationResult { Success = false, Message = errorMessage ?? "Ocurrió un error inesperado al buscar por categoría." };
+                var errorMessage = _configuration["ErrorMessages:Libros:GetAll"];
+                _logger.LogError(ex, errorMessage);
+                return new OperationResult { Success = false, Message = errorMessage };
             }
         }
 

@@ -19,7 +19,6 @@ namespace SGB.Persistence.Repositories
         private readonly ILogger<NotificacionRepository> _logger;
         private readonly IConfiguration _configuration;
 
-        // 1. CONSTRUCTOR CORREGIDO: Inyecta ILoggerFactory y pasa las dependencias a la clase base.
         public NotificacionRepository(SGBContext context,
                                       ILoggerFactory loggerFactory,
                                       IConfiguration configuration)
@@ -29,6 +28,8 @@ namespace SGB.Persistence.Repositories
             _configuration = configuration;
             _logger = loggerFactory.CreateLogger<NotificacionRepository>();
         }
+
+        #region "Implementation of INotificacionRepository (Specific Methods)"
 
         public async Task<OperationResult> ContarPorTipoAsync(int idUsuario)
         {
@@ -43,7 +44,7 @@ namespace SGB.Persistence.Repositories
 
             try
             {
-                var data = await _context.Notificacion 
+                var data = await _context.Notificaciones
                                          .Where(n => n.IDUsuario == idUsuario)
                                          .AsNoTracking()
                                          .GroupBy(n => n.TipoNotificacion)
@@ -58,5 +59,7 @@ namespace SGB.Persistence.Repositories
                 return new OperationResult { Success = false, Message = errorMessage };
             }
         }
+
+        #endregion
     }
 }

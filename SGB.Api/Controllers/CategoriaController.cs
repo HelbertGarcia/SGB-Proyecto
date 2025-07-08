@@ -17,83 +17,54 @@ namespace SGB.Api.Controllers
         }
 
         [HttpGet(Name = "ObtenerTodasLasCategorias")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllCategorias()
+        public async Task<IActionResult> GetAll()
         {
-            var resultado = await _categoriaService.GetAllCategoriasAsync();
-            if (!resultado.Success)
-            {
-                return BadRequest(resultado);
-            }
+            var resultado = await _categoriaService.GetAllAsync();
+            if (!resultado.Success) return BadRequest(resultado);
             return Ok(resultado.Data);
         }
 
         [HttpGet("{id}", Name = "ObtenerCategoriaPorId")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetCategoria(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var resultado = await _categoriaService.GetCategoriaAsync(id);
-            if (!resultado.Success)
-            {
-                return NotFound(resultado);
-            }
+            var resultado = await _categoriaService.GetByIdAsync(id);
+            if (!resultado.Success || resultado.Data == null) return NotFound(resultado);
             return Ok(resultado.Data);
         }
 
         [HttpPost(Name = "CrearCategoria")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddCategoria([FromBody] AddCategoriaDto addCategoriaDto)
+        public async Task<IActionResult> Crear([FromBody] AddCategoriaDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var resultado = await _categoriaService.AddCategoriaAsync(addCategoriaDto);
-            if (!resultado.Success)
-            {
-                return BadRequest(resultado);
-            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var resultado = await _categoriaService.AddAsync(dto);
+            if (!resultado.Success) return BadRequest(resultado);
 
             var categoriaCreada = (CategoriaDto)resultado.Data;
-            return CreatedAtAction(nameof(GetCategoria), new { id = categoriaCreada.Id }, categoriaCreada);
+            return CreatedAtAction(nameof(GetById), new { id = categoriaCreada.Id }, categoriaCreada);
         }
 
         [HttpPut("{id}", Name = "ActualizarCategoria")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateCategoria(int id, [FromBody] UpdateCategoriaDto updateCategoriaDto)
+        public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateCategoriaDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var resultado = await _categoriaService.UpdateCategoriaAsync(id, updateCategoriaDto);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var resultado = await _categoriaService.UpdateAsync(id, dto);
             if (!resultado.Success)
             {
-                if (resultado.Message.Contains("encontrado"))
-                    return NotFound(resultado);
-
+                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
             }
             return Ok(resultado.Data);
         }
 
         [HttpDelete("{id}", Name = "EliminarCategoria")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteCategoria(int id)
+        public async Task<IActionResult> Eliminar(int id)
         {
-            var resultado = await _categoriaService.DeleteCategoriaAsync(id);
+            var resultado = await _categoriaService.DeleteAsync(id);
             if (!resultado.Success)
             {
-                if (resultado.Message.Contains("encontrado"))
-                    return NotFound(resultado);
-
+                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
             }
             return NoContent();

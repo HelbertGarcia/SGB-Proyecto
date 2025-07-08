@@ -8,83 +8,64 @@ using SGB.Domain.Entities.Penalizaciones;
 using SGB.Domain.Entities.Prestamos;
 using SGB.Domain.Entities.Rol;
 using SGB.Domain.Entities.Usuario;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SGB.Persistence.Context
 {
-    public class SGBContext: DbContext
+    public class SGBContext : DbContext
     {
         public SGBContext(DbContextOptions<SGBContext> options) : base(options)
         {
-
         }
 
         public DbSet<Prestamo> Prestamos { get; set; }
-        public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Libro> Libros { get; set; }
-        public DbSet<Notificacion> Notificacion { get; set; }
-        public DbSet<Categoria> Categoria { get; set; }
-        public DbSet<Penalizacion> Penalizacion { get; set; }
-        public DbSet<Rol> Rol { get; set; }
-        public DbSet<Configuracion> Configuracion { get; set; }
+        public DbSet<Notificacion> Notificaciones { get; set; }
+        public DbSet<Categoria> Categorias { get; set; }
+        public DbSet<Penalizacion> Penalizaciones { get; set; }
+        public DbSet<Rol> Roles { get; set; }
+        public DbSet<Configuracion> Configuraciones { get; set; }
+
+        public DbSet<Persona> Personas { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<Administrador> Administradores { get; set; }
+        public DbSet<Bibliotecario> Bibliotecarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); // Siempre llama a la implementación base primero
+            base.OnModelCreating(modelBuilder);
 
-            // Configuración para la entidad Categoria
-            modelBuilder.Entity<Categoria>(entity =>
+            // --- Configuración para Libro ---
+            modelBuilder.Entity<Libro>(entity =>
             {
-                entity.HasKey(c => c.Id);
-                entity.Property(c => c.Id).HasColumnName("IDCategoria");
+                entity.HasKey(l => l.Id);
+                entity.Property(l => l.Id).HasColumnName("IDLibro");
+
+                // --- CORRECCIÓN CLAVE ---
+                // Se define explícitamente el tipo y la longitud de la columna ISBN.
+                entity.Property(l => l.ISBN).HasColumnType("nvarchar(13)").IsRequired();
+                entity.HasIndex(l => l.ISBN).IsUnique();
             });
 
-            // Configuración para la jerarquía de Persona (Table-Per-Type)
-            modelBuilder.Entity<Persona>().ToTable("Usuario");
-            modelBuilder.Entity<Persona>().Property(p => p.Id).HasColumnName("IDUsuario");
-
-            modelBuilder.Entity<Administrador>().ToTable("Administrador");
-            modelBuilder.Entity<Bibliotecario>().ToTable("Bibliotecario");
-
-            // Aquí puedes añadir más configuraciones para otras entidades si es necesario...
-            // Por ejemplo, para la entidad Libro:
-            modelBuilder.Entity<Libro>().HasKey(l => l.ISBN); // Define explícitamente que ISBN es la PK.
-
+            // --- Configuración para Prestamo ---
             modelBuilder.Entity<Prestamo>(entity =>
             {
-                // Le decimos que la tabla en la BD se llama 'Prestamos'
                 entity.ToTable("Prestamos");
-
-                // 1. Mapeo de la Clave Primaria
                 entity.HasKey(p => p.Id);
-                entity.Property(p => p.Id).HasColumnName("IDPrestamo"); // Traduce 'Id' (C#) a 'IDPrestamo' (SQL)
+                entity.Property(p => p.Id).HasColumnName("IDPrestamo");
+                entity.Property(p => p.EjemplarId).HasColumnName("ISBN").HasColumnType("nvarchar(13)").IsRequired();
 
-                // 2. Mapeo de las Claves Foráneas y otras propiedades
-                // Asumiendo que la propiedad en tu entidad se llama 'LibroIsbn' para mayor claridad.
-                entity.Property(p => p.EjemplarId).HasColumnName("ISBN").IsRequired().HasMaxLength(13);
-                entity.Property(p => p.UsuarioId).HasColumnName("IDUsuario").IsRequired();
+                entity.Property(p => p.UsuarioId).HasColumnName("IDUsuario");
+                entity.Property(p => p.Estado).HasConversion<string>().HasMaxLength(50);
 
-                // 3. Mapeo del Enum a String
-                // Esto le dice a EF Core que guarde el nombre del enum (ej. "Activo") como un string en la BD.
-                entity.Property(p => p.Estado)
-                      .HasConversion<string>()
-                      .HasMaxLength(50); // El tamaño de tu columna nvarchar
+                entity.HasOne<Libro>()
+                      .WithMany()
+                      .HasForeignKey(p => p.EjemplarId)
+                      .HasPrincipalKey(l => l.ISBN);
 
-                // 4. Configuración de las Relaciones (Buena Práctica)
-                entity.HasOne<Libro>() // Un Préstamo tiene un Libro
-                      .WithMany() // Un Libro puede estar en muchos Préstamos
-                      .HasForeignKey(p => p.EjemplarId); // La clave foránea es LibroIsbn (que mapea a la columna ISBN)
-
-                entity.HasOne<Usuario>() // Un Préstamo tiene un Usuario
-                      .WithMany() // Un Usuario puede tener muchos Préstamos
+                entity.HasOne<Usuario>()
+                      .WithMany()
                       .HasForeignKey(p => p.UsuarioId);
             });
         }
     }
-
-
 }

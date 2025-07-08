@@ -13,105 +13,68 @@ namespace SGB.Api.Controllers
 
         public LibroController(ILibroService libroService)
         {
-            //
             _libroService = libroService;
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetAllLibros()
+        [HttpGet(Name = "ObtenerTodosLosLibros")]
+        public async Task<IActionResult> GetAll()
         {
-            var resultado = await _libroService.GetAllLibrosAsync();
+            var resultado = await _libroService.GetAllAsync();
+            if (!resultado.Success) return BadRequest(resultado);
+            return Ok(resultado.Data);
+        }
+
+        [HttpGet("{id}", Name = "ObtenerLibroPorId")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var resultado = await _libroService.GetByIdAsync(id);
+            if (!resultado.Success || resultado.Data == null) return NotFound(resultado);
+            return Ok(resultado.Data);
+        }
+
+        [HttpGet("buscar/isbn/{isbn}", Name = "BuscarLibroPorIsbn")]
+        public async Task<IActionResult> BuscarPorIsbn(string isbn)
+        {
+            var resultado = await _libroService.BuscarPorIsbnAsync(isbn);
+            if (!resultado.Success) return BadRequest(resultado);
+            return Ok(resultado.Data);
+        }
+
+        [HttpPost(Name = "CrearLibro")]
+        public async Task<IActionResult> Crear([FromBody] AddLibroDto libroDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var resultado = await _libroService.AddAsync(libroDto);
+            if (!resultado.Success) return BadRequest(resultado);
+
+            var libroCreado = (LibroDto)resultado.Data;
+            return CreatedAtAction(nameof(GetById), new { id = libroCreado.Id }, libroCreado);
+        }
+
+        [HttpPut("{id}", Name = "ActualizarLibro")]
+        public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateLibroDto libroDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var resultado = await _libroService.UpdateAsync(id, libroDto);
             if (!resultado.Success)
             {
+                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
             }
             return Ok(resultado.Data);
         }
 
-        [HttpGet("{isbn}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetLibroPorIsbn(string isbn)
+        [HttpDelete("{id}", Name = "EliminarLibro")]
+        public async Task<IActionResult> Eliminar(int id)
         {
-            var resultado = await _libroService.GetLibroDetailsAsync(isbn);
+            var resultado = await _libroService.DeleteAsync(id);
             if (!resultado.Success)
             {
-                return NotFound(resultado);
-            }
-            return Ok(resultado.Data);
-        }
-
-        [HttpGet("buscar")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> BuscarLibros([FromQuery] string termino)
-        {
-            var resultado = await _libroService.GetLibrosAsync(termino);
-            return Ok(resultado.Data);
-        }
-
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> CrearLibro([FromBody] AddLibroDto libroDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var resultado = await _libroService.AddLibroAsync(libroDto);
-
-            if (!resultado.Success)
-            {
+                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
             }
-
-            var libroCreado = resultado.Data;
-            return CreatedAtAction(nameof(GetLibroPorIsbn), new { isbn = libroCreado.ISBN }, libroCreado);
-        }
-
-        [HttpPut("{isbn}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ActualizarLibro(string isbn, [FromBody] UpdateLibroDto libroDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var resultado = await _libroService.UpdateLibroAsync(isbn, libroDto);
-
-            if (!resultado.Success)
-            {
-                if (resultado.Message.Contains("no encontrado"))
-                    return NotFound(resultado);
-
-                return BadRequest(resultado);
-            }
-
-            return Ok(resultado.Data);
-        }
-
-        [HttpDelete("{isbn}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> EliminarLibro(string isbn)
-        {
-            var resultado = await _libroService.DeleteLibroAsync(isbn);
-
-            if (!resultado.Success)
-            {
-                if (resultado.Message.Contains("no encontrado"))
-                    return NotFound(resultado);
-
-                return BadRequest(resultado);
-            }
-
             return NoContent();
         }
     }
