@@ -94,6 +94,38 @@ namespace SGB.Persistence.Repositories
             }
         }
 
+
         #endregion
+        //nuevo metodo 
+
+        public async Task<List<Prestamo>> GetPrestamosActivosPorUsuarioAsync(int usuarioId)
+        {
+            if (usuarioId <= 0)
+            {
+                _logger.LogWarning("ID de usuario inválido para la consulta de préstamos activos.");
+                return new List<Prestamo>();
+            }
+
+            try
+            {
+                var prestamosActivos = await Entity
+                    .AsNoTracking()
+                    .Where(p =>
+                        p.UsuarioId == usuarioId &&
+                        p.EstaActivo &&
+                        (p.Estado == EstadoPrestamo.Activo || p.Estado == EstadoPrestamo.Atrasado))
+                    .ToListAsync();
+
+                return prestamosActivos;
+            }
+            catch (Exception ex)
+            {
+                var mensaje = _configuration["ErrorMessages:Prestamos:GetPrestamosActivosError"]
+                              ?? "Error al obtener los préstamos activos del usuario.";
+                _logger.LogError(ex, "{Mensaje} - UsuarioId: {UsuarioId}", mensaje, usuarioId);
+                return new List<Prestamo>();
+            }
+        }
+
     }
 }

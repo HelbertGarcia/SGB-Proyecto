@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
-    public class DisablePrestamoDto : DtoBase
+    public  class DiseblePrestamoDto : DtoBase
     {
-        public int IdPrestamo { get; set; }
+
+         public int IDPrestamo { get; set; } 
+
+
+
     }
 }

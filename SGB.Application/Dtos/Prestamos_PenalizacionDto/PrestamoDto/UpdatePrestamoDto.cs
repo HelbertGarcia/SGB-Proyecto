@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
-    public  class UpdatePrestamoDto : PrestamoDTO
+    public  class UpdatePrestamoDto : PrestamoDto
     {
         public int IDPrestamo { get; set; }
-        public DateTime FechaFin { get; set; } 
+        public DateTime? FechaFin { get; set; }
+        public DateTime? FechaInicio { get; set; }
         public DateTime? FechaDevolucion { get; set; }
-        public string Estado { get; set; } 
+        public string? Estado { get; set; }
     }
 }

@@ -12,7 +12,8 @@ namespace SGB.Application.Contracts.Repository.Interfaces
     public interface IPenalizacionRepository : IBaseRepository<Penalizacion>
     {
     
-        Task<OperationResult> GetActivePenalizacionesAsync();
+        
+        Task<OperationResult> GetPenalizacionesActivasPorUsuarioAsync(int usuarioId);
         Task<OperationResult> GetMotivosPenalizacionesPorUsuarioAsync(int usuarioId);
 
       

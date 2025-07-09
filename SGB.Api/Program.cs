@@ -4,12 +4,14 @@ using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion;
 using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos;
 using SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices;
-using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
+
 using SGB.Persistence.Context;
 using SGB.Persistence.Interfaces;
 using SGB.Persistence.Repositories;
 using SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PenalizacionDependencia;
 using SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia;
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto.Validators;
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto.ValidatosDto;
 
 
 
@@ -23,23 +25,28 @@ namespace SGB.Api
 
             //Add services to the container.
 
-            // --- 1. CONFIGURACIÓN DE LA BASE DE DATOS ---
+            // --. CONFIGURACIÓN DE LA BASE DE DATOS ---
             var connectionString = builder.Configuration.GetConnectionString("SGBDatabase");
             builder.Services.AddDbContext<SGBContext>(options =>
                 options.UseSqlServer(connectionString)
             );
 
+           
+
+
             builder.Services.AddPenalizacionDependency();
             builder.Services.AddPrestamoDependency();
 
+
+
             /*
-            // Prestamos
+            //prestamo 
             builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>();
-            builder.Services.AddTransient<IPrestamosServices, PrestamoService>();
+            builder.Services.AddTransient<IPrestamosServices,PrestamoService>();
 
             // Penalizacion
             builder.Services.AddScoped<IPenalizacionRepository, PenalizacionRepository>();
-            builder.Services.AddTransient<IPenalizacionServices, PenalizacionServices>();
+            builder.Services.AddTransient<IPenalizacionServices, PenalizacionService>();
 
             */
 

@@ -11,8 +11,8 @@ namespace SGB.Application.Dtos.BaseDto
 {
     public abstract class DtoBase
     {
-        public DataSetDateTime changeDate {get; set; }
-        public string? changeUser { get; set; }
+        public DateTime FechaCreacion { get; set; }
+        public DateTime FechaActualizacion { get; set; }
     }
 
 }

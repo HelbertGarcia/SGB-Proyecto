@@ -35,27 +35,40 @@ namespace SGB.Persistence.Repositories
 
         #region "Métodos Propios de IPenalizacionRepository"
 
-        public async Task<OperationResult> GetActivePenalizacionesAsync()
+        public async Task<OperationResult> GetPenalizacionesActivasPorUsuarioAsync(int usuarioId)
         {
             var result = new OperationResult();
+
+            if (usuarioId <= 0)
+            {
+                return new OperationResult
+                {
+                    Success = false,
+                    Message = "El ID del usuario es inválido."
+                };
+            }
+
             try
             {
-                var now = DateTime.Now;
-                var penalizacionesActivas = await Entity
+                var penalizaciones = await Entity
                     .AsNoTracking()
-                    .Where(p => p.EstaActivo && p.FechaInicio <= now && p.FechaFin >= now)
+                    .Where(p => p.IDUsuario == usuarioId && p.EstaActivo && p.FechaInicio <= DateTime.UtcNow && p.FechaFin >= DateTime.UtcNow)
                     .ToListAsync();
 
-                result.Data = penalizacionesActivas;
+                result.Success = true;
+                result.Data = penalizaciones;
+                result.Message = "Penalizaciones activas obtenidas correctamente.";
             }
             catch (Exception ex)
             {
                 result.Success = false;
-                result.Message = _configuration["ErrorMessages:Penalizaciones:GetActiveError"] ?? "Error al obtener penalizaciones activas.";
+                result.Message = _configuration["ErrorMessages:Penalizaciones:GetActiveByUserError"] ?? "Error al obtener penalizaciones activas del usuario.";
                 _logger.LogError(ex, result.Message);
             }
+
             return result;
         }
+
 
         public async Task<OperationResult> GetMotivosPenalizacionesPorUsuarioAsync(int usuarioId)
         {

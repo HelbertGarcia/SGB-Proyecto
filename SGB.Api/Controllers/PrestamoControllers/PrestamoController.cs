@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Base;
-using System;
-using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
 using SGB.Domain.Entities.Prestamos;
 
 namespace SGB.Api.Controllers
@@ -102,7 +100,7 @@ namespace SGB.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeletePrestamo(int id)
         {
-            var dto = new DisablePrestamoDto { IdPrestamo = id };
+            var dto = new DiseblePrestamoDto { IDPrestamo = id };
 
             var result = await _prestamosService.DeleteAsync(dto);
 

@@ -1,288 +1,234 @@
-﻿using SGB.Domain.Base;
+﻿using FluentValidation;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using SGB.Application.Base.ValidatorServices.Prestamos;
+using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
+using SGB.Domain.Base;
 using SGB.Domain.Entities.Prestamos;
-using SGB.Application.Contracts.Repository.Interfaces;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices
+public sealed class PrestamoService : IPrestamosServices
 {
-    public sealed class PrestamoService : IPrestamosServices
+    private readonly IPrestamoRepository _prestamoRepository;
+    private readonly ILogger<PrestamoService> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly IValidator<AddPrestamoDto> _addValidator;
+    private readonly IValidator<UpdatePrestamoDto> _updateValidator;
+    private readonly IValidator<DiseblePrestamoDto> _disableValidator;
+    private readonly IPrestamoBusinessValidator _businessValidator;
+
+    public PrestamoService(
+        IPrestamoRepository prestamoRepository,
+        ILogger<PrestamoService> logger,
+        IConfiguration configuration,
+        IValidator<AddPrestamoDto> addValidator,
+        IValidator<UpdatePrestamoDto> updateValidator,
+        IValidator<DiseblePrestamoDto> disableValidator,
+        IPrestamoBusinessValidator businessValidator
+    )
     {
-        private readonly IPrestamoRepository _PrestamoRepository;
-        private readonly ILogger<PrestamoService> _logger;
-        private readonly IConfiguration _configuration;
+        _prestamoRepository = prestamoRepository;
+        _logger = logger;
+        _configuration = configuration;
+        _addValidator = addValidator;
+        _updateValidator = updateValidator;
+        _disableValidator = disableValidator;
+        _businessValidator = businessValidator;
+    }
 
-        public PrestamoService(IPrestamoRepository prestamoRepository, ILogger<PrestamoService> logger, IConfiguration configuration)
+    public async Task<OperationResult> AddAsync(AddPrestamoDto dto)
+    {
+        var dtoValidation = await _addValidator.ValidateAsync(dto);
+        if (!dtoValidation.IsValid)
+            return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+
+        var businessValidation = await _businessValidator.ValidateForAddAsync(dto);
+        if (!businessValidation.Success)
+            return businessValidation;
+
+        try
         {
-            _PrestamoRepository = prestamoRepository;
-            _logger = logger;
-            _configuration = configuration;
-        }
+            var prestamo = new Prestamo(dto.UsuarioId, dto.ISBN, dto.FechaInicio, dto.FechaFin);
+            var result = await _prestamoRepository.AddAsync(prestamo);
+            if (!result.Success) return result;
 
-      
-        public async Task<OperationResult> AddAsync(AddPrestamoDto addPrestamoDto)
-        {
-            if (addPrestamoDto == null)
-                return new OperationResult { Success = false, Message = "El objeto AddPrestamoDto no puede ser nulo." };
-
-            if (addPrestamoDto.EjemplarId <= 0)
-                return new OperationResult { Success = false, Message = "El ID del ejemplar no es válido." };
-
-            if (addPrestamoDto.UsuarioId <= 0)
-                return new OperationResult { Success = false, Message = "El ID del usuario no es válido." };
-
-            if (addPrestamoDto.DiasDePrestamo <= 0)
-                return new OperationResult { Success = false, Message = "Los días de préstamo deben ser mayores que cero." };
-
-            if (string.IsNullOrWhiteSpace(addPrestamoDto.ISBN) || addPrestamoDto.ISBN.Length > 13)
-                return new OperationResult { Success = false, Message = "El ISBN es inválido." };
-
-            try
+            return new OperationResult
             {
-                var prestamo = new Prestamo(
-                    addPrestamoDto.EjemplarId,
-                    addPrestamoDto.UsuarioId,
-                    addPrestamoDto.DiasDePrestamo,
-                    addPrestamoDto.ISBN
-                );
-
-                prestamo.EstaActivo = true; // Asegura que se guarde correctamente
-
-                var result = await _PrestamoRepository.AddAsync(prestamo);
-
-                if (!result.Success)
+                Success = true,
+                Message = "Préstamo registrado correctamente.",
+                Data = new
                 {
-                    _logger.LogError("Error al agregar el préstamo: {Mensaje}", result.Message);
-                    return new OperationResult { Success = false, Message = result.Message };
+                    prestamo.Id,
+                    prestamo.UsuarioId,
+                    prestamo.ISBN,
+                    prestamo.FechaInicio,
+                    prestamo.FechaFin,
+                    Estado = prestamo.Estado.ToString(),
+                    prestamo.EstaActivo
                 }
-
-                _logger.LogInformation("Préstamo para usuario ID: {UsuarioId} agregado correctamente.", addPrestamoDto.UsuarioId);
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Data = new
-                    {
-                        Id = prestamo.Id,
-                        ISBN = prestamo.ISBN,
-                        EjemplarId = prestamo.EjemplarId,
-                        UsuarioId = prestamo.UsuarioId,
-                        FechaInicio = prestamo.FechaInicio,
-                        FechaFin = prestamo.FechaFin,
-                        FechaDevolucion = prestamo.FechaDevolucion,
-                        Estado = prestamo.Estado.ToString(),
-                        EstaActivo = prestamo.EstaActivo
-                    },
-                    Message = "Préstamo agregado correctamente."
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Excepción al agregar préstamo.");
-                return new OperationResult { Success = false, Message = $"Error inesperado: {ex.Message}" };
-            }
+            };
         }
-
-
-
-
-
-        public async Task<OperationResult> DeleteAsync(DisablePrestamoDto disablePrestamoDto)
+        catch (Exception ex)
         {
-            if (disablePrestamoDto == null)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El objeto DisablePrestamoDto no puede ser nulo."
-                };
-            }
-
-            if (disablePrestamoDto.IdPrestamo <= 0)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El ID del préstamo debe ser mayor a cero."
-                };
-            }
-
-            try
-            {
-                _logger.LogInformation("Desactivando préstamo con ID: {Id}", disablePrestamoDto.IdPrestamo);
-
-                var result = await _PrestamoRepository.DisableAsync(disablePrestamoDto.IdPrestamo);
-
-                if (!result.Success)
-                {
-                    _logger.LogWarning("Error al desactivar préstamo: {Mensaje}", result.Message);
-                    return result;
-                }
-
-                _logger.LogInformation("Préstamo con ID {Id} desactivado correctamente.", disablePrestamoDto.IdPrestamo);
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Message = "Préstamo desactivado correctamente."
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Excepción al desactivar préstamo.");
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = $"Error inesperado: {ex.Message}"
-                };
-            }
+            _logger.LogError(ex, "Error al registrar préstamo");
+            return new OperationResult { Success = false, Message = "Error inesperado al registrar préstamo." };
         }
+    }
 
+    public async Task<OperationResult> UpdateAsync(UpdatePrestamoDto dto)
+    {
+        var dtoValidation = await _updateValidator.ValidateAsync(dto);
+        if (!dtoValidation.IsValid)
+            return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
 
-        public async Task<OperationResult> GetAllAsync()
+        var businessValidation = await _businessValidator.ValidateForUpdateAsync(dto);
+        if (!businessValidation.Success)
+            return businessValidation;
+
+        try
         {
-            try
-            {
-                _logger.LogInformation("Obteniendo todos los préstamos.");
+            var prestamo = await _prestamoRepository.GetByIdAsync(dto.IDPrestamo);
+            if (dto.FechaFin.HasValue) prestamo.FechaFin = dto.FechaFin.Value;
+            if (dto.FechaDevolucion.HasValue) prestamo.FechaDevolucion = dto.FechaDevolucion.Value;
+            if (!string.IsNullOrWhiteSpace(dto.Estado))
+                prestamo.Estado = Enum.Parse<EstadoPrestamo>(dto.Estado);
 
-                var prestamosEntidades = await _PrestamoRepository.GetAllAsync();
-
-                var prestamosDto = prestamosEntidades.Select(p => new
-                {
-                    Id = p.Id,
-                    ISBN = p.ISBN,
-                    EjemplarId = p.EjemplarId,
-                    UsuarioId = p.UsuarioId,
-                    FechaInicio = p.FechaInicio,
-                    FechaFin = p.FechaFin,
-                    FechaDevolucion = p.FechaDevolucion,
-                    Estado = p.Estado.ToString(),
-                    EstaActivo = p.EstaActivo
-                }).ToList();
-
-                _logger.LogInformation("Préstamos obtenidos correctamente.");
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Data = prestamosDto,
-                    Message = "Lista de préstamos obtenida correctamente."
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ocurrió un error al obtener los préstamos.");
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = $"Error inesperado: {ex.Message}",
-                    Data = ex.StackTrace
-                };
-            }
+            return await _prestamoRepository.UpdateAsync(prestamo);
         }
-
-       
-
-        public async Task<OperationResult> GetByIdAsync(int idPrestamo)
+        catch (Exception ex)
         {
-            if (idPrestamo <= 0)
-                return new OperationResult { Success = false, Message = "El ID del préstamo debe ser mayor a 0." };
-
-            try
-            {
-                _logger.LogInformation("Buscando préstamo con ID: {Id}", idPrestamo);
-
-                var result = await _PrestamoRepository.GetByIdAsync(idPrestamo);
-
-                if (result == null)
-                {
-                    _logger.LogWarning("Préstamo con ID {Id} no encontrado.", idPrestamo);
-                    return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
-                }
-
-                _logger.LogInformation("Préstamo con ID: {Id} encontrado exitosamente.", idPrestamo);
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Data = new
-                    {
-                        Id = result.Id,
-                        ISBN = result.ISBN,
-                        EjemplarId = result.EjemplarId,
-                        UsuarioId = result.UsuarioId,
-                        FechaInicio = result.FechaInicio,
-                        FechaFin = result.FechaFin,
-                        FechaDevolucion = result.FechaDevolucion,
-                        Estado = result.Estado.ToString(),
-                        EstaActivo = result.EstaActivo
-                    },
-                    Message = "Detalle del préstamo obtenido correctamente."
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Excepción al obtener préstamo por ID.");
-                return new OperationResult { Success = false, Message = $"Error inesperado: {ex.Message}" };
-            }
+            _logger.LogError(ex, "Error al actualizar préstamo");
+            return new OperationResult { Success = false, Message = "Error inesperado al actualizar préstamo." };
         }
+    }
 
-      
+    public async Task<OperationResult> DeleteAsync(DiseblePrestamoDto dto)
+    {
+        var dtoValidation = await _disableValidator.ValidateAsync(dto);
+        if (!dtoValidation.IsValid)
+            return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
 
-        public async Task<OperationResult> UpdateAsync(UpdatePrestamoDto updatePrestamoDto)
+        var businessValidation = await _businessValidator.ValidateForDisableAsync(dto);
+        if (!businessValidation.Success)
+            return businessValidation;
+
+        try
         {
-            if (updatePrestamoDto == null)
-                return new OperationResult { Success = false, Message = "El objeto UpdatePrestamoDto no puede ser nulo." };
-
-            try
-            {
-                _logger.LogInformation("Actualizando préstamo con ID: {Id}", updatePrestamoDto.IDPrestamo);
-
-                var prestamoExistente = await _PrestamoRepository.GetByIdAsync(updatePrestamoDto.IDPrestamo);
-
-                if (prestamoExistente == null)
-                    return new OperationResult { Success = false, Message = "El préstamo que desea actualizar no existe." };
-
-                prestamoExistente.FechaFin = updatePrestamoDto.FechaFin;
-                prestamoExistente.FechaDevolucion = updatePrestamoDto.FechaDevolucion;
-                prestamoExistente.Estado = (EstadoPrestamo)Enum.Parse(typeof(EstadoPrestamo), updatePrestamoDto.Estado);
-
-                var result = await _PrestamoRepository.UpdateAsync(prestamoExistente);
-
-                if (!result.Success)
-                {
-                    _logger.LogWarning("Error al actualizar préstamo: {Mensaje}", result.Message);
-                    return new OperationResult { Success = false, Message = result.Message };
-                }
-
-                _logger.LogInformation("Préstamo con ID: {Id} actualizado correctamente.", updatePrestamoDto.IDPrestamo);
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Data = new
-                    {
-                        Id = prestamoExistente.Id,
-                        ISBN = prestamoExistente.ISBN,
-                        EjemplarId = prestamoExistente.EjemplarId,
-                        UsuarioId = prestamoExistente.UsuarioId,
-                        FechaInicio = prestamoExistente.FechaInicio,
-                        FechaFin = prestamoExistente.FechaFin,
-                        FechaDevolucion = prestamoExistente.FechaDevolucion,
-                        Estado = prestamoExistente.Estado.ToString(),
-                        EstaActivo = prestamoExistente.EstaActivo
-                    },
-                    Message = "Préstamo actualizado correctamente."
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Excepción al actualizar préstamo.");
-                return new OperationResult { Success = false, Message = $"Error inesperado al actualizar el préstamo: {ex.Message}" };
-            }
+            return await _prestamoRepository.DisableAsync(dto.IDPrestamo);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al desactivar préstamo");
+            return new OperationResult { Success = false, Message = "Error inesperado al desactivar préstamo." };
+        }
+    }
+
+    public async Task<OperationResult> RegistrarDevolucionAsync(int idPrestamo)
+    {
+        var businessValidation = await _businessValidator.ValidateForRegistrarDevolucionAsync(idPrestamo);
+        if (!businessValidation.Success)
+            return businessValidation;
+
+        try
+        {
+            var prestamo = await _prestamoRepository.GetByIdAsync(idPrestamo);
+            prestamo.RegistrarDevolucion();
+            return await _prestamoRepository.UpdateAsync(prestamo);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al registrar devolución");
+            return new OperationResult { Success = false, Message = "Error inesperado al registrar devolución." };
+        }
+    }
+
+    public async Task<OperationResult> ActualizarEstadoPrestamoPorVencimientoAsync(int idPrestamo)
+    {
+        try
+        {
+            var prestamo = await _prestamoRepository.GetByIdAsync(idPrestamo);
+            if (prestamo == null)
+                return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
+
+            prestamo.ActualizarEstadoSiEstaAtrasado();
+            return await _prestamoRepository.UpdateAsync(prestamo);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al actualizar estado por vencimiento");
+            return new OperationResult { Success = false, Message = "Error inesperado al actualizar estado." };
+        }
+    }
+
+    public async Task<OperationResult> ObtenerPrestamosActivosPorUsuarioAsync(int usuarioId)
+    {
+        var prestamos = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(usuarioId);
+        var data = prestamos.Select(p => new
+        {
+            p.Id,
+            p.UsuarioId,
+            p.ISBN,
+            p.FechaInicio,
+            p.FechaFin,
+            p.FechaDevolucion,
+            Estado = p.Estado.ToString(),
+            p.EstaActivo
+        });
+
+        return new OperationResult { Success = true, Data = data };
+    }
+
+    public async Task<OperationResult> GetAllAsync()
+    {
+        var prestamos = await _prestamoRepository.GetAllAsync();
+        var data = prestamos.Select(p => new
+        {
+            p.Id,
+            p.UsuarioId,
+            p.ISBN,
+            p.FechaInicio,
+            p.FechaFin,
+            p.FechaDevolucion,
+            Estado = p.Estado.ToString(),
+            p.EstaActivo
+        });
+
+        return new OperationResult { Success = true, Data = data };
+    }
+
+    public async Task<OperationResult> GetByIdAsync(int id)
+    {
+        if (id <= 0)
+            return new OperationResult { Success = false, Message = "ID inválido." };
+
+        var prestamo = await _prestamoRepository.GetByIdAsync(id);
+        if (prestamo == null)
+            return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
+
+        return new OperationResult
+        {
+            Success = true,
+            Data = new
+            {
+                prestamo.Id,
+                prestamo.UsuarioId,
+                prestamo.ISBN,
+                prestamo.FechaInicio,
+                prestamo.FechaFin,
+                prestamo.FechaDevolucion,
+                Estado = prestamo.Estado.ToString(),
+                prestamo.EstaActivo
+            }
+        };
+    }
+
+    public async Task<bool> PuedePrestarAsync(int usuarioId)
+    {
+        var prestamos = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(usuarioId);
+        return prestamos.All(p => p.Estado == EstadoPrestamo.Devuelto || p.Estado == EstadoPrestamo.DevueltoConAtraso);
     }
 }

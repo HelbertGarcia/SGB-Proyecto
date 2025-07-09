@@ -5,43 +5,40 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SGB.Domain.Entities.Penalizaciones
 {
-    [Table("Penalizaciones")] // Nombre exacto de la tabla
+    [Table("Penalizaciones")]
     public class Penalizacion : BaseEntityFecha, IEstaActivo
     {
         [Key]
-        [Column("IDPenalizacion")]   // 👈 Coincide con tu tabla
+        [Column("IDPenalizacion")]
         public int Id { get; set; }
 
+        [Required]
         [Column("IDUsuario")]
         public int IDUsuario { get; set; }
 
+        [Required]
+        [MaxLength(200)]
         [Column("Motivo")]
-        public string Motivo { get; set; } = string.Empty;
+        public string Motivo { get; private set; } = string.Empty;
 
+        [Required]
         [Column("FechaInicio")]
         public DateTime FechaInicio { get; set; }
 
+        [Required]
         [Column("FechaFin")]
-        public DateTime FechaFin { get; set; }
+        public DateTime FechaFin { get; private set; }
+
+        [Column("FechaDevolucion")]
+        public DateTime? FechaDevolucion { get; set; }
+
+        [Column("Monto")]
+        public decimal? Monto { get; set; } 
 
         [Column("EstaActiva")]
         public bool EstaActivo { get; set; } = true;
 
-        [Column("FechaCreacion")]
-        public new DateTime FechaCreacion { get; set; }  // Usa `new` para sobrescribir BaseEntityFecha si aplica
-
-        [Column("FechaActualizacion")]
-        public new DateTime FechaActualizacion { get; set; }
-
-        // Si tienes estas columnas en la tabla, inclúyelas:
-        [Column("FechaDevolucion")]
-        public DateTime? FechaDevolucion { get; set; }
-
-
-
-    
-
-        // 👇 Constructor sin parámetros para EF Core
+        // Constructor sin parámetros requerido por EF Core
         private Penalizacion() { }
 
         public Penalizacion(int idUsuario, string motivo, DateTime fechaInicio, DateTime fechaFin)
@@ -53,9 +50,11 @@ namespace SGB.Domain.Entities.Penalizaciones
             FechaInicio = fechaInicio;
             FechaFin = fechaFin;
 
-            Habilitar(); // Marca como activa al crear
-            ActualizarFechaModificacion(); // Actualiza FechaActualizacion
+            Habilitar();
+            ActualizarFechaModificacion();
         }
+
+        #region Comportamientos de dominio
 
         public void DesactivarPenalizacion()
         {
@@ -68,10 +67,10 @@ namespace SGB.Domain.Entities.Penalizaciones
 
         public void ExtenderPenalizacion(DateTime nuevaFechaFin)
         {
-            ValidarFechas(FechaInicio, nuevaFechaFin);
             if (nuevaFechaFin <= FechaFin)
-                throw new ArgumentException("La nueva fecha de fin debe ser posterior a la fecha de fin actual.", nameof(nuevaFechaFin));
+                throw new ArgumentException("La nueva fecha debe ser posterior a la actual.", nameof(nuevaFechaFin));
 
+            ValidarFechas(FechaInicio, nuevaFechaFin);
             FechaFin = nuevaFechaFin;
             ActualizarFechaModificacion();
         }
@@ -82,10 +81,19 @@ namespace SGB.Domain.Entities.Penalizaciones
             ActualizarFechaModificacion();
         }
 
+        public void Deshabilitar() => EstaActivo = false;
+
+        public void Habilitar() => EstaActivo = true;
+
+        #endregion
+
+        #region Validaciones
+
         private void ValidarYAsignarIdUsuario(int idUsuario)
         {
             if (idUsuario <= 0)
-                throw new ArgumentException("El ID de usuario no es válido.", nameof(idUsuario));
+                throw new ArgumentException("El ID del usuario no es válido.", nameof(idUsuario));
+
             IDUsuario = idUsuario;
         }
 
@@ -93,19 +101,16 @@ namespace SGB.Domain.Entities.Penalizaciones
         {
             if (string.IsNullOrWhiteSpace(motivo) || motivo.Length > 200)
                 throw new ArgumentException("El motivo de la penalización es inválido.", nameof(motivo));
+
             Motivo = motivo.Trim();
         }
 
         private void ValidarFechas(DateTime fechaInicio, DateTime fechaFin)
         {
             if (fechaInicio >= fechaFin)
-                throw new ArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.", nameof(fechaInicio));
+                throw new ArgumentException("La fecha de inicio debe ser anterior a la de fin.");
         }
 
-        private void ActualizarFechaModificacion() => FechaActualizacion = DateTime.UtcNow;
-
-        public void Deshabilitar() => EstaActivo = false;
-
-        public void Habilitar() => EstaActivo = true;
+        #endregion
     }
 }

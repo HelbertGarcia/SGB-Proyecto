@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
-    public class  AddPrestamoDto : PrestamoDTO
+    public class  AddPrestamoDto : PrestamoDto
     {
-       
+      public DateTime FechaInicio { get; set; } // Fecha del préstamo
+      public DateTime FechaFin { get; set; }     // Fecha límite para devolver
 
 
     }

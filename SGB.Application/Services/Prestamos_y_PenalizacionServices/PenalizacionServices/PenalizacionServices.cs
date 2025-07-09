@@ -1,356 +1,287 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Application.Base.ValidatorServices.Penalizacion;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
-using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
-using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Penalizaciones;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices
 {
-
-
-    public sealed class PenalizacionServices : IPenalizacionServices
+    public sealed class PenalizacionService : IPenalizacionServices
     {
-        private readonly IPenalizacionRepository _PenalizacionRepository;
-
-        private readonly ILogger<PenalizacionServices> _logger;
+        private readonly IPenalizacionRepository _penalizacionRepository;
+        private readonly IPrestamoRepository _prestamoRepository;
+        private readonly ILogger<PenalizacionService> _logger;
         private readonly IConfiguration _configuration;
-        public PenalizacionServices(IPenalizacionRepository PenalizacionRepository, ILogger<PenalizacionServices> logger, IConfiguration configuration)
+        private readonly IValidator<AddPenalizacionDto> _addValidator;
+        private readonly IValidator<UpdatePenalizacionDto> _updateValidator;
+        private readonly IValidator<DisablePenalizacionDto> _disableValidator;
+        private readonly IPenalizacionBusinessValidator _businessValidator;
+
+        public PenalizacionService(
+            IPenalizacionRepository penalizacionRepository,
+            IPrestamoRepository prestamoRepository,
+            ILogger<PenalizacionService> logger,
+            IConfiguration configuration,
+            IValidator<AddPenalizacionDto> addValidator,
+            IValidator<UpdatePenalizacionDto> updateValidator,
+            IValidator<DisablePenalizacionDto> disableValidator,
+            IPenalizacionBusinessValidator businessValidator)
         {
-            _PenalizacionRepository = PenalizacionRepository;
+            _penalizacionRepository = penalizacionRepository;
+            _prestamoRepository = prestamoRepository;
             _logger = logger;
             _configuration = configuration;
-
-
+            _addValidator = addValidator;
+            _updateValidator = updateValidator;
+            _disableValidator = disableValidator;
+            _businessValidator = businessValidator;
         }
 
-       
-
-        public async Task<OperationResult> AddAsync(AddPenalizacionDto addPenalizacionDto)
+        public async Task<OperationResult> AddAsync(AddPenalizacionDto dto)
         {
-            if (addPenalizacionDto == null)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El objeto AddPenalizacionDto no puede ser nulo."
-                };
-            }
+            var dtoValidation = await _addValidator.ValidateAsync(dto);
+            if (!dtoValidation.IsValid)
+                return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
 
-            if (addPenalizacionDto.UsuarioId <= 0)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El ID de usuario no es válido."
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(addPenalizacionDto.Motivo) || addPenalizacionDto.Motivo.Length > 200)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El motivo de la penalización es inválido, pasa el liminte de letras."
-                };
-            }
-
-            if (addPenalizacionDto.FechaInicio >= addPenalizacionDto.FechaFin)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "La fecha de inicio debe ser anterior a la fecha de fin."
-                };
-            }
+            var businessValidation = await _businessValidator.ValidateForAddAsync(dto);
+            if (!businessValidation.Success)
+                return businessValidation;
 
             try
             {
+                var penalizacion = new Penalizacion(dto.UsuarioId, dto.Motivo, dto.FechaInicio, dto.FechaFin);
+                var result = await _penalizacionRepository.AddAsync(penalizacion);
+
+                if (!result.Success)
+                    return result;
+
+                return new OperationResult
+                {
+                    Success = true,
+                    Message = "Penalización registrada correctamente.",
+                    Data = new
+                    {
+                        penalizacion.Id,
+                        penalizacion.IDUsuario,
+                        penalizacion.Motivo,
+                        penalizacion.FechaInicio,
+                        penalizacion.FechaFin,
+                        penalizacion.FechaDevolucion,
+                        penalizacion.EstaActivo
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al registrar penalización");
+                return new OperationResult { Success = false, Message = "Error inesperado al registrar penalización." };
+            }
+        }
+
+        public async Task<OperationResult> UpdateAsync(UpdatePenalizacionDto dto)
+        {
+            var dtoValidation = await _updateValidator.ValidateAsync(dto);
+            if (!dtoValidation.IsValid)
+                return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+
+            var businessValidation = await _businessValidator.ValidateForUpdateAsync(dto);
+            if (!businessValidation.Success)
+                return businessValidation;
+
+            try
+            {
+                var penalizacion = await _penalizacionRepository.GetByIdAsync(dto.IDPenalizacion);
+                if (!string.IsNullOrWhiteSpace(dto.Motivo))
+                    penalizacion.CambiarMotivo(dto.Motivo);
+
+                if (dto.FechaInicio.HasValue)
+                    penalizacion.FechaInicio = dto.FechaInicio.Value;
+
+                if (dto.FechaFin.HasValue)
+                    penalizacion.ExtenderPenalizacion(dto.FechaFin.Value);
+
+                if (dto.FechaDevolucion.HasValue)
+                    penalizacion.FechaDevolucion = dto.FechaDevolucion.Value;
+
+                var result = await _penalizacionRepository.UpdateAsync(penalizacion);
+                if (!result.Success)
+                    return result;
+
+                return new OperationResult
+                {
+                    Success = true,
+                    Message = "Penalización actualizada correctamente.",
+                    Data = new
+                    {
+                        penalizacion.Id,
+                        penalizacion.IDUsuario,
+                        penalizacion.Motivo,
+                        penalizacion.FechaInicio,
+                        penalizacion.FechaFin,
+                        penalizacion.FechaDevolucion,
+                        penalizacion.EstaActivo
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al actualizar penalización");
+                return new OperationResult { Success = false, Message = "Error inesperado al actualizar penalización." };
+            }
+        }
+
+        public async Task<OperationResult> DeleteAsync(DisablePenalizacionDto dto)
+        {
+            var dtoValidation = await _disableValidator.ValidateAsync(dto);
+            if (!dtoValidation.IsValid)
+                return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+
+            var businessValidation = await _businessValidator.ValidateForDisableAsync(dto);
+            if (!businessValidation.Success)
+                return businessValidation;
+
+            try
+            {
+                var result = await _penalizacionRepository.DisableAsync(dto.IDPenalizacion);
+                if (!result.Success)
+                    return result;
+
+                return new OperationResult { Success = true, Message = "Penalización desactivada correctamente." };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al desactivar penalización");
+                return new OperationResult { Success = false, Message = "Error inesperado al desactivar penalización." };
+            }
+        }
+
+        public async Task<OperationResult> CalcularPenalizacionPorRetrasoAsync(int idPrestamo)
+        {
+            var businessValidation = await _businessValidator.ValidateForCalcularPenalizacionAsync(idPrestamo);
+            if (!businessValidation.Success)
+                return businessValidation;
+
+            try
+            {
+                var prestamo = await _prestamoRepository.GetByIdAsync(idPrestamo);
+                var diasRetraso = (prestamo.FechaDevolucion.Value - prestamo.FechaFin).Days;
+                var fechaInicio = prestamo.FechaFin.AddDays(1);
+                var fechaFin = fechaInicio.AddDays(diasRetraso);
+
                 var penalizacion = new Penalizacion(
-                    addPenalizacionDto.UsuarioId,
-                    addPenalizacionDto.Motivo,
-                    addPenalizacionDto.FechaInicio,
-                    addPenalizacionDto.FechaFin
-                   
+                    prestamo.UsuarioId,
+                    $"Retraso de {diasRetraso} día(s) en devolución del libro ISBN {prestamo.ISBN}",
+                    fechaInicio,
+                    fechaFin
                 );
 
-                var result = await _PenalizacionRepository.AddAsync(penalizacion);
-
+                var result = await _penalizacionRepository.AddAsync(penalizacion);
                 if (!result.Success)
-                {
-                    _logger.LogError("Error al agregar la penalización: {Mensaje}", result.Message);
-                    return new OperationResult
-                    {
-                        Success = false,
-                        Message = result.Message
-                    };
-                }
-
-                _logger.LogInformation("Penalización para usuario ID: {UsuarioId} agregada correctamente.", addPenalizacionDto.UsuarioId);
+                    return result;
 
                 return new OperationResult
                 {
                     Success = true,
-                    Data = penalizacion,
-                    Message = "Penalización agregada correctamente."
+                    Message = "Penalización generada correctamente.",
+                    Data = new
+                    {
+                        penalizacion.Id,
+                        penalizacion.IDUsuario,
+                        penalizacion.Motivo,
+                        penalizacion.FechaInicio,
+                        penalizacion.FechaFin,
+                        penalizacion.EstaActivo
+                    }
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Excepción al agregar penalización.");
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = $"Error inesperado: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error al calcular penalización");
+                return new OperationResult { Success = false, Message = "Error inesperado al calcular penalización." };
             }
         }
 
-        
-
-        public async Task<OperationResult> DeleteAsync(DisablePenalizacionDto disablePenalizacionDto)
+        public async Task<OperationResult> GetAllAsync()
         {
-            if (disablePenalizacionDto == null)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El objeto DisablePenalizacionDto no puede ser nulo."
-                };
-            }
-
-            _logger.LogInformation("Iniciando desactivación de penalización con ID: {Id}", disablePenalizacionDto.IDPenalizacion);
-
             try
             {
-                var result = await _PenalizacionRepository.DisableAsync(disablePenalizacionDto.IDPenalizacion);
-
-                if (!result.Success)
+                var penalizaciones = await _penalizacionRepository.GetAllAsync();
+                var data = penalizaciones.Select(p => new
                 {
-                    _logger.LogError("Error al desactivar la penalización: {Mensaje}", result.Message);
-                    return new OperationResult
-                    {
-                        Success = false,
-                        Message = result.Message
-                    };
-                }
+                    p.Id,
+                    p.IDUsuario,
+                    p.Motivo,
+                    p.FechaInicio,
+                    p.FechaFin,
+                    p.FechaDevolucion,
+                    p.EstaActivo
+                }).ToList();
 
-                _logger.LogInformation("Penalización con ID: {Id} desactivada correctamente.", disablePenalizacionDto.IDPenalizacion);
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Message = "Penalización desactivada correctamente."
-                };
+                return new OperationResult { Success = true, Data = data, Message = "Penalizaciones obtenidas correctamente." };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Excepción al desactivar penalización.");
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = $"Error inesperado: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error al obtener penalizaciones");
+                return new OperationResult { Success = false, Message = "Error inesperado al obtener penalizaciones." };
             }
         }
 
-        
-
-        public async Task<OperationResult> GetAllAsync( )
+        public async Task<OperationResult> GetByIdAsync(int id)
         {
-            if (GetAllAsync == null)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El objeto GetPenalizacionDto no puede ser nulo."
-                };
-            }
-
-            _logger.LogInformation("Obteniendo penalizaciones según los criterios proporcionados.");
+            if (id <= 0)
+                return new OperationResult { Success = false, Message = "ID inválido." };
 
             try
             {
-                var result = await _PenalizacionRepository.GetAllAsync();
-
-                if (result == null || !result.Any())
-                {
-                    _logger.LogWarning("No se encontraron penalizaciones.");
-                    return new OperationResult
-                    {
-                        Success = false,
-                        Message = "No se encontraron penalizaciones."
-                    };
-                }
-
-                _logger.LogInformation("Listado de penalizaciones obtenido correctamente.");
+                var penalizacion = await _penalizacionRepository.GetByIdAsync(id);
+                if (penalizacion == null)
+                    return new OperationResult { Success = false, Message = "Penalización no encontrada." };
 
                 return new OperationResult
                 {
                     Success = true,
-                    Data = result,
-                    Message = "Penalizaciones obtenidas correctamente."
+                    Message = "Penalización obtenida correctamente.",
+                    Data = new
+                    {
+                        penalizacion.Id,
+                        penalizacion.IDUsuario,
+                        penalizacion.Motivo,
+                        penalizacion.FechaInicio,
+                        penalizacion.FechaFin,
+                        penalizacion.FechaDevolucion,
+                        penalizacion.EstaActivo
+                    }
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Excepción al obtener penalizaciones.");
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = $"Error inesperado: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error al obtener penalización por ID");
+                return new OperationResult { Success = false, Message = "Error inesperado al buscar penalización." };
             }
         }
 
-       
-
-        public async Task<OperationResult> GetByIdAsync(int idPenalizacion)
+        public async Task<OperationResult> ObtenerPenalizacionesActivasPorUsuarioAsync(int usuarioId)
         {
-            if (idPenalizacion <= 0)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El ID de la penalización debe ser mayor a 0."
-                };
-            }
-
-            _logger.LogInformation("Buscando penalización con ID: {Id}", idPenalizacion);
+            if (usuarioId <= 0)
+                return new OperationResult { Success = false, Message = "ID inválido." };
 
             try
             {
-                var result = await _PenalizacionRepository.GetByIdAsync(idPenalizacion);
-
-                if (result == null)
-                {
-                    _logger.LogWarning("Penalización con ID {Id} no encontrada.", idPenalizacion);
-                    return new OperationResult
-                    {
-                        Success = false,
-                        Message = "Penalización no encontrada."
-                    };
-                }
-
-                _logger.LogInformation("Penalización con ID: {Id} encontrada correctamente.", idPenalizacion);
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Data = result,
-                    Message = "Detalle de penalización obtenido correctamente."
-                };
+                var result = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(usuarioId);
+                return new OperationResult { Success = true, Message = result.Message, Data = result.Data };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Excepción al obtener penalización por ID.");
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = $"Error inesperado: {ex.Message}"
-                };
+                _logger.LogError(ex, "Error al obtener penalizaciones activas");
+                return new OperationResult { Success = false, Message = "Error inesperado al obtener penalizaciones activas." };
             }
         }
-
-       
-
-        public async Task<OperationResult> UpdateAsync(UpdatePenalizacionDto updatePenalizacionDto)
-        {
-            if (updatePenalizacionDto == null)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El objeto UpdatePenalizacionDto no puede ser nulo."
-                };
-            }
-
-            try
-            {
-                _logger.LogInformation("Actualizando penalización con ID: {Id}", updatePenalizacionDto.IDPenalizacion);
-
-                var penalizacionExistente = await _PenalizacionRepository.GetByIdAsync(updatePenalizacionDto.IDPenalizacion);
-
-                if (penalizacionExistente == null)
-                {
-                    return new OperationResult
-                    {
-                        Success = false,
-                        Message = "La penalización que desea actualizar no existe."
-                    };
-                }
-
-                // Solo actualiza campos si vienen en el DTO
-
-                if (!string.IsNullOrWhiteSpace(updatePenalizacionDto.Motivo))
-                {
-                    penalizacionExistente.CambiarMotivo(updatePenalizacionDto.Motivo);
-                }
-
-                if (updatePenalizacionDto.FechaInicio.HasValue)
-                {
-                    penalizacionExistente.FechaInicio = updatePenalizacionDto.FechaInicio.Value;
-                }
-
-                if (updatePenalizacionDto.FechaFin.HasValue)
-                {
-                    penalizacionExistente.ExtenderPenalizacion(updatePenalizacionDto.FechaFin.Value);
-                }
-
-                if (updatePenalizacionDto.FechaDevolucion.HasValue)
-                {
-                    penalizacionExistente.FechaDevolucion = updatePenalizacionDto.FechaDevolucion.Value;
-                }
-
-                if (updatePenalizacionDto.EstaActivo.HasValue)
-                {
-                    if (updatePenalizacionDto.EstaActivo.Value)
-                        penalizacionExistente.Habilitar();
-                    else
-                        penalizacionExistente.Deshabilitar();
-                }
-
-                var result = await _PenalizacionRepository.UpdateAsync(penalizacionExistente);
-
-                if (!result.Success)
-                {
-                    _logger.LogWarning("Error al actualizar penalización: {Mensaje}", result.Message);
-                    return new OperationResult
-                    {
-                        Success = false,
-                        Message = result.Message
-                    };
-                }
-
-                _logger.LogInformation("Penalización con ID: {Id} actualizada correctamente.", updatePenalizacionDto.IDPenalizacion);
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Data = penalizacionExistente,
-                    Message = "Penalización actualizada correctamente."
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Excepción al actualizar penalización.");
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = $"Error inesperado al actualizar la penalización: {ex.Message}"
-                };
-            }
-      
-       }
     }
-
- }
-
+}

@@ -7,13 +7,11 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
-    public abstract class PrestamoDTO :  DtoBase
+    public abstract class PrestamoDto : DtoBase
     {
 
-        public string? ISBN { get; set; }
-        public int EjemplarId { get; set; }
         public int UsuarioId { get; set; }
-        public int DiasDePrestamo { get; set; }
+        public string ISBN { get; set; } = string.Empty;
 
 
 

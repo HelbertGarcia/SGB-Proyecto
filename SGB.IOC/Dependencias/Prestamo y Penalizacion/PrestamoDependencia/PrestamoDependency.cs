@@ -1,15 +1,19 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion;
 using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos;
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto.ValidatosDto;
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices;
-using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
+//using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
 using SGB.Persistence.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SGB.Application.Base.ValidatorServices.Prestamos;
 
 namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia
 {
@@ -21,6 +25,16 @@ namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia
           
             services.AddScoped<IPrestamoRepository, PrestamoRepository>();
             services.AddTransient<IPrestamosServices, PrestamoService>();
+
+
+            // Validadores DTOs con FluentValidation
+            services.AddScoped<IValidator<AddPrestamoDto>, AddPrestamoDtoValidator>();
+            services.AddScoped<IValidator<UpdatePrestamoDto>, UpdatePrestamoDtoValidator>();
+            services.AddScoped<IValidator<DiseblePrestamoDto>, DisablePrestamoDtoValidator>();
+
+
+            // Validator Services (Reglas de negocio)
+            services.AddScoped<IPrestamoBusinessValidator, PrestamoBusinessValidator>();
         }
     }
 }

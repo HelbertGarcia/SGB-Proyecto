@@ -16,6 +16,7 @@ namespace SGB.Application.Contracts.Repository.Interfaces
         Task<OperationResult> GetFechaVencimientoByPrestamoIdAsync(int prestamoId);
 
         Task<OperationResult> GetEstadosPrestamosPorUsuarioAsync(int usuarioId);
-       
+
+        Task<List<Prestamo>> GetPrestamosActivosPorUsuarioAsync(int usuarioId);
     }
 }

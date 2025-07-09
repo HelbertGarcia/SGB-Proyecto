@@ -13,8 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Base\Validator\Penalizacion\" />
-    <Folder Include="Base\Validator\Prestamos\" />
     <Folder Include="Contracts\Service\ILibroServices\" />
     <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
     <Folder Include="Contracts\Service\IUsuarioServices\" />
@@ -26,6 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
   </ItemGroup>

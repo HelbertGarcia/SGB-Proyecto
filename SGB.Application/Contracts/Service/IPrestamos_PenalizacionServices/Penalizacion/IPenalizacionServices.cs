@@ -12,8 +12,16 @@ namespace SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Pena
 {
     public interface IPenalizacionServices  : IBaseService<AddPenalizacionDto, UpdatePenalizacionDto, DisablePenalizacionDto>
     {
-       
-        
 
+        // RF3.4: Calcular penalizaciones por retraso (por ejemplo al registrar devolución)
+        Task<OperationResult> CalcularPenalizacionPorRetrasoAsync(int idPrestamo);
+
+
+        // Obtener penalizaciones activas de un usuario
+        Task<OperationResult> ObtenerPenalizacionesActivasPorUsuarioAsync(int usuarioId);
     }
+
+
+
 }
+

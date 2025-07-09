@@ -8,15 +8,17 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
-    public class UpdatePenalizacionDto : PenalizacionDTO
+    public class UpdatePenalizacionDto : PenalizacionDto
     {
         public int IDPenalizacion { get; set; }
         public DateTime? FechaInicio { get; set; }
         public DateTime? FechaFin { get; set; }
-
         public DateTime? FechaDevolucion { get; set; }
 
-        public bool? EstaActivo { get; set; }
+
+
+        
+       
 
     }
 }
