@@ -1,15 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Application.Interfaces;
 using SGB.Domain.Base;
-using SGB.Domain.Entities.Usuario;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
-using SGB.Persistence.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace SGB.Persistence.Repositories
 {
     public class PersonaRepository : BaseRepository<Persona>, IPersonaRepository

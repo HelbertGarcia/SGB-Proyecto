@@ -7,11 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SGB.Application\SGB.Application.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dependencies\" />
+    <ProjectReference Include="..\SGB.Application\SGB.Application.csproj" />
+    <ProjectReference Include="..\SGB.Persistence\SGB.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

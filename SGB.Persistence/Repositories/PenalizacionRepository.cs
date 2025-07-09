@@ -5,11 +5,7 @@ using SGB.Domain.Base;
 using SGB.Domain.Entities.Penalizaciones;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
-using SGB.Persistence.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
+using SGB.Application.Interfaces;
 namespace SGB.Persistence.Repositories
 {
     public class PenalizacionRepository : BaseRepository<Penalizacion>, IPenalizacionRepository
