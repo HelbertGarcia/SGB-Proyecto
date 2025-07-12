@@ -8,7 +8,7 @@ using SGB.Persistence.Repositories;
 using FluentValidation;
 
 namespace SGB.IOC.Dependencies.ConfiguracionDependency
-{
+{/////
     public static class ConfiguracionDependency
     {
         public static IServiceCollection AddConfiguracionDependency(this IServiceCollection service)
