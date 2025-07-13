@@ -20,7 +20,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var resultado = await _categoriaService.GetAllAsync();
-            if (!resultado.Success) return BadRequest(resultado);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
             return Ok(resultado.Data);
         }
 
@@ -28,7 +28,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var resultado = await _categoriaService.GetByIdAsync(id);
-            if (!resultado.Success || resultado.Data == null) return NotFound(resultado);
+            if (!resultado.IsSuccess || resultado.Data == null) return NotFound(resultado);
             return Ok(resultado.Data);
         }
 
@@ -38,7 +38,7 @@ namespace SGB.Api.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var resultado = await _categoriaService.AddAsync(dto);
-            if (!resultado.Success) return BadRequest(resultado);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
 
             var categoriaCreada = (CategoriaDto)resultado.Data;
             return CreatedAtAction(nameof(GetById), new { id = categoriaCreada.Id }, categoriaCreada);
@@ -50,7 +50,7 @@ namespace SGB.Api.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var resultado = await _categoriaService.UpdateAsync(id, dto);
-            if (!resultado.Success)
+            if (!resultado.IsSuccess)
             {
                 if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
@@ -62,7 +62,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             var resultado = await _categoriaService.DeleteAsync(id);
-            if (!resultado.Success)
+            if (!resultado.IsSuccess)
             {
                 if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);

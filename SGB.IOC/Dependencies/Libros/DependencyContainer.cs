@@ -27,7 +27,6 @@ namespace SGB.IOC
             services.AddTransient<ILibroBusinessValidator, LibroBusinessValidator>();
             services.AddTransient<ILibroService, LibroService>();
 
-            // Módulo de Categorías
             services.AddTransient<ICategoriaBusinessValidator, CategoriaBusinessValidator>();
             services.AddTransient<ICategoriaService, CategoriaService>();
 

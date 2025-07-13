@@ -20,7 +20,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var resultado = await _libroService.GetAllAsync();
-            if (!resultado.Success) return BadRequest(resultado);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
             return Ok(resultado.Data);
         }
 
@@ -28,7 +28,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var resultado = await _libroService.GetByIdAsync(id);
-            if (!resultado.Success || resultado.Data == null) return NotFound(resultado);
+            if (!resultado.IsSuccess || resultado.Data == null) return NotFound(resultado);
             return Ok(resultado.Data);
         }
 
@@ -36,7 +36,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> BuscarPorIsbn(string isbn)
         {
             var resultado = await _libroService.BuscarPorIsbnAsync(isbn);
-            if (!resultado.Success) return BadRequest(resultado);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
             return Ok(resultado.Data);
         }
 
@@ -46,7 +46,7 @@ namespace SGB.Api.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var resultado = await _libroService.AddAsync(libroDto);
-            if (!resultado.Success) return BadRequest(resultado);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
 
             var libroCreado = (LibroDto)resultado.Data;
             return CreatedAtAction(nameof(GetById), new { id = libroCreado.Id }, libroCreado);
@@ -58,7 +58,7 @@ namespace SGB.Api.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var resultado = await _libroService.UpdateAsync(id, libroDto);
-            if (!resultado.Success)
+            if (!resultado.IsSuccess)
             {
                 if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
@@ -70,7 +70,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             var resultado = await _libroService.DeleteAsync(id);
-            if (!resultado.Success)
+            if (!resultado.IsSuccess)
             {
                 if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
