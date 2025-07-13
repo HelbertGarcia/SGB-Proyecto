@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SGB.Application.Base.ValidatorServices.Penalizacion;
+using SGB.Application.Contracts.Interfaces.Mappers.PenalizacionMappers;
+using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Penalizacion;
 using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Penalizaciones;
@@ -23,6 +24,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
         private readonly IValidator<UpdatePenalizacionDto> _updateValidator;
         private readonly IValidator<DisablePenalizacionDto> _disableValidator;
         private readonly IPenalizacionBusinessValidator _businessValidator;
+        private readonly IPenalizacionMapper _mapper;
 
         public PenalizacionService(
             IPenalizacionRepository penalizacionRepository,
@@ -32,7 +34,8 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             IValidator<AddPenalizacionDto> addValidator,
             IValidator<UpdatePenalizacionDto> updateValidator,
             IValidator<DisablePenalizacionDto> disableValidator,
-            IPenalizacionBusinessValidator businessValidator)
+            IPenalizacionBusinessValidator businessValidator,
+            IPenalizacionMapper mapper)
         {
             _penalizacionRepository = penalizacionRepository;
             _prestamoRepository = prestamoRepository;
@@ -42,6 +45,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             _updateValidator = updateValidator;
             _disableValidator = disableValidator;
             _businessValidator = businessValidator;
+            _mapper = mapper;
         }
 
         public async Task<OperationResult> AddAsync(AddPenalizacionDto dto)
@@ -56,7 +60,8 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
 
             try
             {
-                var penalizacion = new Penalizacion(dto.UsuarioId, dto.Motivo, dto.FechaInicio, dto.FechaFin);
+                var penalizacion = _mapper.MapFromDto(dto);
+
                 var result = await _penalizacionRepository.AddAsync(penalizacion);
 
                 if (!result.Success)
@@ -66,16 +71,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                 {
                     Success = true,
                     Message = "Penalización registrada correctamente.",
-                    Data = new
-                    {
-                        penalizacion.Id,
-                        penalizacion.IDUsuario,
-                        penalizacion.Motivo,
-                        penalizacion.FechaInicio,
-                        penalizacion.FechaFin,
-                        penalizacion.FechaDevolucion,
-                        penalizacion.EstaActivo
-                    }
+                    Data = _mapper.MapToDto(penalizacion)
                 };
             }
             catch (Exception ex)
@@ -98,17 +94,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             try
             {
                 var penalizacion = await _penalizacionRepository.GetByIdAsync(dto.IDPenalizacion);
-                if (!string.IsNullOrWhiteSpace(dto.Motivo))
-                    penalizacion.CambiarMotivo(dto.Motivo);
-
-                if (dto.FechaInicio.HasValue)
-                    penalizacion.FechaInicio = dto.FechaInicio.Value;
-
-                if (dto.FechaFin.HasValue)
-                    penalizacion.ExtenderPenalizacion(dto.FechaFin.Value);
-
-                if (dto.FechaDevolucion.HasValue)
-                    penalizacion.FechaDevolucion = dto.FechaDevolucion.Value;
+                _mapper.ApplyUpdateDto(penalizacion, dto);
 
                 var result = await _penalizacionRepository.UpdateAsync(penalizacion);
                 if (!result.Success)
@@ -118,16 +104,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                 {
                     Success = true,
                     Message = "Penalización actualizada correctamente.",
-                    Data = new
-                    {
-                        penalizacion.Id,
-                        penalizacion.IDUsuario,
-                        penalizacion.Motivo,
-                        penalizacion.FechaInicio,
-                        penalizacion.FechaFin,
-                        penalizacion.FechaDevolucion,
-                        penalizacion.EstaActivo
-                    }
+                    Data = _mapper.MapToDto(penalizacion)
                 };
             }
             catch (Exception ex)
@@ -150,10 +127,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             try
             {
                 var result = await _penalizacionRepository.DisableAsync(dto.IDPenalizacion);
-                if (!result.Success)
-                    return result;
-
-                return new OperationResult { Success = true, Message = "Penalización desactivada correctamente." };
+                return result.Success
+                    ? new OperationResult { Success = true, Message = "Penalización desactivada correctamente." }
+                    : result;
             }
             catch (Exception ex)
             {
@@ -190,15 +166,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                 {
                     Success = true,
                     Message = "Penalización generada correctamente.",
-                    Data = new
-                    {
-                        penalizacion.Id,
-                        penalizacion.IDUsuario,
-                        penalizacion.Motivo,
-                        penalizacion.FechaInicio,
-                        penalizacion.FechaFin,
-                        penalizacion.EstaActivo
-                    }
+                    Data = _mapper.MapToDto(penalizacion)
                 };
             }
             catch (Exception ex)
@@ -213,16 +181,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             try
             {
                 var penalizaciones = await _penalizacionRepository.GetAllAsync();
-                var data = penalizaciones.Select(p => new
-                {
-                    p.Id,
-                    p.IDUsuario,
-                    p.Motivo,
-                    p.FechaInicio,
-                    p.FechaFin,
-                    p.FechaDevolucion,
-                    p.EstaActivo
-                }).ToList();
+                var data = penalizaciones.Select(_mapper.MapToDto).ToList();
 
                 return new OperationResult { Success = true, Data = data, Message = "Penalizaciones obtenidas correctamente." };
             }
@@ -248,16 +207,7 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                 {
                     Success = true,
                     Message = "Penalización obtenida correctamente.",
-                    Data = new
-                    {
-                        penalizacion.Id,
-                        penalizacion.IDUsuario,
-                        penalizacion.Motivo,
-                        penalizacion.FechaInicio,
-                        penalizacion.FechaFin,
-                        penalizacion.FechaDevolucion,
-                        penalizacion.EstaActivo
-                    }
+                    Data = _mapper.MapToDto(penalizacion)
                 };
             }
             catch (Exception ex)

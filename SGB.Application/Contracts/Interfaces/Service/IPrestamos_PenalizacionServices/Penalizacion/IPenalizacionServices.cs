@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion
+namespace SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Penalizacion
 {
-    public interface IPenalizacionServices  : IBaseService<AddPenalizacionDto, UpdatePenalizacionDto, DisablePenalizacionDto>
+    public interface IPenalizacionServices : IBaseService<AddPenalizacionDto, UpdatePenalizacionDto, DisablePenalizacionDto>
     {
 
         // RF3.4: Calcular penalizaciones por retraso (por ejemplo al registrar devolución)

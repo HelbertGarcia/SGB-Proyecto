@@ -7,13 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos
+namespace SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Prestamos
 {
-     public interface IPrestamosServices : IBaseService<AddPrestamoDto, UpdatePrestamoDto, DiseblePrestamoDto>
+    public interface IPrestamosServices : IBaseService<AddPrestamoDto, UpdatePrestamoDto, DiseblePrestamoDto>
     {
 
-      
-      
+
+
 
         // RF3.2: Controlar la fecha de vencimiento (actualiza estado de préstamo si está vencido)
         Task<OperationResult> ActualizarEstadoPrestamoPorVencimientoAsync(int idPrestamo);

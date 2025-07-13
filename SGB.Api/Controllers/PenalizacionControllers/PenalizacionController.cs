@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Penalizaciones;
+using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Penalizacion;
 
 namespace SGB.Api.Controllers.PenalizacionControllers
 {

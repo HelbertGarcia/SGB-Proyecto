@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SGB.Application.Base.ValidatorServices.Prestamos;
+using SGB.Application.Contracts.Interfaces.Mappers.PrestamoMappers;
+using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Prestamos;
 using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Prestamos;
@@ -20,6 +21,7 @@ public sealed class PrestamoService : IPrestamosServices
     private readonly IValidator<UpdatePrestamoDto> _updateValidator;
     private readonly IValidator<DiseblePrestamoDto> _disableValidator;
     private readonly IPrestamoBusinessValidator _businessValidator;
+    private readonly IPrestamoMapper _mapper;
 
     public PrestamoService(
         IPrestamoRepository prestamoRepository,
@@ -28,7 +30,8 @@ public sealed class PrestamoService : IPrestamosServices
         IValidator<AddPrestamoDto> addValidator,
         IValidator<UpdatePrestamoDto> updateValidator,
         IValidator<DiseblePrestamoDto> disableValidator,
-        IPrestamoBusinessValidator businessValidator
+        IPrestamoBusinessValidator businessValidator,
+        IPrestamoMapper mapper
     )
     {
         _prestamoRepository = prestamoRepository;
@@ -38,21 +41,21 @@ public sealed class PrestamoService : IPrestamosServices
         _updateValidator = updateValidator;
         _disableValidator = disableValidator;
         _businessValidator = businessValidator;
+        _mapper = mapper;
     }
 
     public async Task<OperationResult> AddAsync(AddPrestamoDto dto)
     {
-        var dtoValidation = await _addValidator.ValidateAsync(dto);
-        if (!dtoValidation.IsValid)
-            return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+        var validation = await _addValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
+            return new OperationResult { Success = false, Message = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)) };
 
         var businessValidation = await _businessValidator.ValidateForAddAsync(dto);
-        if (!businessValidation.Success)
-            return businessValidation;
+        if (!businessValidation.Success) return businessValidation;
 
         try
         {
-            var prestamo = new Prestamo(dto.UsuarioId, dto.ISBN, dto.FechaInicio, dto.FechaFin);
+            var prestamo = _mapper.MapFromAddDto(dto);
             var result = await _prestamoRepository.AddAsync(prestamo);
             if (!result.Success) return result;
 
@@ -60,16 +63,7 @@ public sealed class PrestamoService : IPrestamosServices
             {
                 Success = true,
                 Message = "Préstamo registrado correctamente.",
-                Data = new
-                {
-                    prestamo.Id,
-                    prestamo.UsuarioId,
-                    prestamo.ISBN,
-                    prestamo.FechaInicio,
-                    prestamo.FechaFin,
-                    Estado = prestamo.Estado.ToString(),
-                    prestamo.EstaActivo
-                }
+                Data = _mapper.MapToDto(prestamo)
             };
         }
         catch (Exception ex)
@@ -81,22 +75,20 @@ public sealed class PrestamoService : IPrestamosServices
 
     public async Task<OperationResult> UpdateAsync(UpdatePrestamoDto dto)
     {
-        var dtoValidation = await _updateValidator.ValidateAsync(dto);
-        if (!dtoValidation.IsValid)
-            return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+        var validation = await _updateValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
+            return new OperationResult { Success = false, Message = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)) };
 
         var businessValidation = await _businessValidator.ValidateForUpdateAsync(dto);
-        if (!businessValidation.Success)
-            return businessValidation;
+        if (!businessValidation.Success) return businessValidation;
 
         try
         {
             var prestamo = await _prestamoRepository.GetByIdAsync(dto.IDPrestamo);
-            if (dto.FechaFin.HasValue) prestamo.FechaFin = dto.FechaFin.Value;
-            if (dto.FechaDevolucion.HasValue) prestamo.FechaDevolucion = dto.FechaDevolucion.Value;
-            if (!string.IsNullOrWhiteSpace(dto.Estado))
-                prestamo.Estado = Enum.Parse<EstadoPrestamo>(dto.Estado);
+            if (prestamo == null)
+                return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
 
+            _mapper.ApplyUpdateDto(prestamo, dto);
             return await _prestamoRepository.UpdateAsync(prestamo);
         }
         catch (Exception ex)
@@ -108,13 +100,12 @@ public sealed class PrestamoService : IPrestamosServices
 
     public async Task<OperationResult> DeleteAsync(DiseblePrestamoDto dto)
     {
-        var dtoValidation = await _disableValidator.ValidateAsync(dto);
-        if (!dtoValidation.IsValid)
-            return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+        var validation = await _disableValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
+            return new OperationResult { Success = false, Message = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)) };
 
         var businessValidation = await _businessValidator.ValidateForDisableAsync(dto);
-        if (!businessValidation.Success)
-            return businessValidation;
+        if (!businessValidation.Success) return businessValidation;
 
         try
         {
@@ -130,12 +121,14 @@ public sealed class PrestamoService : IPrestamosServices
     public async Task<OperationResult> RegistrarDevolucionAsync(int idPrestamo)
     {
         var businessValidation = await _businessValidator.ValidateForRegistrarDevolucionAsync(idPrestamo);
-        if (!businessValidation.Success)
-            return businessValidation;
+        if (!businessValidation.Success) return businessValidation;
 
         try
         {
             var prestamo = await _prestamoRepository.GetByIdAsync(idPrestamo);
+            if (prestamo == null)
+                return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
+
             prestamo.RegistrarDevolucion();
             return await _prestamoRepository.UpdateAsync(prestamo);
         }
@@ -167,36 +160,14 @@ public sealed class PrestamoService : IPrestamosServices
     public async Task<OperationResult> ObtenerPrestamosActivosPorUsuarioAsync(int usuarioId)
     {
         var prestamos = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(usuarioId);
-        var data = prestamos.Select(p => new
-        {
-            p.Id,
-            p.UsuarioId,
-            p.ISBN,
-            p.FechaInicio,
-            p.FechaFin,
-            p.FechaDevolucion,
-            Estado = p.Estado.ToString(),
-            p.EstaActivo
-        });
-
+        var data = prestamos.Select(_mapper.MapToDto).ToList();
         return new OperationResult { Success = true, Data = data };
     }
 
     public async Task<OperationResult> GetAllAsync()
     {
         var prestamos = await _prestamoRepository.GetAllAsync();
-        var data = prestamos.Select(p => new
-        {
-            p.Id,
-            p.UsuarioId,
-            p.ISBN,
-            p.FechaInicio,
-            p.FechaFin,
-            p.FechaDevolucion,
-            Estado = p.Estado.ToString(),
-            p.EstaActivo
-        });
-
+        var data = prestamos.Select(_mapper.MapToDto).ToList();
         return new OperationResult { Success = true, Data = data };
     }
 
@@ -209,21 +180,7 @@ public sealed class PrestamoService : IPrestamosServices
         if (prestamo == null)
             return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
 
-        return new OperationResult
-        {
-            Success = true,
-            Data = new
-            {
-                prestamo.Id,
-                prestamo.UsuarioId,
-                prestamo.ISBN,
-                prestamo.FechaInicio,
-                prestamo.FechaFin,
-                prestamo.FechaDevolucion,
-                Estado = prestamo.Estado.ToString(),
-                prestamo.EstaActivo
-            }
-        };
+        return new OperationResult { Success = true, Data = _mapper.MapToDto(prestamo) };
     }
 
     public async Task<bool> PuedePrestarAsync(int usuarioId)

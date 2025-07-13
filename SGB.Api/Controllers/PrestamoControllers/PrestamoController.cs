@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Prestamos;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Prestamos;
+using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Prestamos;
 
 namespace SGB.Api.Controllers
 {

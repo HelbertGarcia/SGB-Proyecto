@@ -13,10 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Contracts\Service\ILibroServices\" />
-    <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
-    <Folder Include="Contracts\Service\IUsuarioServices\" />
-    <Folder Include="Contracts\Service\INotificacionesServices\" />
+    <Folder Include="Contracts\Interfaces\Service\ILibroServices\" />
+    <Folder Include="Contracts\Interfaces\Service\IReporte_EstadisticaServices\" />
+    <Folder Include="Contracts\Interfaces\Service\IUsuarioServices\" />
+    <Folder Include="Contracts\Interfaces\Service\INotificacionesServices\" />
     <Folder Include="Services\LibrosServices\" />
     <Folder Include="Services\UsuarioServices\" />
     <Folder Include="Services\Reporte_EstaditicaServices\" />

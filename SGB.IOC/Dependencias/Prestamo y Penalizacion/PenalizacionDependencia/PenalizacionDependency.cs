@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Application.Contracts.Service.IPrestamos_PenalizacionServices.Penalizacion;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto.Validators;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices;
 using SGB.Persistence.Repositories;
 using SGB.Application.Base.ValidatorServices.Penalizacion;
+using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Penalizacion;
 
 
 namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PenalizacionDependencia
