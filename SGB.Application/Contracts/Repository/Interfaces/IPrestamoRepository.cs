@@ -11,8 +11,7 @@ namespace SGB.Application.Contracts.Repository.Interfaces
 {
     public interface IPrestamoRepository: IBaseRepository<Prestamo>
     {
-        Task<OperationResult> GetFechaVencimientoByPrestamoIdAsync(int prestamoId);
-
-        Task<OperationResult> GetEstadosPrestamosPorUsuarioAsync(int usuarioId);
+        Task<OperationResult<DateTime?>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId);
+        Task<OperationResult<IEnumerable<Prestamo>>> GetPrestamosPorUsuarioAsync(int usuarioId);
     }
 }

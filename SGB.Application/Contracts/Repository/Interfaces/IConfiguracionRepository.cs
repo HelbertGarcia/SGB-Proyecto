@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using SGB.Domain.Base;
+using SGB.Domain.Entities.Configuracion;
 using System.Threading.Tasks;
-using SGB.Domain.Base;
 
 namespace SGB.Application.Contracts.Repository.Interfaces
 {
-    public interface IConfiguracionRepository
+    public interface IConfiguracionRepository : IBaseRepository<Configuracion>
     {
-        Task<OperationResult> ObtenerPorNombreAsync(string nombre);
+        Task<OperationResult<Configuracion>> ObtenerPorNombreAsync(string nombre);
     }
 }

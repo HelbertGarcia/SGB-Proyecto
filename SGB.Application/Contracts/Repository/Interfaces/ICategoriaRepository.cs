@@ -10,6 +10,6 @@ namespace SGB.Application.Contracts.Repository.Interfaces
 {
     public interface ICategoriaRepository: IBaseRepository<Categoria>
     {
-        Task<OperationResult> ObtenerPorNombreAsync(string nombreCategoria);
+        Task<OperationResult<Categoria>> ObtenerPorNombreAsync(string nombreCategoria);
     }
 }

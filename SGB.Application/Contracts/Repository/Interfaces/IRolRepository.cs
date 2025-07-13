@@ -8,12 +8,9 @@ namespace SGB.Application.Contracts.Repository.Interfaces
 
     public interface IRolRepository : IBaseRepository<Rol> 
     {
-        Task<OperationResult> ObtenerPorNombreAsync(string nombre);
-
-        Task<OperationResult> ObtenerTodosActivosAsync();
-
-        Task<OperationResult> ActivarRolAsync(int idRol);
-
-        Task<OperationResult> DesactivarRolAsync(int idRol);
+        Task<OperationResult<Rol>> ObtenerPorNombreAsync(string nombre);
+        Task<OperationResult<IEnumerable<Rol>>> ObtenerTodosActivosAsync();
+        Task<OperationResult<bool>> ActivarRolAsync(int idRol);
+        Task<OperationResult<bool>> DesactivarRolAsync(int idRol);
     }
 }

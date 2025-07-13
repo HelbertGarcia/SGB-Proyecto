@@ -1,7 +1,7 @@
 ﻿using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using SGB.Domain.Base;
-using SGB.Domain.Entities.Libro; 
+using SGB.Domain.Entities.Libro;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,26 +21,33 @@ namespace SGB.Application.Validators.BusinessValidators
             _libroRepository = libroRepository;
         }
 
-        public async Task<OperationResult> ValidateForAddAsync(AddCategoriaDto dto)
+        public async Task<OperationResult<bool>> ValidateForAddAsync(AddCategoriaDto dto)
         {
             var resultadoExistencia = await _categoriaRepository.ObtenerPorNombreAsync(dto.Nombre);
-            if (resultadoExistencia.Success && resultadoExistencia.Data != null)
+
+            if (resultadoExistencia.IsSuccess && resultadoExistencia.Data != null)
             {
-                return new OperationResult { Success = false, Message = "Ya existe una categoría con ese nombre." };
+                return OperationResult<bool>.Failure("Ya existe una categoría con ese nombre.");
             }
 
-            return new OperationResult { Success = true };
+            return OperationResult<bool>.Success(true);
         }
 
-        public async Task<OperationResult> ValidateForDeleteAsync(int id)
+        public async Task<OperationResult<bool>> ValidateForDeleteAsync(int id)
         {
-            var librosConCategoria = await _libroRepository.FindByConditionAsync(l => l.IDCategoria == id && l.EstaActivo);
-            if (librosConCategoria.Success && librosConCategoria.Data is IEnumerable<Libro> lista && lista.Any())
+            var librosConCategoriaResult = await _libroRepository.FindByConditionAsync(l => l.IDCategoria == id && l.EstaActivo);
+
+            if (!librosConCategoriaResult.IsSuccess)
             {
-                return new OperationResult { Success = false, Message = "No se puede eliminar la categoría porque está asignada a uno o más libros activos." };
+                return OperationResult<bool>.Failure(librosConCategoriaResult.Message);
             }
 
-            return new OperationResult { Success = true };
+            if (librosConCategoriaResult.Data != null && librosConCategoriaResult.Data.Any())
+            {
+                return OperationResult<bool>.Failure("No se puede eliminar la categoría porque está asignada a uno o más libros activos.");
+            }
+
+            return OperationResult<bool>.Success(true);
         }
     }
 }

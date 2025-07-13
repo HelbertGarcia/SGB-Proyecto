@@ -7,6 +7,7 @@ using SGB.Domain.Entities.Prestamos;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,6 +18,7 @@ namespace SGB.Persistence.Repositories
         private readonly ILogger<PrestamoRepository> _logger;
         private readonly IConfiguration _configuration;
 
+        // The constructor is aligned with the final pattern.
         public PrestamoRepository(SGBContext context,
                                   ILoggerFactory loggerFactory,
                                   IConfiguration configuration)
@@ -26,67 +28,53 @@ namespace SGB.Persistence.Repositories
             _logger = loggerFactory.CreateLogger<PrestamoRepository>();
         }
 
-        #region "Implementación de IPrestamoRepository"
+        // No overrides are needed here. The BaseRepository handles Add, Update, Delete, etc.
 
-        public async Task<OperationResult> GetFechaVencimientoByPrestamoIdAsync(int prestamoId)
+        #region "Implementation of IPrestamoRepository"
+
+        public async Task<OperationResult<DateTime?>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId)
         {
             if (prestamoId <= 0)
             {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "ID de préstamo inválido." });
+                return OperationResult<DateTime?>.Failure("ID de préstamo inválido.");
             }
 
             try
             {
                 var fechaVencimiento = await Entity
                                            .Where(p => p.Id == prestamoId)
-                                           .Select(p => p.FechaVencimiento)
+                                           .Select(p => (DateTime?)p.FechaVencimiento)
                                            .FirstOrDefaultAsync();
 
-                if (fechaVencimiento != default(DateTime))
+                if (fechaVencimiento != null)
                 {
-                    return new OperationResult { Data = fechaVencimiento };
+                    return OperationResult<DateTime?>.Success(fechaVencimiento);
                 }
                 else
                 {
-                    return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Prestamos:LoanNotFound"] ?? "Préstamo no encontrado." };
+                    return OperationResult<DateTime?>.Failure(_configuration["ErrorMessages:Prestamos:LoanNotFound"] ?? "Préstamo no encontrado.");
                 }
             }
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:Prestamos:GetFechaVencimientoError"] ?? "Error al obtener la fecha de vencimiento.";
                 _logger.LogError(ex, "{ErrorMessage} - ID de Préstamo: {PrestamoId}", errorMessage, prestamoId);
-                return new OperationResult { Success = false, Message = errorMessage };
+                return OperationResult<DateTime?>.Failure(errorMessage);
             }
         }
 
-        public async Task<OperationResult> GetEstadosPrestamosPorUsuarioAsync(int usuarioId)
+        public async Task<OperationResult<IEnumerable<Prestamo>>> GetPrestamosPorUsuarioAsync(int usuarioId)
         {
             if (usuarioId <= 0)
             {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "ID de usuario inválido." });
+                return OperationResult<IEnumerable<Prestamo>>.Failure("El ID de usuario es inválido.");
             }
 
-            try
-            {
-                var estados = await Entity
-                    .AsNoTracking()
-                    .Where(p => p.Id == usuarioId) 
-                    .Select(p => new
-                    {
-                        PrestamoId = p.Id,
-                        Estado = p.Estado.ToString()
-                    })
-                    .ToListAsync();
-
-                return new OperationResult { Data = estados };
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:Prestamos:GetEstadosPorUsuarioError"] ?? "Error al obtener los estados de préstamos del usuario.";
-                _logger.LogError(ex, "{ErrorMessage} - UsuarioId: {UsuarioId}", errorMessage, usuarioId);
-                return new OperationResult { Success = false, Message = errorMessage };
-            }
+            // We can reuse the generic FindByConditionAsync from the base repository.
+            // It correctly handles errors and returns the strongly-typed OperationResult.
+            return await base.FindByConditionAsync(p => p.UsuarioId == usuarioId);
         }
+
         #endregion
     }
 }

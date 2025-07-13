@@ -1,6 +1,7 @@
 ﻿using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.LibrosDto.LibroDto;
 using SGB.Domain.Base;
+using SGB.Domain.Entities.Categoria;
 using SGB.Domain.Entities.Libro;
 using SGB.Domain.Entities.Prestamos;
 using System.Collections.Generic;
@@ -25,50 +26,55 @@ namespace SGB.Application.Validators.BusinessValidators
             _prestamoRepository = prestamoRepository;
         }
 
-        public async Task<OperationResult> ValidateForAddAsync(AddLibroDto dto)
+        public async Task<OperationResult<Categoria>> ValidateForAddAsync(AddLibroDto dto)
         {
             var existenciaResult = await _libroRepository.BuscarPorIsbnAsync(dto.ISBN);
-            if (existenciaResult.Success && existenciaResult.Data is IEnumerable<Libro> lista && lista.Any())
+            if (existenciaResult.IsSuccess && existenciaResult.Data is IEnumerable<Libro> lista && lista.Any())
             {
-                return new OperationResult { Success = false, Message = "El ISBN proporcionado ya existe en el sistema." };
+                return OperationResult<Categoria>.Failure("El ISBN proporcionado ya existe en el sistema.");
             }
 
-            var categoria = await _categoriaRepository.GetByIdAsync(dto.IDCategoria);
-            if (categoria == null)
+            var categoriaResult = await _categoriaRepository.GetByIdAsync(dto.IDCategoria);
+            if (!categoriaResult.IsSuccess || categoriaResult.Data == null)
             {
-                return new OperationResult { Success = false, Message = "La categoría especificada no existe." };
+                return OperationResult<Categoria>.Failure("La categoría especificada no existe.");
             }
 
-            return new OperationResult { Success = true, Data = categoria };
+            return OperationResult<Categoria>.Success(categoriaResult.Data);
         }
 
-        public async Task<OperationResult> ValidateForUpdateAsync(int id, UpdateLibroDto dto)
+        public async Task<OperationResult<Libro>> ValidateForUpdateAsync(int id, UpdateLibroDto dto)
         {
             var libroEntidad = await _libroRepository.ObtenerParaActualizacionAsync(id);
             if (libroEntidad == null)
             {
-                return new OperationResult { Success = false, Message = "Libro no encontrado." };
+                return OperationResult<Libro>.Failure("Libro no encontrado.");
             }
 
-            var categoria = await _categoriaRepository.GetByIdAsync(dto.IDCategoria);
-            if (categoria == null)
+            var categoriaResult = await _categoriaRepository.GetByIdAsync(dto.IDCategoria);
+            if (!categoriaResult.IsSuccess || categoriaResult.Data == null)
             {
-                return new OperationResult { Success = false, Message = "La nueva categoría especificada no existe." };
+                return OperationResult<Libro>.Failure("La nueva categoría especificada no existe.");
             }
 
-            return new OperationResult { Success = true, Data = libroEntidad };
+            return OperationResult<Libro>.Success(libroEntidad);
         }
 
-        public async Task<OperationResult> ValidateForDeleteAsync(int id)
+        public async Task<OperationResult<bool>> ValidateForDeleteAsync(int id)
         {
             var prestamosActivosResult = await _prestamoRepository.FindByConditionAsync(p => p.Id == id && p.Estado == EstadoPrestamo.Activo);
 
-            if (prestamosActivosResult.Success && prestamosActivosResult.Data is IEnumerable<Prestamo> listaPrestamos && listaPrestamos.Any())
+            if (!prestamosActivosResult.IsSuccess)
             {
-                return new OperationResult { Success = false, Message = "No se puede eliminar el libro porque está actualmente en un préstamo activo." };
+                return OperationResult<bool>.Failure(prestamosActivosResult.Message);
             }
 
-            return new OperationResult { Success = true };
+            if (prestamosActivosResult.Data != null && prestamosActivosResult.Data.Any())
+            {
+                return OperationResult<bool>.Failure("No se puede eliminar el libro porque está actualmente en un préstamo activo.");
+            }
+
+            return OperationResult<bool>.Success(true);
         }
     }
 }

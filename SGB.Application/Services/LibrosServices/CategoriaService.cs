@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.ILibroServices;
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
-using SGB.Application.Extensions;
 using SGB.Application.Validators.BusinessValidators;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Categoria;
@@ -33,56 +32,69 @@ namespace SGB.Application.Services.LibrosServices
             _configuration = configuration;
         }
 
-        public async Task<OperationResult> AddAsync(AddCategoriaDto dto)
+        public async Task<OperationResult<CategoriaDto>> AddAsync(AddCategoriaDto dto)
         {
             try
             {
                 var validationResult = await _categoriaValidator.ValidateForAddAsync(dto);
-                if (!validationResult.Success)
+                if (!validationResult.IsSuccess)
                 {
-                    return validationResult;
+                    return OperationResult<CategoriaDto>.Failure(validationResult.Message);
                 }
 
                 var nuevaCategoria = new Categoria(dto.Nombre);
-                var repoResult = await _categoriaRepository.AddAsync(nuevaCategoria);
-                if (!repoResult.Success) return repoResult;
 
-                var categoriaDto = new CategoriaDto(nuevaCategoria.Id, nuevaCategoria.Nombre, nuevaCategoria.EstaActivo);
-                return new OperationResult { Success = true, Data = categoriaDto };
+                var repoResult = await _categoriaRepository.AddAsync(nuevaCategoria);
+                if (!repoResult.IsSuccess)
+                    return OperationResult<CategoriaDto>.Failure(repoResult.Message);
+
+                var categoriaDto = new CategoriaDto(
+                    repoResult.Data.Id,
+                    repoResult.Data.Nombre,
+                    repoResult.Data.EstaActivo
+                );
+
+                return OperationResult<CategoriaDto>.Success(categoriaDto, "Categoría creada exitosamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en el servicio al crear categoría: {Nombre}", dto?.Nombre);
-                return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
+                return OperationResult<CategoriaDto>.Failure(_configuration["ErrorMessages:Global:UnexpectedError"]);
             }
         }
 
-        public async Task<OperationResult> UpdateAsync(int id, UpdateCategoriaDto dto)
+        public async Task<OperationResult<CategoriaDto>> UpdateAsync(int id, UpdateCategoriaDto dto)
         {
             try
             {
                 var categoriaEntidad = await _categoriaRepository.GetByIdAsync(id);
-                if (categoriaEntidad == null)
+                if (!categoriaEntidad.IsSuccess || categoriaEntidad.Data == null)
                 {
-                    return await Task.FromResult(new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:ResourceNotFound"] });
+                    return OperationResult<CategoriaDto>.Failure(_configuration["ErrorMessages:Global:ResourceNotFound"]);
                 }
 
-                categoriaEntidad.ActualizarNombre(dto.Nombre);
-                return await _categoriaRepository.UpdateAsync(categoriaEntidad);
+                categoriaEntidad.Data.ActualizarNombre(dto.Nombre);
+
+                var repoResult = await _categoriaRepository.UpdateAsync(categoriaEntidad.Data);
+                if (!repoResult.IsSuccess)
+                    return OperationResult<CategoriaDto>.Failure(repoResult.Message);
+
+                var categoriaDto = new CategoriaDto(repoResult.Data.Id, repoResult.Data.Nombre, repoResult.Data.EstaActivo);
+                return OperationResult<CategoriaDto>.Success(categoriaDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en el servicio al actualizar categoría con ID: {ID}", id);
-                return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
+                return OperationResult<CategoriaDto>.Failure(_configuration["ErrorMessages:Global:UnexpectedError"]);
             }
         }
 
-        public async Task<OperationResult> DeleteAsync(int id)
+        public async Task<OperationResult<bool>> DeleteAsync(int id)
         {
             try
             {
                 var validationResult = await _categoriaValidator.ValidateForDeleteAsync(id);
-                if (!validationResult.Success)
+                if (!validationResult.IsSuccess)
                 {
                     return validationResult;
                 }
@@ -92,56 +104,28 @@ namespace SGB.Application.Services.LibrosServices
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en el servicio al eliminar categoría con ID: {ID}", id);
-                return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
+                return OperationResult<bool>.Failure(_configuration["ErrorMessages:Global:UnexpectedError"]);
             }
         }
 
-        public async Task<OperationResult> GetByIdAsync(int id)
+        public async Task<OperationResult<CategoriaDto>> GetByIdAsync(int id)
         {
-            try
-            {
-                var categoria = await _categoriaRepository.GetByIdAsync(id);
-                if (categoria == null)
-                {
-                    return await Task.FromResult(new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:ResourceNotFound"] });
-                }
+            var result = await _categoriaRepository.GetByIdAsync(id);
+            if (!result.IsSuccess || result.Data == null)
+                return OperationResult<CategoriaDto>.Failure(_configuration["ErrorMessages:Global:ResourceNotFound"]);
 
-                var categoriaDto = new CategoriaDto(
-                    categoria.Id,
-                    categoria.Nombre,
-                    categoria.EstaActivo
-                );
-                return new OperationResult { Success = true, Data = categoriaDto };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogErrorWithConfigurationMessage(_configuration, ex, "ErrorMessages:Categorias:GetById", id);
-                return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
-            }
+            var dto = new CategoriaDto(result.Data.Id, result.Data.Nombre, result.Data.EstaActivo);
+            return OperationResult<CategoriaDto>.Success(dto);
         }
 
-        public async Task<OperationResult> GetAllAsync()
+        public async Task<OperationResult<IEnumerable<CategoriaDto>>> GetAllAsync()
         {
-            try
-            {
-                var resultadoRepo = await _categoriaRepository.FindByConditionAsync(c => c.EstaActivo);
-                if (!resultadoRepo.Success) return resultadoRepo;
+            var result = await _categoriaRepository.GetAllAsync();
+            if (!result.IsSuccess)
+                return OperationResult<IEnumerable<CategoriaDto>>.Failure(result.Message);
 
-                var listaEntidades = (IEnumerable<Categoria>)resultadoRepo.Data;
-
-                var listaDto = listaEntidades.Select(c => new CategoriaDto(
-                    c.Id,
-                    c.Nombre,
-                    c.EstaActivo
-                )).ToList();
-
-                return new OperationResult { Success = true, Data = listaDto };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogErrorWithConfigurationMessage(_configuration, ex, "ErrorMessages:Categorias:GetAll");
-                return new OperationResult { Success = false, Message = _configuration["ErrorMessages:Global:UnexpectedError"] };
-            }
+            var dtoList = result.Data.Select(c => new CategoriaDto(c.Id, c.Nombre, c.EstaActivo));
+            return OperationResult<IEnumerable<CategoriaDto>>.Success(dtoList);
         }
     }
 }

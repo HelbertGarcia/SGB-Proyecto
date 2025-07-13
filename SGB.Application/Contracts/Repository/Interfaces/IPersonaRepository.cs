@@ -5,16 +5,16 @@ namespace SGB.Application.Contracts.Repository.Interfaces
 {
     public interface IPersonaRepository : IBaseRepository<Persona> 
     {
-        Task<OperationResult> ObtenerPorEmailAsync(string email);
+        Task<OperationResult<Persona>> ObtenerPorEmailAsync(string email);
 
-        Task<OperationResult> ExisteEmailAsync(string email);
+        Task<OperationResult<bool>> ExisteEmailAsync(string email);
 
-        Task<OperationResult> BuscarPorRolAsync(int idRol);
+        Task<OperationResult<IEnumerable<Persona>>> BuscarPorRolAsync(int idRol);
 
-        Task<OperationResult> ObtenerTodosActivosAsync();
+        Task<OperationResult<IEnumerable<Persona>>> ObtenerTodosActivosAsync();
 
-        Task<OperationResult> ActivarCuentaAsync(int idUsuario);
+        Task<OperationResult<bool>> ActivarCuentaAsync(int idUsuario);
 
-        Task<OperationResult> DesactivarCuentaAsync(int idUsuario);
+        Task<OperationResult<bool>> DesactivarCuentaAsync(int idUsuario);
     }
 }

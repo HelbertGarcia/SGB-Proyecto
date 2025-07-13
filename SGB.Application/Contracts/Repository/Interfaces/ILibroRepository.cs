@@ -1,17 +1,18 @@
-﻿using SGB.Domain.Base;
+﻿using SGB.Application.Dtos.LibrosDto.LibroDto;
+using SGB.Domain.Base;
 using SGB.Domain.Entities.Libro;
-using SGB.Application.Dtos;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SGB.Application.Contracts.Repository.Interfaces
 {
-    public interface ILibroRepository : IBaseRepository<Libro> 
+    public interface ILibroRepository : IBaseRepository<Libro>
     {
-        Task<OperationResult> BuscarPorIsbnAsync(string isbn);
-        Task<OperationResult> BuscarPorAutorAsync(string autor);
-        Task<OperationResult> BuscarPorTituloAsync(string titulo);
+        Task<OperationResult<IEnumerable<Libro>>> BuscarPorAutorAsync(string autor);
+        Task<OperationResult<IEnumerable<Libro>>> BuscarPorTituloAsync(string titulo);
+        Task<OperationResult<Libro>> BuscarPorIsbnAsync(string isbn);
         Task<Libro> ObtenerParaActualizacionAsync(int id);
-        Task<OperationResult> ObtenerDetallesDTOPorIdAsync(int id);
-        Task<OperationResult> ObtenerTodosConDetallesAsync();
+        Task<OperationResult<LibroDto>> ObtenerDetallesDTOPorIdAsync(int id);
+        Task<OperationResult<IEnumerable<LibroDto>>> ObtenerTodosConDetallesAsync();
     }
 }

@@ -1,22 +1,21 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Domain.Base;
+using SGB.Application.Contracts.Repository;
 using SGB.Persistence.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using SGB.Application.Contracts;
-using SGB.Domain.Base;
-using SGB.Application.Contracts.Repository;
 
 namespace SGB.Persistence.Base
 {
     public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     {
         private readonly SGBContext _context;
-        private readonly ILogger _logger; 
+        private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
         protected readonly DbSet<T> Entity;
 
@@ -28,82 +27,104 @@ namespace SGB.Persistence.Base
             Entity = _context.Set<T>();
         }
 
-
-        public virtual async Task<OperationResult> AddAsync(T entity)
+        public virtual async Task<OperationResult<T>> AddAsync(T entity)
         {
             try
             {
                 await Entity.AddAsync(entity);
                 await _context.SaveChangesAsync();
-                return new OperationResult();
+                return OperationResult<T>.Success(entity, "Entidad agregada exitosamente.");
             }
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:BaseRepository:AddError"];
                 _logger.LogError(ex, "{ErrorMessage}", errorMessage);
-                return new OperationResult { Success = false, Message = errorMessage };
+                return OperationResult<T>.Failure(errorMessage);
             }
         }
 
-        public virtual async Task<OperationResult> UpdateAsync(T entity)
+        public virtual async Task<OperationResult<T>> UpdateAsync(T entity)
         {
             try
             {
                 Entity.Update(entity);
                 await _context.SaveChangesAsync();
-                return new OperationResult();
+                return OperationResult<T>.Success(entity, "Entidad actualizada exitosamente.");
             }
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:BaseRepository:UpdateError"];
                 _logger.LogError(ex, "{ErrorMessage}", errorMessage);
-                return new OperationResult { Success = false, Message = errorMessage };
+                return OperationResult<T>.Failure(errorMessage);
             }
         }
 
-        public virtual async Task<OperationResult> DeleteAsync(int id)
+        public virtual async Task<OperationResult<bool>> DeleteAsync(int id)
         {
             try
             {
                 var entityToDelete = await Entity.FindAsync(id);
                 if (entityToDelete == null)
-                    return new OperationResult { Success = false, Message = "Entidad no encontrada para eliminar." };
+                    return OperationResult<bool>.Failure("Entidad no encontrada para eliminar.");
 
                 Entity.Remove(entityToDelete);
                 await _context.SaveChangesAsync();
-                return new OperationResult();
+                return OperationResult<bool>.Success(true, "Entidad eliminada exitosamente.");
             }
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:BaseRepository:DeleteError"];
                 _logger.LogError(ex, "{ErrorMessage} - ID: {Id}", errorMessage, id);
-                return new OperationResult { Success = false, Message = errorMessage };
+                return OperationResult<bool>.Failure(errorMessage);
             }
         }
 
-        public virtual async Task<OperationResult> FindByConditionAsync(Expression<Func<T, bool>> filter)
+        public virtual async Task<OperationResult<IEnumerable<T>>> FindByConditionAsync(Expression<Func<T, bool>> filter)
         {
             try
             {
                 var data = await Entity.Where(filter).AsNoTracking().ToListAsync();
-                return new OperationResult { Data = data };
+                return OperationResult<IEnumerable<T>>.Success(data);
             }
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:BaseRepository:GetError"];
                 _logger.LogError(ex, errorMessage);
-                return new OperationResult { Success = false, Message = errorMessage };
+                return OperationResult<IEnumerable<T>>.Failure(errorMessage);
             }
         }
 
-        public virtual async Task<T> GetByIdAsync(int id)
+        public virtual async Task<OperationResult<T>> GetByIdAsync(int id)
         {
-            return await Entity.FindAsync(id);
+            try
+            {
+                var data = await Entity.FindAsync(id);
+                if (data == null)
+                    return OperationResult<T>.Failure("Entidad no encontrada.");
+
+                return OperationResult<T>.Success(data);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:BaseRepository:GetError"];
+                _logger.LogError(ex, "{ErrorMessage} - ID: {Id}", errorMessage, id);
+                return OperationResult<T>.Failure(errorMessage);
+            }
         }
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<OperationResult<IEnumerable<T>>> GetAllAsync()
         {
-            return await Entity.AsNoTracking().ToListAsync();
+            try
+            {
+                var data = await Entity.AsNoTracking().ToListAsync();
+                return OperationResult<IEnumerable<T>>.Success(data);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:BaseRepository:GetError"];
+                _logger.LogError(ex, errorMessage);
+                return OperationResult<IEnumerable<T>>.Failure(errorMessage);
+            }
         }
     }
 }

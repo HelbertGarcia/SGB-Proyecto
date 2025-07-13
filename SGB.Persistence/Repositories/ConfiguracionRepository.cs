@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SGB.Application.Contracts.Repository.Interfaces;
@@ -8,119 +6,85 @@ using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
-
+using System;
+using System.Threading.Tasks;
 
 namespace SGB.Persistence.Repositories
 {
     public class ConfiguracionRepository : BaseRepository<Configuracion>, IConfiguracionRepository
     {
-        private readonly SGBContext _context;
-        private readonly ILogger<LibroRepository> _logger;
+        private readonly ILogger<ConfiguracionRepository> _logger;
         private readonly IConfiguration _configuration;
 
-
-        public ConfiguracionRepository(SGBContext context,ILoggerFactory loggerFactory, IConfiguration configuration)
-       : base(context, loggerFactory, configuration)
+        public ConfiguracionRepository(SGBContext context,
+                                       ILoggerFactory loggerFactory,
+                                       IConfiguration configuration)
+            : base(context, loggerFactory, configuration)
         {
-            _context = context;
             _configuration = configuration;
-            _logger = loggerFactory.CreateLogger<LibroRepository>();
+            //-- CORRECCIÓN: Se crea el logger con el tipo correcto.
+            _logger = loggerFactory.CreateLogger<ConfiguracionRepository>();
         }
 
-        #region "Metodos Heredados BaseRepository"
-        public async Task<OperationResult> ActualizarConfiguracionAsync(int id, string valor, string descripcion = null, bool? estaActivo = null)
+        #region "Métodos Heredados Sobrescritos"
+
+        /// <summary>
+        /// Sobrescribe el comportamiento de borrado por defecto para que sea un borrado lógico.
+        /// </summary>
+        public override async Task<OperationResult<bool>> DeleteAsync(int id)
         {
             try
             {
                 var configuracion = await Entity.FindAsync(id);
                 if (configuracion == null)
-                    return new OperationResult { Success = false, Message = "Configuración no encontrada." };
+                {
+                    return OperationResult<bool>.Failure("Configuración no encontrada.");
+                }
 
-                configuracion.Valor = valor;
-                if (descripcion != null)
-                    configuracion.Descripcion = descripcion;
-                if (estaActivo.HasValue)
-                    configuracion.EstaActivo = estaActivo.Value;
+                configuracion.Deshabilitar(); // Llama al método de la entidad para cambiar su estado.
 
-                Entity.Update(configuracion);
-                await _context.SaveChangesAsync();
+                var updateResult = await base.UpdateAsync(configuracion);
 
-                return new OperationResult();
+                // Devuelve el resultado de la operación de actualización.
+                return OperationResult<bool>.Success(updateResult.IsSuccess, updateResult.Message);
             }
             catch (Exception ex)
             {
-                var errorMsg = _configuration["ErrorMessages:ConfiguracionRepository:UpdateError"];
-                _logger.LogError(ex, errorMsg);
-                return new OperationResult { Success = false, Message = errorMsg };
+                var errorMessage = _configuration["ErrorMessages:Configuracion:DeleteError"] ?? "Ocurrió un error al desactivar la configuración.";
+                _logger.LogError(ex, "{ErrorMessage} para el ID: {ConfigID}", errorMessage, id);
+                return OperationResult<bool>.Failure(errorMessage);
             }
         }
 
-        public async Task<OperationResult> DeshabilitarConfiguracionAsync(int id)
+        #endregion
+
+        #region "Implementación de IConfiguracionRepository"
+
+        /// <summary>
+        /// Busca una configuración específica por su nombre o clave única.
+        /// </summary>
+        public async Task<OperationResult<Configuracion>> ObtenerPorNombreAsync(string nombre)
         {
-            try
+            if (string.IsNullOrWhiteSpace(nombre))
             {
-                var configuracion = await Entity.FindAsync(id);
-                if (configuracion == null)
-                    return new OperationResult { Success = false, Message = "Configuración no encontrada." };
-
-                configuracion.EstaActivo = false;
-                await _context.SaveChangesAsync();
-
-                return new OperationResult();
+                return OperationResult<Configuracion>.Failure("El nombre de la configuración no puede estar vacío.");
             }
-            catch (Exception ex)
-            {
-                var errorMsg = _configuration["ErrorMessages:ConfiguracionRepository:DeleteError"];
-                _logger.LogError(ex, errorMsg);
-                return new OperationResult { Success = false, Message = errorMsg };
-            }
-        }
 
-        public async Task<OperationResult> ObtenerConfiguracionAsync(int id)
-        {
             try
             {
                 var configuracion = await Entity.AsNoTracking()
-                                                .FirstOrDefaultAsync(c => c.IDConfiguracion == id);
-                if (configuracion == null)
-                    return new OperationResult { Success = false, Message = "Configuración no encontrada." };
+                                                .FirstOrDefaultAsync(c => c.Nombre == nombre);
 
-                return new OperationResult { Data = configuracion };
+                return OperationResult<Configuracion>.Success(configuracion);
             }
             catch (Exception ex)
             {
-                var errorMsg = _configuration["ErrorMessages:ConfiguracionRepository:GetError"];
-                _logger.LogError(ex, errorMsg);
-                return new OperationResult { Success = false, Message = errorMsg };
+                var errorMessage = _configuration["ErrorMessages:Configuracion:GetByNameError"] ?? "Ocurrió un error al buscar la configuración por nombre.";
+                _logger.LogError(ex, "{ErrorMessage} para el nombre: {Nombre}", errorMessage, nombre);
+                return OperationResult<Configuracion>.Failure(errorMessage);
             }
         }
+
         #endregion
-
-
-
-        #region "Implementación de IConfiguracionRepository"
-        public async Task<OperationResult> ObtenerPorNombreAsync(string nombre)
-        {
-            try
-            {
-                var result = await Entity.AsNoTracking()
-                                         .Where(c => c.Nombre == nombre)
-                                         .ToListAsync();
-
-                return new OperationResult { Data = result };
-            }
-            catch (Exception ex)
-            {
-                var errorMsg = _configuration["ErrorMessages:ConfiguracionRepository:GetError"];
-                _logger.LogError(ex, errorMsg);
-                return new OperationResult { Success = false, Message = errorMsg };
-            }
-        }
-        #endregion
-
     }
-
-
-
-
 }

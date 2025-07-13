@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Contracts.Service.ILibroServices
 {
-    public interface ILibroService : IBaseService<AddLibroDto, UpdateLibroDto>
+    public interface ILibroService : IBaseService<AddLibroDto, UpdateLibroDto, LibroDto>
     {
-        Task<OperationResult> BuscarPorIsbnAsync(string isbn);
-        Task<OperationResult> BuscarLibrosAsync(string terminoBusqueda);
+        Task<OperationResult<LibroDto>> BuscarPorIsbnAsync(string isbn);
+        Task<OperationResult<IEnumerable<LibroDto>>> BuscarLibrosAsync(string terminoBusqueda);
     }
 }

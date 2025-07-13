@@ -6,7 +6,7 @@ namespace SGB.Application.Validators.BusinessValidators
 {
     public interface ICategoriaBusinessValidator
     {
-        Task<OperationResult> ValidateForAddAsync(AddCategoriaDto dto);
-        Task<OperationResult> ValidateForDeleteAsync(int id);
+        Task<OperationResult<bool>> ValidateForAddAsync(AddCategoriaDto dto);
+        Task<OperationResult<bool>> ValidateForDeleteAsync(int id);
     }
 }
