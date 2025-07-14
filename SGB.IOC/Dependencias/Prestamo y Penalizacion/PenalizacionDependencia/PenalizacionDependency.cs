@@ -6,7 +6,10 @@ using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices;
 using SGB.Persistence.Repositories;
 using SGB.Application.Base.ValidatorServices.Penalizacion;
-using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Penalizacion;
+using SGB.Application.Contracts.Interfaces.Mappers.PrestamoMappers;
+using SGB.Application.Extensions.Mappers.PenalizacionesMapper;
+using SGB.Application.Extensions.Mappers.PrestamosMapper;
+
 
 
 namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PenalizacionDependencia
@@ -29,7 +32,9 @@ namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PenalizacionDependencia
 
             services.AddScoped<IPenalizacionBusinessValidator, PenalizacionBusinessValidator>();
 
-            
+
+            services.AddTransient<IPenalizacionMapper, PenalizacionMapper>();
+
         }
     }
 }

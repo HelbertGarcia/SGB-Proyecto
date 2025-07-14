@@ -6,19 +6,27 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Base
 {
-    public class OperationResult
+    public class OperationResult<T>
     {
+        public bool IsSuccess { get; private set; }
+        public string Message { get; private set; } = string.Empty;
+        public T? Data { get; private set; }
 
-        public OperationResult()
+        private OperationResult(bool isSuccess, string message, T? data = default)
         {
-            this.Success = true;
+            IsSuccess = isSuccess;
+            Message = message;
+            Data = data;
         }
 
-        public bool Success { get; set; }
+        public static OperationResult<T> Success(T data, string message = "")
+        {
+            return new OperationResult<T>(true, message, data);
+        }
 
-        public string Message { get; set; }
-
-        public dynamic Data { get; set; }
-
+        public static OperationResult<T> Failure(string message)
+        {
+            return new OperationResult<T>(false, message);
+        }
     }
 }

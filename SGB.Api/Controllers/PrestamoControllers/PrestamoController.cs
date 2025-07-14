@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Base;
-using SGB.Domain.Entities.Prestamos;
-using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Prestamos;
 
 namespace SGB.Api.Controllers
 {
@@ -15,38 +16,35 @@ namespace SGB.Api.Controllers
 
         public PrestamoController(IPrestamosServices prestamosService)
         {
-            _prestamosService = prestamosService;
+            _prestamosService = prestamosService ?? throw new ArgumentNullException(nameof(prestamosService));
         }
 
-        [HttpGet("GetAllPrestamos")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<PrestamoResponseDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllPrestamos()
         {
-            var resultado = await _prestamosService.GetAllAsync(); 
+            var resultado = await _prestamosService.GetAllAsync();
 
-            if (!resultado.Success)
+            if (!resultado.IsSuccess)
                 return BadRequest(resultado);
 
             return Ok(resultado.Data);
         }
 
-        [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("{id:int}")]
+        [ProducesResponseType(typeof(PrestamoResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetPrestamoById(int id)
         {
             var resultado = await _prestamosService.GetByIdAsync(id);
 
-            if (!resultado.Success)
+            if (!resultado.IsSuccess)
             {
-                if (resultado.Message.Contains("no existe", StringComparison.OrdinalIgnoreCase) ||
-                    resultado.Message.Contains("no encontrado", StringComparison.OrdinalIgnoreCase) ||
-                    resultado.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
-                {
+                if (EsNotFound(resultado.Message))
                     return NotFound(resultado);
-                }
+
                 return BadRequest(resultado);
             }
 
@@ -54,20 +52,24 @@ namespace SGB.Api.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PrestamoResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddPrestamo([FromBody] AddPrestamoDto addPrestamoDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _prestamosService.AddAsync(addPrestamoDto);
 
-            if (!result.Success)
-                return BadRequest(new { success = false, message = result.Message });
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
-            return Ok(new { success = true, message = "Préstamo creado correctamente.", data = result.Data });
+            // Devuelve 201 Created con ruta para obtener el recurso creado
+            return CreatedAtAction(nameof(GetPrestamoById), new { id = result.Data.Id }, result.Data);
         }
 
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(PrestamoResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdatePrestamo(int id, [FromBody] UpdatePrestamoDto updatePrestamoDto)
@@ -80,21 +82,18 @@ namespace SGB.Api.Controllers
 
             var resultado = await _prestamosService.UpdateAsync(updatePrestamoDto);
 
-            if (!resultado.Success)
+            if (!resultado.IsSuccess)
             {
-                if (resultado.Message.Contains("no existe", StringComparison.OrdinalIgnoreCase) ||
-                    resultado.Message.Contains("no encontrado", StringComparison.OrdinalIgnoreCase) ||
-                    resultado.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
-                {
+                if (EsNotFound(resultado.Message))
                     return NotFound(resultado);
-                }
+
                 return BadRequest(resultado);
             }
 
             return Ok(resultado.Data);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -104,14 +103,10 @@ namespace SGB.Api.Controllers
 
             var result = await _prestamosService.DeleteAsync(dto);
 
-            if (!result.Success)
+            if (!result.IsSuccess)
             {
-                if (result.Message.Contains("no existe", StringComparison.OrdinalIgnoreCase) ||
-                    result.Message.Contains("no encontrado", StringComparison.OrdinalIgnoreCase) ||
-                    result.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
-                {
+                if (EsNotFound(result.Message))
                     return NotFound(result);
-                }
 
                 return BadRequest(result);
             }
@@ -123,6 +118,14 @@ namespace SGB.Api.Controllers
             });
         }
 
+        private bool EsNotFound(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+                return false;
+
+            return message.Contains("no existe", StringComparison.OrdinalIgnoreCase) ||
+                   message.Contains("no encontrado", StringComparison.OrdinalIgnoreCase) ||
+                   message.Contains("not found", StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
-

@@ -8,7 +8,7 @@ namespace SGB.Domain.Base
 {
     public interface IEstaActivo
     {
-        public bool EstaActivo { get; set; } 
+        public bool EstaActivo { get; } 
 
         public void Deshabilitar();
 

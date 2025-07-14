@@ -1,22 +1,28 @@
-﻿using SGB.Domain.Entities.Libro;
+﻿
+
 using SGB.Domain.Entities.Prestamos;
-using SGB.Domain.Repository;
+using SGB.Domain.Base;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using SGB.Domain.Base;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 
 namespace SGB.Application.Contracts.Repository.Interfaces
 {
-    public interface IPrestamoRepository: IBaseRepository<Prestamo>
+    public interface IPrestamoRepository : IBaseRepository<Prestamo>
     {
-        Task<OperationResult> GetFechaVencimientoByPrestamoIdAsync(int prestamoId);
+       
+        /// Obtiene la fecha de vencimiento (FechaFin) de un préstamo por su ID.
+        
+        Task<OperationResult<DateTime>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId);
 
-        Task<OperationResult> GetEstadosPrestamosPorUsuarioAsync(int usuarioId);
+     
+       
+        /// Lista de préstamos activos y atrasados de un usuario.
+       
+        Task<OperationResult<List<Prestamo>>> GetPrestamosActivosPorUsuarioAsync(int usuarioId);
 
-        Task<List<Prestamo>> GetPrestamosActivosPorUsuarioAsync(int usuarioId);
+ 
+        
     }
 }

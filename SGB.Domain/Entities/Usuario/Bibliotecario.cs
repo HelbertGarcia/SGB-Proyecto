@@ -9,6 +9,8 @@ namespace SGB.Domain.Entities.Usuario
 {
     public class Bibliotecario: Persona
     {
+
+        public Bibliotecario() { } // ✅ EF podrá usar este
         public Bibliotecario(string nombre, string apellido, string correo, string contraseña, int idRol)
             : base(nombre, apellido, correo, contraseña, idRol)
         {

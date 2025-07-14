@@ -2,13 +2,13 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SGB.Application.Base.ValidatorServices.Penalizacion;
-using SGB.Application.Contracts.Interfaces.Mappers.PenalizacionMappers;
-using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Penalizacion;
+
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Penalizaciones;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -48,106 +48,117 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             _mapper = mapper;
         }
 
-        public async Task<OperationResult> AddAsync(AddPenalizacionDto dto)
+        public async Task<OperationResult<PenalizacionResponseDto>> AddAsync(AddPenalizacionDto dto)
         {
             var dtoValidation = await _addValidator.ValidateAsync(dto);
             if (!dtoValidation.IsValid)
-                return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+                return OperationResult<PenalizacionResponseDto>.Failure(string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)));
 
             var businessValidation = await _businessValidator.ValidateForAddAsync(dto);
-            if (!businessValidation.Success)
-                return businessValidation;
+            if (!businessValidation.IsSuccess)
+                return OperationResult<PenalizacionResponseDto>.Failure(businessValidation.Message);
 
             try
             {
                 var penalizacion = _mapper.MapFromDto(dto);
 
                 var result = await _penalizacionRepository.AddAsync(penalizacion);
+                if (!result.IsSuccess)
+                    return OperationResult<PenalizacionResponseDto>.Failure(result.Message);
 
-                if (!result.Success)
-                    return result;
-
-                return new OperationResult
-                {
-                    Success = true,
-                    Message = "Penalización registrada correctamente.",
-                    Data = _mapper.MapToDto(penalizacion)
-                };
+                return OperationResult<PenalizacionResponseDto>.Success(_mapper.MapToDto(penalizacion), "Penalización registrada correctamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al registrar penalización");
-                return new OperationResult { Success = false, Message = "Error inesperado al registrar penalización." };
+                return OperationResult<PenalizacionResponseDto>.Failure("Error inesperado al registrar penalización.");
             }
         }
 
-        public async Task<OperationResult> UpdateAsync(UpdatePenalizacionDto dto)
+        //camios
+        public async Task<OperationResult<PenalizacionResponseDto>> UpdateAsync(UpdatePenalizacionDto dto)
         {
             var dtoValidation = await _updateValidator.ValidateAsync(dto);
             if (!dtoValidation.IsValid)
-                return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+                return OperationResult<PenalizacionResponseDto>.Failure(string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)));
 
             var businessValidation = await _businessValidator.ValidateForUpdateAsync(dto);
-            if (!businessValidation.Success)
-                return businessValidation;
+            if (!businessValidation.IsSuccess)
+                return OperationResult<PenalizacionResponseDto>.Failure(businessValidation.Message);
 
             try
             {
-                var penalizacion = await _penalizacionRepository.GetByIdAsync(dto.IDPenalizacion);
+                var penalizacionResult = await _penalizacionRepository.GetByIdAsync(dto.IDPenalizacion);
+
+                if (!penalizacionResult.IsSuccess || penalizacionResult.Data == null)
+                    return OperationResult<PenalizacionResponseDto>.Failure("Penalización no encontrada.");
+
+                var penalizacion = penalizacionResult.Data;
+
                 _mapper.ApplyUpdateDto(penalizacion, dto);
 
                 var result = await _penalizacionRepository.UpdateAsync(penalizacion);
-                if (!result.Success)
-                    return result;
+                if (!result.IsSuccess)
+                    return OperationResult<PenalizacionResponseDto>.Failure(result.Message);
 
-                return new OperationResult
-                {
-                    Success = true,
-                    Message = "Penalización actualizada correctamente.",
-                    Data = _mapper.MapToDto(penalizacion)
-                };
+                return OperationResult<PenalizacionResponseDto>.Success(_mapper.MapToDto(penalizacion), "Penalización actualizada correctamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar penalización");
-                return new OperationResult { Success = false, Message = "Error inesperado al actualizar penalización." };
+                return OperationResult<PenalizacionResponseDto>.Failure("Error inesperado al actualizar penalización.");
             }
         }
 
-        public async Task<OperationResult> DeleteAsync(DisablePenalizacionDto dto)
+
+        public async Task<OperationResult<bool>> DeleteAsync(DisablePenalizacionDto dto)
         {
             var dtoValidation = await _disableValidator.ValidateAsync(dto);
             if (!dtoValidation.IsValid)
-                return new OperationResult { Success = false, Message = string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)) };
+                return OperationResult<bool>.Failure(string.Join("; ", dtoValidation.Errors.Select(e => e.ErrorMessage)));
 
             var businessValidation = await _businessValidator.ValidateForDisableAsync(dto);
-            if (!businessValidation.Success)
-                return businessValidation;
+            if (!businessValidation.IsSuccess)
+                return OperationResult<bool>.Failure(businessValidation.Message);
 
             try
             {
                 var result = await _penalizacionRepository.DisableAsync(dto.IDPenalizacion);
-                return result.Success
-                    ? new OperationResult { Success = true, Message = "Penalización desactivada correctamente." }
-                    : result;
+                if (!result.IsSuccess)
+                    return OperationResult<bool>.Failure(result.Message);
+
+                return OperationResult<bool>.Success(true, "Penalización desactivada correctamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al desactivar penalización");
-                return new OperationResult { Success = false, Message = "Error inesperado al desactivar penalización." };
+                return OperationResult<bool>.Failure("Error inesperado al desactivar penalización.");
             }
         }
 
-        public async Task<OperationResult> CalcularPenalizacionPorRetrasoAsync(int idPrestamo)
+
+        //cambios
+        public async Task<OperationResult<object>> CalcularPenalizacionPorRetrasoAsync(int idPrestamo)
         {
             var businessValidation = await _businessValidator.ValidateForCalcularPenalizacionAsync(idPrestamo);
-            if (!businessValidation.Success)
-                return businessValidation;
+            if (!businessValidation.IsSuccess)
+                return OperationResult<object>.Failure(businessValidation.Message);
 
             try
             {
-                var prestamo = await _prestamoRepository.GetByIdAsync(idPrestamo);
+                var prestamoResult = await _prestamoRepository.GetByIdAsync(idPrestamo);
+                if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
+                    return OperationResult<object>.Failure("Préstamo no encontrado.");
+
+                var prestamo = prestamoResult.Data;
+
+                if (!prestamo.FechaDevolucion.HasValue)
+                    return OperationResult<object>.Failure("El préstamo no tiene fecha de devolución registrada.");
+
                 var diasRetraso = (prestamo.FechaDevolucion.Value - prestamo.FechaFin).Days;
+                if (diasRetraso <= 0)
+                    return OperationResult<object>.Failure("No hay retraso en la devolución.");
+
                 var fechaInicio = prestamo.FechaFin.AddDays(1);
                 var fechaFin = fechaInicio.AddDays(diasRetraso);
 
@@ -159,78 +170,83 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                 );
 
                 var result = await _penalizacionRepository.AddAsync(penalizacion);
-                if (!result.Success)
-                    return result;
+                if (!result.IsSuccess)
+                    return OperationResult<object>.Failure(result.Message);
 
-                return new OperationResult
-                {
-                    Success = true,
-                    Message = "Penalización generada correctamente.",
-                    Data = _mapper.MapToDto(penalizacion)
-                };
+                return OperationResult<object>.Success(_mapper.MapToDto(penalizacion), "Penalización generada correctamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al calcular penalización");
-                return new OperationResult { Success = false, Message = "Error inesperado al calcular penalización." };
+                return OperationResult<object>.Failure("Error inesperado al calcular penalización.");
             }
         }
 
-        public async Task<OperationResult> GetAllAsync()
+
+
+
+
+        public async Task<OperationResult<IEnumerable<PenalizacionResponseDto>>> GetAllAsync()
         {
             try
             {
-                var penalizaciones = await _penalizacionRepository.GetAllAsync();
-                var data = penalizaciones.Select(_mapper.MapToDto).ToList();
+                var result = await _penalizacionRepository.GetAllAsync();
+                if (!result.IsSuccess || result.Data == null)
+                    return OperationResult<IEnumerable<PenalizacionResponseDto>>.Failure(result.Message ?? "Error al obtener penalizaciones.");
 
-                return new OperationResult { Success = true, Data = data, Message = "Penalizaciones obtenidas correctamente." };
+                var data = result.Data.Select(_mapper.MapToDto).ToList();
+
+                return OperationResult<IEnumerable<PenalizacionResponseDto>>.Success(data, "Penalizaciones obtenidas correctamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener penalizaciones");
-                return new OperationResult { Success = false, Message = "Error inesperado al obtener penalizaciones." };
+                return OperationResult<IEnumerable<PenalizacionResponseDto>>.Failure("Error inesperado al obtener penalizaciones.");
             }
         }
 
-        public async Task<OperationResult> GetByIdAsync(int id)
+
+        public async Task<OperationResult<PenalizacionResponseDto>> GetByIdAsync(int id)
         {
             if (id <= 0)
-                return new OperationResult { Success = false, Message = "ID inválido." };
+                return OperationResult<PenalizacionResponseDto>.Failure("ID inválido.");
 
             try
             {
-                var penalizacion = await _penalizacionRepository.GetByIdAsync(id);
-                if (penalizacion == null)
-                    return new OperationResult { Success = false, Message = "Penalización no encontrada." };
+                var result = await _penalizacionRepository.GetByIdAsync(id);
+                if (!result.IsSuccess || result.Data == null)
+                    return OperationResult<PenalizacionResponseDto>.Failure(result.Message ?? "Penalización no encontrada.");
 
-                return new OperationResult
-                {
-                    Success = true,
-                    Message = "Penalización obtenida correctamente.",
-                    Data = _mapper.MapToDto(penalizacion)
-                };
+                return OperationResult<PenalizacionResponseDto>.Success(_mapper.MapToDto(result.Data), "Penalización obtenida correctamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener penalización por ID");
-                return new OperationResult { Success = false, Message = "Error inesperado al buscar penalización." };
+                return OperationResult<PenalizacionResponseDto>.Failure("Error inesperado al buscar penalización.");
             }
         }
 
-        public async Task<OperationResult> ObtenerPenalizacionesActivasPorUsuarioAsync(int usuarioId)
+        
+        public async Task<OperationResult<List<PenalizacionResponseDto>>> ObtenerPenalizacionesActivasPorUsuarioAsync(int usuarioId)
         {
             if (usuarioId <= 0)
-                return new OperationResult { Success = false, Message = "ID inválido." };
+                return OperationResult<List<PenalizacionResponseDto>>.Failure("ID inválido.");
 
             try
             {
                 var result = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(usuarioId);
-                return new OperationResult { Success = true, Message = result.Message, Data = result.Data };
+                if (!result.IsSuccess || result.Data == null)
+                    return OperationResult<List<PenalizacionResponseDto>>.Failure(result.Message ?? "Error al obtener penalizaciones activas.");
+
+                // Aquí mapeamos la lista de Penalizacion a PenalizacionResponseDto
+                var data = result.Data.Select(_mapper.MapToDto).ToList();
+
+                return OperationResult<List<PenalizacionResponseDto>>.Success(data, result.Message);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener penalizaciones activas");
-                return new OperationResult { Success = false, Message = "Error inesperado al obtener penalizaciones activas." };
+                return OperationResult<List<PenalizacionResponseDto>>.Failure("Error inesperado al obtener penalizaciones activas.");
             }
         }
     }

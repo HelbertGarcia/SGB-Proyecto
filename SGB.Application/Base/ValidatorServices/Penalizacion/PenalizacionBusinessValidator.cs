@@ -1,83 +1,92 @@
-﻿using SGB.Application.Contracts.Repository.Interfaces;
+﻿using SGB.Application.Base.ValidatorServices.Penalizacion;
+using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SGB.Application.Base.ValidatorServices.Penalizacion
+public class PenalizacionBusinessValidator : IPenalizacionBusinessValidator
 {
-    public class PenalizacionBusinessValidator : IPenalizacionBusinessValidator
+    private readonly IPenalizacionRepository _penalizacionRepository;
+    private readonly IPrestamoRepository _prestamoRepository;
+
+    public PenalizacionBusinessValidator(
+        IPenalizacionRepository penalizacionRepository,
+        IPrestamoRepository prestamoRepository)
     {
-        private readonly IPenalizacionRepository _penalizacionRepository;
-        private readonly IPrestamoRepository _prestamoRepository;
+        _penalizacionRepository = penalizacionRepository;
+        _prestamoRepository = prestamoRepository;
+    }
 
-        public PenalizacionBusinessValidator(
-            IPenalizacionRepository penalizacionRepository,
-            IPrestamoRepository prestamoRepository)
+    // Valida la creación de una penalización
+    public async Task<OperationResult<string>> ValidateForAddAsync(AddPenalizacionDto dto)
+    {
+        if (dto == null)
+            return OperationResult<string>.Failure("Datos inválidos para penalización.");
+
+        if (dto.FechaInicio > dto.FechaFin)
+            return OperationResult<string>.Failure("La fecha de inicio no puede ser mayor que la fecha fin.");
+
+        // Consulta penalizaciones activas para evitar solapamientos
+        var penalizacionesActivasResult = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(dto.UsuarioId);
+        if (!penalizacionesActivasResult.IsSuccess)
+            return OperationResult<string>.Failure(penalizacionesActivasResult.Message);
+
+        var penalizacionesActivas = penalizacionesActivasResult.Data;
+        if (penalizacionesActivas != null && penalizacionesActivas.Any())
         {
-            _penalizacionRepository = penalizacionRepository;
-            _prestamoRepository = prestamoRepository;
+            // Retorna error si hay penalizaciones activas que podrían superponerse
+            return OperationResult<string>.Failure("El usuario tiene penalizaciones activas que podrían solaparse.");
         }
 
-        public async Task<OperationResult> ValidateForAddAsync(AddPenalizacionDto dto)
-        {
-            if (dto == null)
-                return new OperationResult { Success = false, Message = "Datos inválidos para penalización." };
+        return OperationResult<string>.Success("Validación exitosa.");
+    }
 
-            if (dto.FechaInicio > dto.FechaFin)
-                return new OperationResult { Success = false, Message = "La fecha de inicio no puede ser mayor que la fecha fin." };
+    // Valida la actualización de una penalización
+    public async Task<OperationResult<string>> ValidateForUpdateAsync(UpdatePenalizacionDto dto)
+    {
+        if (dto == null)
+            return OperationResult<string>.Failure("Datos inválidos para actualizar penalización.");
 
-            // Podrías validar que el usuario no tenga penalizaciones activas que se crucen, etc.
+        var penalizacionResult = await _penalizacionRepository.GetByIdAsync(dto.IDPenalizacion);
+        if (!penalizacionResult.IsSuccess || penalizacionResult.Data == null)
+            return OperationResult<string>.Failure("Penalización no encontrada.");
 
-            return new OperationResult { Success = true };
-        }
+        if (dto.FechaInicio.HasValue && dto.FechaFin.HasValue && dto.FechaInicio > dto.FechaFin)
+            return OperationResult<string>.Failure("La fecha de inicio no puede ser mayor que la fecha fin.");
 
-        public async Task<OperationResult> ValidateForUpdateAsync(UpdatePenalizacionDto dto)
-        {
-            if (dto == null)
-                return new OperationResult { Success = false, Message = "Datos inválidos para actualizar penalización." };
+        return OperationResult<string>.Success("Validación exitosa.");
+    }
 
-            var penalizacion = await _penalizacionRepository.GetByIdAsync(dto.IDPenalizacion);
-            if (penalizacion == null)
-                return new OperationResult { Success = false, Message = "Penalización no encontrada." };
+    // Valida la desactivación de una penalización
+    public async Task<OperationResult<string>> ValidateForDisableAsync(DisablePenalizacionDto dto)
+    {
+        if (dto == null)
+            return OperationResult<string>.Failure("Datos inválidos para desactivar penalización.");
 
-            if (dto.FechaInicio.HasValue && dto.FechaFin.HasValue && dto.FechaInicio > dto.FechaFin)
-                return new OperationResult { Success = false, Message = "La fecha de inicio no puede ser mayor que la fecha fin." };
+        var penalizacionResult = await _penalizacionRepository.GetByIdAsync(dto.IDPenalizacion);
+        if (!penalizacionResult.IsSuccess || penalizacionResult.Data == null)
+            return OperationResult<string>.Failure("Penalización no encontrada.");
 
-            return new OperationResult { Success = true };
-        }
+        var penalizacion = penalizacionResult.Data;
+        if (!penalizacion.EstaActivo)
+            return OperationResult<string>.Failure("La penalización ya está desactivada.");
 
-        public async Task<OperationResult> ValidateForDisableAsync(DisablePenalizacionDto dto)
-        {
-            if (dto == null)
-                return new OperationResult { Success = false, Message = "Datos inválidos para desactivar penalización." };
+        return OperationResult<string>.Success("Validación exitosa.");
+    }
 
-            var penalizacion = await _penalizacionRepository.GetByIdAsync(dto.IDPenalizacion);
-            if (penalizacion == null)
-                return new OperationResult { Success = false, Message = "Penalización no encontrada." };
+    // Valida si se puede calcular penalización por retraso en un préstamo
+    public async Task<OperationResult<string>> ValidateForCalcularPenalizacionAsync(int idPrestamo)
+    {
+        var prestamoResult = await _prestamoRepository.GetByIdAsync(idPrestamo);
+        if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
+            return OperationResult<string>.Failure("Préstamo no encontrado.");
 
-            if (!penalizacion.EstaActivo)
-                return new OperationResult { Success = false, Message = "La penalización ya está desactivada." };
+        var prestamo = prestamoResult.Data;
+        if (!prestamo.FechaDevolucion.HasValue)
+            return OperationResult<string>.Failure("El préstamo no tiene fecha de devolución registrada.");
 
-            return new OperationResult { Success = true };
-        }
+        if (prestamo.FechaDevolucion <= prestamo.FechaFin)
+            return OperationResult<string>.Failure("No hay retraso en la devolución.");
 
-        public async Task<OperationResult> ValidateForCalcularPenalizacionAsync(int idPrestamo)
-        {
-            var prestamo = await _prestamoRepository.GetByIdAsync(idPrestamo);
-            if (prestamo == null)
-                return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
-
-            if (!prestamo.FechaDevolucion.HasValue)
-                return new OperationResult { Success = false, Message = "El préstamo no tiene fecha de devolución registrada." };
-
-            if (prestamo.FechaDevolucion <= prestamo.FechaFin)
-                return new OperationResult { Success = false, Message = "No hay retraso en la devolución." };
-
-            return new OperationResult { Success = true };
-        }
+        return OperationResult<string>.Success("Validación exitosa.");
     }
 }

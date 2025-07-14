@@ -1,16 +1,19 @@
-﻿using SGB.Application.Contracts.Interfaces.Mappers.PenalizacionMappers;
+﻿
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Entities.Penalizaciones;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SGB.Application.Extensions.Mappers.PenalizacionesMapper
 {
     public class PenalizacionMapper : IPenalizacionMapper
     {
+        public Penalizacion MapFromDto(AddPenalizacionDto dto)
+        {
+            // Asumiendo que el constructor de Penalizacion es:
+            // Penalizacion(int usuarioId, string motivo, DateTime fechaInicio, DateTime fechaFin)
+            return new Penalizacion(dto.UsuarioId, dto.Motivo, dto.FechaInicio, dto.FechaFin);
+        }
+
         public void ApplyUpdateDto(Penalizacion entity, UpdatePenalizacionDto dto)
         {
             if (!string.IsNullOrWhiteSpace(dto.Motivo))
@@ -26,22 +29,18 @@ namespace SGB.Application.Extensions.Mappers.PenalizacionesMapper
                 entity.FechaDevolucion = dto.FechaDevolucion.Value;
         }
 
-        public Penalizacion MapFromDto(AddPenalizacionDto dto)
+        public PenalizacionResponseDto MapToDto(Penalizacion entity)
         {
-            return new Penalizacion(dto.UsuarioId, dto.Motivo, dto.FechaInicio, dto.FechaFin); ;
-        }
-
-        public object MapToDto(Penalizacion entity)
-        {
-            return new
+            return new PenalizacionResponseDto
             {
-                entity.Id,
-                IDUsuario = entity.IDUsuario,
-                entity.Motivo,
-                entity.FechaInicio,
-                entity.FechaFin,
-                entity.FechaDevolucion,
-                entity.EstaActivo
+                IDPenalizacion = entity.Id,
+                UsuarioId = entity.IDUsuario,
+                Motivo = entity.Motivo,
+                FechaInicio = entity.FechaInicio,
+                FechaFin = entity.FechaFin,
+                FechaDevolucion = entity.FechaDevolucion,
+                EstaActivo = entity.EstaActivo,
+                Monto = entity.Monto // si existe en la entidad
             };
         }
     }

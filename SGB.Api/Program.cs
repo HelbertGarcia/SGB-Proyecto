@@ -4,7 +4,6 @@ using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices;
 
 using SGB.Persistence.Context;
-using SGB.Persistence.Interfaces;
 using SGB.Persistence.Repositories;
 using SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PenalizacionDependencia;
 using SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia;
@@ -31,7 +30,7 @@ namespace SGB.Api
 
            
 
-
+            //registrar dependencias de Prestamo y Penalizacion
             builder.Services.AddPenalizacionDependency();
             builder.Services.AddPrestamoDependency();
 
@@ -45,8 +44,8 @@ namespace SGB.Api
             // Penalizacion
             builder.Services.AddScoped<IPenalizacionRepository, PenalizacionRepository>();
             builder.Services.AddTransient<IPenalizacionServices, PenalizacionService>();
-
             */
+            
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

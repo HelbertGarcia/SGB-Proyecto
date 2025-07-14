@@ -1,4 +1,8 @@
-﻿using SGB.Domain.Base;
+﻿
+using SGB.Domain.Base;
+
+
+using SGB.Domain.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,18 +11,16 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Base
 {
-    public interface IBaseService<TDtoAdd,TDtoUpdate,TDtoDelete>
-
+    public interface IBaseService<TAddDto, TUpdateDto, TDtoDelete , TDto>
     {
-         Task<OperationResult> AddAsync(TDtoAdd dto);
-        Task<OperationResult> UpdateAsync(TDtoUpdate dto);
-        Task<OperationResult> DeleteAsync(TDtoDelete dto);
+        Task<OperationResult<TDto>> AddAsync(TAddDto dto);
+        Task<OperationResult<TDto>> UpdateAsync( TUpdateDto dto);
+        Task<OperationResult<bool>> DeleteAsync(TDtoDelete dto);
 
-        Task<OperationResult> GetAllAsync();
-
-        Task<OperationResult> GetByIdAsync(int id);
-       
-
-
+        Task<OperationResult<IEnumerable<TDto>>> GetAllAsync();
+        Task<OperationResult<TDto>> GetByIdAsync(int id);
     }
 }
+
+
+

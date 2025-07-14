@@ -9,13 +9,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using SGB.Application.Contracts.Repository.Interfaces;
+using System.Collections.Generic;
 
 namespace SGB.Persistence.Repositories
 {
     public class PrestamoRepository : BaseRepository<Prestamo>, IPrestamoRepository
     {
         private readonly ILogger<PrestamoRepository> _logger;
-        private readonly String? _ConnectionStrings;
+        private readonly string? _ConnectionStrings;
         private readonly IConfiguration _configuration;
 
         public PrestamoRepository(SGBContext context,
@@ -25,16 +26,16 @@ namespace SGB.Persistence.Repositories
         {
             _configuration = configuration;
             _logger = loggerFactory.CreateLogger<PrestamoRepository>();
-            _ConnectionStrings = _configuration.GetConnectionString("SGBDatabase")!;
+            _ConnectionStrings = _configuration.GetConnectionString("SGBDatabase");
         }
 
         #region "Implementación de IPrestamoRepository"
 
-        public async Task<OperationResult> GetFechaVencimientoByPrestamoIdAsync(int prestamoId)
+        public async Task<OperationResult<DateTime>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId)
         {
             if (prestamoId <= 0)
             {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "ID de préstamo inválido." });
+                return OperationResult<DateTime>.Failure("ID de préstamo inválido.");
             }
 
             try
@@ -44,66 +45,57 @@ namespace SGB.Persistence.Repositories
                     .Select(p => p.FechaFin)
                     .FirstOrDefaultAsync();
 
-                if (fechaFin != default(DateTime))
+                if (fechaFin != default)
                 {
-                    return new OperationResult { Data = fechaFin };
+                    return OperationResult<DateTime>.Success(fechaFin);
                 }
                 else
                 {
-                    return new OperationResult
-                    {
-                        Success = false,
-                        Message = _configuration["ErrorMessages:Prestamos:LoanNotFound"] ?? "Préstamo no encontrado."
-                    };
+                    string msg = _configuration["ErrorMessages:Prestamos:LoanNotFound"] ?? "Préstamo no encontrado.";
+                    return OperationResult<DateTime>.Failure(msg);
                 }
             }
             catch (Exception ex)
             {
-                var errorMessage = _configuration["ErrorMessages:Prestamos:GetFechaFinError"] ?? "Error al obtener la fecha de fin.";
+                string errorMessage = _configuration["ErrorMessages:Prestamos:GetFechaFinError"] ?? "Error al obtener la fecha de fin.";
                 _logger.LogError(ex, "{ErrorMessage} - ID de Préstamo: {PrestamoId}", errorMessage, prestamoId);
-                return new OperationResult { Success = false, Message = errorMessage };
+                return OperationResult<DateTime>.Failure(errorMessage);
             }
         }
 
-        public async Task<OperationResult> GetEstadosPrestamosPorUsuarioAsync(int usuarioId)
+        public async Task<OperationResult<List<(int PrestamoId, string Estado)>>> GetEstadosPrestamosPorUsuarioAsync(int usuarioId)
         {
             if (usuarioId <= 0)
             {
-                return await Task.FromResult(new OperationResult { Success = false, Message = "ID de usuario inválido." });
+                return OperationResult<List<(int, string)>>.Failure("ID de usuario inválido.");
             }
 
             try
             {
                 var estados = await Entity
                     .AsNoTracking()
-                    .Where(p => p.UsuarioId == usuarioId) 
-                    .Select(p => new
-                    {
-                        PrestamoId = p.Id,
-                        Estado = p.Estado.ToString()
-                    })
+                    .Where(p => p.UsuarioId == usuarioId)
+                    .Select(p => new ValueTuple<int, string>(p.Id, p.Estado.ToString()))
                     .ToListAsync();
 
-                return new OperationResult { Data = estados };
+                return OperationResult<List<(int, string)>>.Success(estados);
             }
             catch (Exception ex)
             {
-                var errorMessage = _configuration["ErrorMessages:Prestamos:GetEstadosPorUsuarioError"] ?? "Error al obtener los estados de préstamos del usuario.";
+                string errorMessage = _configuration["ErrorMessages:Prestamos:GetEstadosPorUsuarioError"] ?? "Error al obtener los estados de préstamos del usuario.";
                 _logger.LogError(ex, "{ErrorMessage} - UsuarioId: {UsuarioId}", errorMessage, usuarioId);
-                return new OperationResult { Success = false, Message = errorMessage };
+                return OperationResult<List<(int, string)>>.Failure(errorMessage);
             }
         }
 
-
         #endregion
-        //nuevo metodo 
 
-        public async Task<List<Prestamo>> GetPrestamosActivosPorUsuarioAsync(int usuarioId)
+        public async Task<OperationResult<List<Prestamo>>> GetPrestamosActivosPorUsuarioAsync(int usuarioId)
         {
             if (usuarioId <= 0)
             {
                 _logger.LogWarning("ID de usuario inválido para la consulta de préstamos activos.");
-                return new List<Prestamo>();
+                return OperationResult<List<Prestamo>>.Failure("ID de usuario inválido.");
             }
 
             try
@@ -116,16 +108,16 @@ namespace SGB.Persistence.Repositories
                         (p.Estado == EstadoPrestamo.Activo || p.Estado == EstadoPrestamo.Atrasado))
                     .ToListAsync();
 
-                return prestamosActivos;
+                return OperationResult<List<Prestamo>>.Success(prestamosActivos);
             }
             catch (Exception ex)
             {
-                var mensaje = _configuration["ErrorMessages:Prestamos:GetPrestamosActivosError"]
-                              ?? "Error al obtener los préstamos activos del usuario.";
+                string mensaje = _configuration["ErrorMessages:Prestamos:GetPrestamosActivosError"] ?? "Error al obtener los préstamos activos del usuario.";
                 _logger.LogError(ex, "{Mensaje} - UsuarioId: {UsuarioId}", mensaje, usuarioId);
-                return new List<Prestamo>();
+                return OperationResult<List<Prestamo>>.Failure(mensaje);
             }
         }
 
+       
     }
 }

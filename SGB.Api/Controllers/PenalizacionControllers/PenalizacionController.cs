@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Base;
-using SGB.Domain.Entities.Penalizaciones;
-using SGB.Application.Contracts.Interfaces.Service.IPrestamos_PenalizacionServices.Penalizacion;
 
 namespace SGB.Api.Controllers.PenalizacionControllers
 {
@@ -22,27 +20,27 @@ namespace SGB.Api.Controllers.PenalizacionControllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Penalizacion>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<PenalizacionResponseDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllPenalizaciones()
         {
             var result = await _penalizacionService.GetAllAsync();
 
-            if (!result.Success)
+            if (!result.IsSuccess)
                 return BadRequest(result);
 
             return Ok(result.Data);
         }
 
         [HttpGet("{idPenalizacion:int}")]
-        [ProducesResponseType(typeof(Penalizacion), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PenalizacionResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetPenalizacionById(int idPenalizacion)
         {
             var result = await _penalizacionService.GetByIdAsync(idPenalizacion);
 
-            if (!result.Success)
+            if (!result.IsSuccess)
             {
                 if (EsNotFound(result.Message))
                     return NotFound(result);
@@ -54,7 +52,7 @@ namespace SGB.Api.Controllers.PenalizacionControllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(Penalizacion), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(PenalizacionResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddPenalizacion([FromBody] AddPenalizacionDto addPenalizacionDto)
         {
@@ -63,18 +61,18 @@ namespace SGB.Api.Controllers.PenalizacionControllers
 
             var result = await _penalizacionService.AddAsync(addPenalizacionDto);
 
-            if (!result.Success)
+            if (!result.IsSuccess)
                 return BadRequest(result);
 
-            var nuevaPenalizacion = result.Data as Penalizacion;
+            var nuevaPenalizacionDto = result.Data as PenalizacionResponseDto;
 
             return CreatedAtAction(nameof(GetPenalizacionById),
-                                   new { idPenalizacion = nuevaPenalizacion?.Id },
-                                   nuevaPenalizacion);
+                                   new { idPenalizacion = nuevaPenalizacionDto?.IDPenalizacion },
+                                   nuevaPenalizacionDto);
         }
 
         [HttpPut("{idPenalizacion:int}")]
-        [ProducesResponseType(typeof(Penalizacion), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PenalizacionResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdatePenalizacion(int idPenalizacion, [FromBody] UpdatePenalizacionDto updatePenalizacionDto)
@@ -87,7 +85,7 @@ namespace SGB.Api.Controllers.PenalizacionControllers
 
             var result = await _penalizacionService.UpdateAsync(updatePenalizacionDto);
 
-            if (!result.Success)
+            if (!result.IsSuccess)
             {
                 if (EsNotFound(result.Message))
                     return NotFound(result);
@@ -97,15 +95,20 @@ namespace SGB.Api.Controllers.PenalizacionControllers
             return Ok(result.Data);
         }
 
-        [HttpDelete("{id:int}")]
+        // Aquí cambiamos a recibir el ID en la ruta para borrar / desactivar
+        [HttpDelete("{idPenalizacion:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DisablePenalizacion([FromBody] DisablePenalizacionDto disablePenalizacionDto)
+        public async Task<IActionResult> DisablePenalizacion(int idPenalizacion)
         {
-            var result = await _penalizacionService.DeleteAsync(disablePenalizacionDto);
+            if (idPenalizacion <= 0)
+                return BadRequest(new { Message = "ID inválido." });
 
-            if (!result.Success)
+            var dto = new DisablePenalizacionDto { IDPenalizacion = idPenalizacion };
+            var result = await _penalizacionService.DeleteAsync(dto);
+
+            if (!result.IsSuccess)
             {
                 if (EsNotFound(result.Message))
                     return NotFound(result);

@@ -3,11 +3,7 @@ using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections;
 
 namespace SGB.Application.Base.ValidatorServices.Prestamos
 {
@@ -24,82 +20,92 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
             _penalizacionRepository = penalizacionRepository;
         }
 
-        public async Task<OperationResult> ValidateForAddAsync(AddPrestamoDto dto)
+        public async Task<OperationResult<string>> ValidateForAddAsync(AddPrestamoDto dto)
         {
             if (dto == null)
-                return new OperationResult { Success = false, Message = "Datos de préstamo inválidos." };
+                return OperationResult<string>.Failure("Datos de préstamo inválidos.");
 
-            // Validar que usuario no tenga préstamos activos pendientes de devolución
-            var prestamosActivos = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(dto.UsuarioId);
-            if (prestamosActivos.Any(p => p.Estado != Domain.Entities.Prestamos.EstadoPrestamo.Devuelto && p.Estado != Domain.Entities.Prestamos.EstadoPrestamo.DevueltoConAtraso))
+            // Obtener préstamos activos con validación de éxito
+            var prestamosActivosResult = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(dto.UsuarioId);
+            if (!prestamosActivosResult.IsSuccess)
+                return OperationResult<string>.Failure(prestamosActivosResult.Message);
+
+            var prestamosActivos = prestamosActivosResult.Data;
+
+            // Validar que existan préstamos activos no devueltos
+            if (prestamosActivos != null && prestamosActivos.Any(p => p.Estado != Domain.Entities.Prestamos.EstadoPrestamo.Devuelto
+                                                                        && p.Estado != Domain.Entities.Prestamos.EstadoPrestamo.DevueltoConAtraso))
             {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El usuario tiene préstamos pendientes no devueltos."
-                };
+                return OperationResult<string>.Failure("El usuario tiene préstamos pendientes no devueltos.");
             }
 
-            // Validar que usuario no tenga penalizaciones activas
-            var penalizacionesActivas = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(dto.UsuarioId);
-            if (penalizacionesActivas != null && penalizacionesActivas.Data is System.Collections.IEnumerable penList && penList.GetEnumerator().MoveNext())
+            // Obtener penalizaciones activas
+            var penalizacionesActivasResult = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(dto.UsuarioId);
+            if (!penalizacionesActivasResult.IsSuccess)
+                return OperationResult<string>.Failure(penalizacionesActivasResult.Message);
+
+            var penalizacionesActivas = penalizacionesActivasResult.Data;
+
+            // Validar si hay penalizaciones activas
+            if (penalizacionesActivas != null && penalizacionesActivas is IEnumerable penList && penList.GetEnumerator().MoveNext())
             {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "El usuario tiene penalizaciones activas."
-                };
+                return OperationResult<string>.Failure("El usuario tiene penalizaciones activas.");
             }
 
-            // Podrías agregar más validaciones de negocio como fechas, estado, etc.
-
-            return new OperationResult { Success = true };
+            return OperationResult<string>.Success("Validación exitosa.");
         }
 
-        public async Task<OperationResult> ValidateForUpdateAsync(UpdatePrestamoDto dto)
+        public async Task<OperationResult<string>> ValidateForUpdateAsync(UpdatePrestamoDto dto)
         {
             if (dto == null)
-                return new OperationResult { Success = false, Message = "Datos de actualización inválidos." };
+                return OperationResult<string>.Failure("Datos de actualización inválidos.");
 
             var prestamo = await _prestamoRepository.GetByIdAsync(dto.IDPrestamo);
             if (prestamo == null)
-                return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
+                return OperationResult<string>.Failure("Préstamo no encontrado.");
 
-            // Validar que las fechas sean coherentes
             if (dto.FechaFin.HasValue && dto.FechaDevolucion.HasValue && dto.FechaDevolucion < dto.FechaFin)
             {
-                return new OperationResult { Success = false, Message = "La fecha de devolución no puede ser anterior a la fecha fin del préstamo." };
+                return OperationResult<string>.Failure("La fecha de devolución no puede ser anterior a la fecha fin.");
             }
 
-            return new OperationResult { Success = true };
+            return OperationResult<string>.Success("Validación exitosa.");
         }
 
-        public async Task<OperationResult> ValidateForDisableAsync(DiseblePrestamoDto dto)
+        public async Task<OperationResult<string>> ValidateForDisableAsync(DiseblePrestamoDto dto)
         {
             if (dto == null)
-                return new OperationResult { Success = false, Message = "Datos inválidos para deshabilitar préstamo." };
+                return OperationResult<string>.Failure("Datos inválidos para deshabilitar préstamo.");
 
-            var prestamo = await _prestamoRepository.GetByIdAsync(dto.IDPrestamo);
-            if (prestamo == null)
-                return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
+            var prestamoResult = await _prestamoRepository.GetByIdAsync(dto.IDPrestamo);
+
+            if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
+                return OperationResult<string>.Failure("Préstamo no encontrado.");
+
+            var prestamo = prestamoResult.Data;
 
             if (!prestamo.EstaActivo)
-                return new OperationResult { Success = false, Message = "El préstamo ya está desactivado." };
+                return OperationResult<string>.Failure("El préstamo ya está desactivado.");
 
-            return new OperationResult { Success = true };
+            return OperationResult<string>.Success("Validación exitosa.");
         }
 
-        public async Task<OperationResult> ValidateForRegistrarDevolucionAsync(int idPrestamo)
+
+        public async Task<OperationResult<string>> ValidateForRegistrarDevolucionAsync(int idPrestamo)
         {
-            var prestamo = await _prestamoRepository.GetByIdAsync(idPrestamo);
-            if (prestamo == null)
-                return new OperationResult { Success = false, Message = "Préstamo no encontrado." };
+            var prestamoResult = await _prestamoRepository.GetByIdAsync(idPrestamo);
+
+            if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
+                return OperationResult<string>.Failure("Préstamo no encontrado.");
+
+            var prestamo = prestamoResult.Data;
 
             if (prestamo.FechaDevolucion.HasValue)
-                return new OperationResult { Success = false, Message = "El préstamo ya tiene fecha de devolución registrada." };
+                return OperationResult<string>.Failure("El préstamo ya tiene fecha de devolución registrada.");
 
-            return new OperationResult { Success = true };
+            return OperationResult<string>.Success("Validación exitosa.");
         }
-    }
 
+
+    }
 }

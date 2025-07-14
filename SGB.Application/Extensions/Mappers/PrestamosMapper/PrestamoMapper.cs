@@ -1,11 +1,6 @@
 ﻿using SGB.Application.Contracts.Interfaces.Mappers.PrestamoMappers;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Entities.Prestamos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SGB.Application.Extensions.Mappers.PrestamosMapper
 {
@@ -28,19 +23,19 @@ namespace SGB.Application.Extensions.Mappers.PrestamosMapper
             return new Prestamo(dto.UsuarioId, dto.ISBN, dto.FechaInicio, dto.FechaFin);
         }
 
-        public object MapToDto(Prestamo entity)
+        public PrestamoResponseDto MapToDto(Prestamo entity)
         {
-            return new
+            return new PrestamoResponseDto
             {
-                entity.Id,
-                entity.UsuarioId,
-                entity.ISBN,
-                entity.FechaInicio,
-                entity.FechaFin,
-                entity.FechaDevolucion,
+                Id = entity.Id,
+                UsuarioId = entity.UsuarioId,
+                ISBN = entity.ISBN,
+                FechaInicio = entity.FechaInicio,
+                FechaFin = entity.FechaFin,
+                FechaDevolucion = entity.FechaDevolucion,
                 Estado = entity.Estado.ToString(),
-                entity.EstaActivo
-            }; ;
+                EstaActivo = entity.EstaActivo
+            };
         }
     }
 }

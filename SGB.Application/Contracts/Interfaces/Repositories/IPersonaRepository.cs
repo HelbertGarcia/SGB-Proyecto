@@ -1,22 +1,20 @@
-﻿// Ubicación: SGB.Persistence/Interfaces/IPersonaRepository.cs
-using SGB.Domain.Base;
-using SGB.Domain.Repository;
+﻿using SGB.Domain.Base;
 using System.Threading.Tasks;
 
-namespace SGB.Persistence.Interfaces
+namespace SGB.Application.Contracts.Repository.Interfaces
 {
-    public interface IPersonaRepository : IBaseRepository<Persona> // Se asume que IBaseRepository se llama IRepository
+    public interface IPersonaRepository : IBaseRepository<Persona>
     {
-        Task<OperationResult> ObtenerPorEmailAsync(string email);
+        Task<OperationResult<Persona>> ObtenerPorEmailAsync(string email);
 
-        Task<OperationResult> ExisteEmailAsync(string email);
+        Task<OperationResult<bool>> ExisteEmailAsync(string email);
 
-        Task<OperationResult> BuscarPorRolAsync(int idRol);
+        Task<OperationResult<IEnumerable<Persona>>> BuscarPorRolAsync(int idRol);
 
-        Task<OperationResult> ObtenerTodosActivosAsync();
+        Task<OperationResult<IEnumerable<Persona>>> ObtenerTodosActivosAsync();
 
-        Task<OperationResult> ActivarCuentaAsync(int idUsuario);
+        Task<OperationResult<bool>> ActivarCuentaAsync(int idUsuario);
 
-        Task<OperationResult> DesactivarCuentaAsync(int idUsuario);
+        Task<OperationResult<bool>> DesactivarCuentaAsync(int idUsuario);
     }
 }

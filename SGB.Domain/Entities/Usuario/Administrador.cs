@@ -7,12 +7,15 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Entities.Usuario
 {
-    public class Administrador: Persona
+    public class Administrador : Persona
     {
-        public Administrador(string nombre, string apellido, string correo, string contraseña, int idRol)
-           : base(nombre, apellido, correo, contraseña, idRol)
-        {
+        public Administrador() { } // Necesario para EF
 
+        public Administrador(string nombre, string apellido, string correo, string contraseña, int idRol)
+            : base(nombre, apellido, correo, contraseña, idRol)
+        {
         }
     }
+
+
 }
