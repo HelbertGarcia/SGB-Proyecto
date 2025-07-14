@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
 using SGB.Domain.Base;
-using SGB.Domain.Entities.Usuario;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 
 namespace SGB.Application.Contracts.Service.IUsuarioServices
