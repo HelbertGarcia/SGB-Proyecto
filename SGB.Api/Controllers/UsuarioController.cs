@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Contracts.Service.IUsuarioServices;
 using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
+using System.Threading.Tasks;
 
 namespace SGB.Api.Controllers
 {
@@ -15,37 +16,68 @@ namespace SGB.Api.Controllers
             _usuarioServices = usuarioServices;
         }
 
-
-
-        [HttpGet("")]
-        public IEnumerable<string> Get()
+        [HttpGet(Name = "ObtenerTodosLosUsuarios")]
+        public async Task<IActionResult> GetAll()
         {
-            return new string[] { "value1", "value2" };
+            var resultado = await _usuarioServices.GetAllAsync();
+            if (!resultado.IsSuccess) return BadRequest(resultado);
+            return Ok(resultado.Data);
         }
 
-
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{id}", Name = "ObtenerUsuarioPorId")]
+        public async Task<IActionResult> GetById(int id)
         {
-            return "value";
+            var resultado = await _usuarioServices.GetByIdAsync(id);
+            if (!resultado.IsSuccess || resultado.Data == null) return NotFound(resultado);
+            return Ok(resultado.Data);
         }
 
-
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpGet("buscar/{termino}", Name = "BuscarUsuarioPorTermino")]
+        public async Task<IActionResult> BuscarPorTermino(string termino)
         {
+            var resultado = await _usuarioServices.BuscarUsuariosAsync(termino);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
+            return Ok(resultado.Data);
         }
 
-
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPost(Name = "CrearUsuario")]
+        public async Task<IActionResult> Crear([FromBody] SaveUsuarioDto usuarioDto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var resultado = await _usuarioServices.AddUsuarioAsync(usuarioDto);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
+
+            var usuarioCreado = (UsuarioDto)resultado.Data!;
+            return CreatedAtAction(nameof(GetById), new { id = usuarioCreado.IDUsuario }, usuarioCreado);
         }
 
-
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpPut("{id}", Name = "ActualizarUsuario")]
+        public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateUsuarioDto usuarioDto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var resultado = await _usuarioServices.UpdateAsync(id, usuarioDto);
+            if (!resultado.IsSuccess)
+            {
+                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
+                return BadRequest(resultado);
+            }
+
+            return Ok(resultado.Data);
+        }
+
+        [HttpDelete("{id}", Name = "EliminarUsuario")]
+        public async Task<IActionResult> Eliminar(int id)
+        {
+            var resultado = await _usuarioServices.DeleteAsync(id);
+            if (!resultado.IsSuccess)
+            {
+                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
+                return BadRequest(resultado);
+            }
+
+            return NoContent();
         }
     }
 }

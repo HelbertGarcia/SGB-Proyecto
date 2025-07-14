@@ -1,5 +1,6 @@
-﻿using SGB.Domain.Entities.Notificaciones;
-using SGB.Domain.Repository;
+﻿using SGB.Application.Contracts.Repository;
+using SGB.Domain.Entities.Notificaciones;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

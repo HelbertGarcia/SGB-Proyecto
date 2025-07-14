@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using SGB.Application.Contracts.Service.IReporte_EstadisticaServices;
+using System.Threading.Tasks;
 
 namespace SGB.Api.Controllers
 {
@@ -8,36 +8,51 @@ namespace SGB.Api.Controllers
     [ApiController]
     public class Reporte_y_EstadisticaController : ControllerBase
     {
-        // GET: api/<ValuesController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly IReporte_EstadisticaServices _reporteService;
+
+        public Reporte_y_EstadisticaController(IReporte_EstadisticaServices reporteService)
         {
-            return new string[] { "value1", "value2" };
+            _reporteService = reporteService;
         }
 
-        // GET api/<ValuesController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+      
+        [HttpGet("libros-mas-prestados")]
+        public async Task<IActionResult> GetLibrosMasPrestados()
         {
-            return "value";
+            var resultado = await _reporteService.GenerarLibrosMasPrestadosAsync();
+            if (!resultado.IsSuccess) return BadRequest(resultado);
+            return Ok(resultado.Data);
         }
 
-        // POST api/<ValuesController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+       
+        [HttpGet("historial-usuario/{idUsuario}")]
+        public async Task<IActionResult> GetHistorialUsuario(int idUsuario)
         {
+            var resultado = await _reporteService.GenerarHistorialPrestamosPorUsuarioAsync(idUsuario);
+            if (!resultado.IsSuccess || resultado.Data == null) return NotFound(resultado);
+            return Ok(resultado.Data);
         }
 
-        // PUT api/<ValuesController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+     
+        [HttpGet("usuarios-con-penalizaciones")]
+        public async Task<IActionResult> GetUsuariosConPenalizaciones()
         {
+            var resultado = await _reporteService.GenerarUsuariosConPenalizacionesActivasAsync();
+            if (!resultado.IsSuccess) return BadRequest(resultado);
+            return Ok(resultado.Data);
         }
 
-        // DELETE api/<ValuesController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+       
+        [HttpPost("exportar/{idReporte}")]
+        public async Task<IActionResult> Exportar(int idReporte, [FromQuery] string tipoArchivo)
         {
+            if (string.IsNullOrWhiteSpace(tipoArchivo))
+                return BadRequest("Debe especificar el tipo de archivo a exportar.");
+
+            var resultado = await _reporteService.ExportarReporteAsync(idReporte, tipoArchivo);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
+
+            return Ok(new { mensaje = resultado.Message });
         }
     }
 }

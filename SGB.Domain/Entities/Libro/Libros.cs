@@ -1,26 +1,24 @@
 ﻿using SGB.Domain.Base;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace SGB.Domain.Entities.Libro
 {
-    public class Libro: IEstaActivo
+    public class Libro : BaseEntity, IEstaActivo
     {
-        public int Id { get; set; }
         public string ISBN { get; private set; }
         public string Titulo { get; private set; }
         public string Autor { get; private set; }
         public string Editorial { get; private set; }
-        public DateTime? FechaPublicacion { get; private set; } 
-
+        public DateTime? FechaPublicacion { get; private set; }
         public int IDCategoria { get; private set; }
-        public DateTime FechaRegistro { get; private set; } 
+        public DateTime FechaRegistro { get; private set; }
         public DateTime FechaActualizacion { get; private set; }
-
-        public bool EstaActivo { get ; set ; }
+        public bool EstaActivo { get; private set; }
 
         private Libro() { }
 
-        public Libro(string isbn, string titulo, string autor, string editorial, DateTime? fechaPublicacion, int idCategoria)
+        public Libro(string isbn, string titulo, string autor, string editorial, DateTime? fechaPublicacion, int idCategoria) : base()
         {
             ValidarYAsignarISBN(isbn);
             ValidarYAsignarTitulo(titulo);
@@ -50,7 +48,6 @@ namespace SGB.Domain.Entities.Libro
             }
 
             Editorial = nuevaEditorial;
-
             ActualizarFechaModificacion();
         }
 
@@ -58,7 +55,6 @@ namespace SGB.Domain.Entities.Libro
         {
             FechaActualizacion = DateTime.UtcNow;
         }
-
 
         private void ValidarYAsignarISBN(string isbn)
         {
