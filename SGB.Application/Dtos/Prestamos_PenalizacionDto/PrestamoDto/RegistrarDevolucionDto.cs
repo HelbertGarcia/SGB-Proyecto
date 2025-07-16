@@ -1,5 +1,4 @@
-﻿using SGB.Application.Dtos.BaseDto;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
-    public class DiseblePrestamoDto : DTOBase
+    public class RegistrarDevolucionDto
     {
-
-        public int IDPrestamo { get; set; }
-
-
-
+        public int IdPrestamo { get; set; }
+        public DateTime FechaDevolucion { get; set; } // ← ¡clave!
     }
 }

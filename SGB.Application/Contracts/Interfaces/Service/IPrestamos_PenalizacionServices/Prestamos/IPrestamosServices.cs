@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 public interface IPrestamosServices : IBaseService<AddPrestamoDto, UpdatePrestamoDto, DiseblePrestamoDto, PrestamoResponseDto>
 {
     Task<OperationResult<string>> ActualizarEstadoPrestamoPorVencimientoAsync(int idPrestamo);
-    Task<OperationResult<string>> RegistrarDevolucionAsync(int idPrestamo);
+    Task<OperationResult<string>> RegistrarDevolucionAsync(RegistrarDevolucionDto dto);
+
     Task<OperationResult<bool>> PuedePrestarAsync(int usuarioId);
     Task<OperationResult<IList<PrestamoResponseDto>>> ObtenerPrestamosActivosPorUsuarioAsync(int usuarioId);
 }

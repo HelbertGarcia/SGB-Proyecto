@@ -74,6 +74,7 @@ public class PenalizacionBusinessValidator : IPenalizacionBusinessValidator
     }
 
     // Valida si se puede calcular penalización por retraso en un préstamo
+
     public async Task<OperationResult<string>> ValidateForCalcularPenalizacionAsync(int idPrestamo)
     {
         var prestamoResult = await _prestamoRepository.GetByIdAsync(idPrestamo);
@@ -81,12 +82,17 @@ public class PenalizacionBusinessValidator : IPenalizacionBusinessValidator
             return OperationResult<string>.Failure("Préstamo no encontrado.");
 
         var prestamo = prestamoResult.Data;
+
         if (!prestamo.FechaDevolucion.HasValue)
-            return OperationResult<string>.Failure("El préstamo no tiene fecha de devolución registrada.");
+            return OperationResult<string>.Failure("El préstamo aún no ha sido devuelto.");
 
         if (prestamo.FechaDevolucion <= prestamo.FechaFin)
             return OperationResult<string>.Failure("No hay retraso en la devolución.");
 
+     
+
         return OperationResult<string>.Success("Validación exitosa.");
     }
+
+
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Base;
+using SGB.Application.Contracts.Interfaces;
 
 namespace SGB.Api.Controllers.PenalizacionControllers
 {

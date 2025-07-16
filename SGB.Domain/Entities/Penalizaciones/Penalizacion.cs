@@ -29,11 +29,12 @@ namespace SGB.Domain.Entities.Penalizaciones
         [Column("FechaFin")]
         public DateTime FechaFin { get; private set; }
 
-        [Column("FechaDevolucion")]
-        public DateTime? FechaDevolucion { get; set; }
 
         [Column("Monto")]
-        public decimal? Monto { get; set; } 
+        public decimal Monto { get; set; }
+
+        [Column("IDPrestamo")]
+        public int IDPrestamo { get; set; }
 
         [Column("EstaActiva")]
         public bool EstaActivo { get; set; } = true;
@@ -41,7 +42,7 @@ namespace SGB.Domain.Entities.Penalizaciones
         // Constructor sin parámetros requerido por EF Core
         private Penalizacion() { }
 
-        public Penalizacion(int idUsuario, string motivo, DateTime fechaInicio, DateTime fechaFin)
+        public Penalizacion(int idUsuario, string motivo, DateTime fechaInicio, DateTime fechaFin, int idPrestamo, decimal monto)
         {
             ValidarYAsignarIdUsuario(idUsuario);
             ValidarYAsignarMotivo(motivo);
@@ -49,6 +50,8 @@ namespace SGB.Domain.Entities.Penalizaciones
 
             FechaInicio = fechaInicio;
             FechaFin = fechaFin;
+            Monto = monto;
+            IDPrestamo = idPrestamo;
 
             Habilitar();
             ActualizarFechaModificacion();

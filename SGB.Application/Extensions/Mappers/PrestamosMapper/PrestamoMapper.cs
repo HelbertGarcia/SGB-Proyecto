@@ -11,11 +11,8 @@ namespace SGB.Application.Extensions.Mappers.PrestamosMapper
             if (dto.FechaFin.HasValue)
                 entity.FechaFin = dto.FechaFin.Value;
 
-            if (dto.FechaDevolucion.HasValue)
-                entity.FechaDevolucion = dto.FechaDevolucion.Value;
-
-            if (!string.IsNullOrWhiteSpace(dto.Estado))
-                entity.Estado = Enum.Parse<EstadoPrestamo>(dto.Estado, true);
+        
+      
         }
 
         public Prestamo MapFromAddDto(AddPrestamoDto dto)

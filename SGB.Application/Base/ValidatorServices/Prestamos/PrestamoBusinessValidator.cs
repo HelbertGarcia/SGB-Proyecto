@@ -3,6 +3,7 @@ using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Domain.Base;
+using SGB.Domain.Entities.Prestamos;
 using System.Collections;
 
 namespace SGB.Application.Base.ValidatorServices.Prestamos
@@ -11,49 +12,57 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
     {
         private readonly IPrestamoRepository _prestamoRepository;
         private readonly IPenalizacionRepository _penalizacionRepository;
+        private readonly ILibroRepository _libroRepository; // Inyéctalo
+
 
         public PrestamoBusinessValidator(
             IPrestamoRepository prestamoRepository,
-            IPenalizacionRepository penalizacionRepository)
+            IPenalizacionRepository penalizacionRepository,
+            ILibroRepository libroRepository)
         {
             _prestamoRepository = prestamoRepository;
             _penalizacionRepository = penalizacionRepository;
+            _libroRepository = libroRepository;
         }
+
 
         public async Task<OperationResult<string>> ValidateForAddAsync(AddPrestamoDto dto)
         {
             if (dto == null)
                 return OperationResult<string>.Failure("Datos de préstamo inválidos.");
 
-            // Obtener préstamos activos con validación de éxito
+          
+            /*
+
+            // Buscar libro por ISBN
+            // Validar que el libro exista
+            var libroResult = await _libroRepository.BuscarPorIsbnAsync(dto.ISBN);
+            if (!libroResult.IsSuccess || libroResult.Data == null)
+                return OperationResult<string>.Failure("El libro con el ISBN proporcionado no existe.");
+            */
+
+            // Validar préstamos activos del usuario
             var prestamosActivosResult = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(dto.UsuarioId);
             if (!prestamosActivosResult.IsSuccess)
                 return OperationResult<string>.Failure(prestamosActivosResult.Message);
 
             var prestamosActivos = prestamosActivosResult.Data;
+           
 
-            // Validar que existan préstamos activos no devueltos
-            if (prestamosActivos != null && prestamosActivos.Any(p => p.Estado != Domain.Entities.Prestamos.EstadoPrestamo.Devuelto
-                                                                        && p.Estado != Domain.Entities.Prestamos.EstadoPrestamo.DevueltoConAtraso))
-            {
-                return OperationResult<string>.Failure("El usuario tiene préstamos pendientes no devueltos.");
-            }
+            // Validar penalizaciones activas
+            var penalizacionesResult = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(dto.UsuarioId);
+            if (!penalizacionesResult.IsSuccess)
+                return OperationResult<string>.Failure(penalizacionesResult.Message);
 
-            // Obtener penalizaciones activas
-            var penalizacionesActivasResult = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(dto.UsuarioId);
-            if (!penalizacionesActivasResult.IsSuccess)
-                return OperationResult<string>.Failure(penalizacionesActivasResult.Message);
-
-            var penalizacionesActivas = penalizacionesActivasResult.Data;
-
-            // Validar si hay penalizaciones activas
-            if (penalizacionesActivas != null && penalizacionesActivas is IEnumerable penList && penList.GetEnumerator().MoveNext())
-            {
+            var penalizaciones = penalizacionesResult.Data;
+            if (penalizaciones != null && penalizaciones.Any())
                 return OperationResult<string>.Failure("El usuario tiene penalizaciones activas.");
-            }
 
-            return OperationResult<string>.Success("Validación exitosa.");
+            return OperationResult<string>.Success("Validación de negocio exitosa.");
         }
+
+
+
 
         public async Task<OperationResult<string>> ValidateForUpdateAsync(UpdatePrestamoDto dto)
         {
@@ -64,13 +73,15 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
             if (prestamo == null)
                 return OperationResult<string>.Failure("Préstamo no encontrado.");
 
-            if (dto.FechaFin.HasValue && dto.FechaDevolucion.HasValue && dto.FechaDevolucion < dto.FechaFin)
-            {
-                return OperationResult<string>.Failure("La fecha de devolución no puede ser anterior a la fecha fin.");
-            }
+         
 
             return OperationResult<string>.Success("Validación exitosa.");
         }
+
+
+
+
+
 
         public async Task<OperationResult<string>> ValidateForDisableAsync(DiseblePrestamoDto dto)
         {
@@ -91,17 +102,27 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
         }
 
 
-        public async Task<OperationResult<string>> ValidateForRegistrarDevolucionAsync(int idPrestamo)
-        {
-            var prestamoResult = await _prestamoRepository.GetByIdAsync(idPrestamo);
 
+
+
+
+
+        public async Task<OperationResult<string>> ValidateForRegistrarDevolucionAsync(RegistrarDevolucionDto dto)
+        {
+            if (dto.IdPrestamo <= 0)
+                return OperationResult<string>.Failure("ID del préstamo inválido.");
+
+            var prestamoResult = await _prestamoRepository.GetByIdAsync(dto.IdPrestamo);
             if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
                 return OperationResult<string>.Failure("Préstamo no encontrado.");
 
             var prestamo = prestamoResult.Data;
 
             if (prestamo.FechaDevolucion.HasValue)
-                return OperationResult<string>.Failure("El préstamo ya tiene fecha de devolución registrada.");
+                return OperationResult<string>.Failure("El préstamo ya fue devuelto.");
+
+            if (dto.FechaDevolucion < prestamo.FechaInicio)
+                return OperationResult<string>.Failure("La fecha de devolución no puede ser anterior a la fecha de inicio.");
 
             return OperationResult<string>.Success("Validación exitosa.");
         }

@@ -9,6 +9,6 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
         Task<OperationResult<string>> ValidateForAddAsync(AddPrestamoDto dto);
         Task<OperationResult<string>> ValidateForUpdateAsync(UpdatePrestamoDto dto);
         Task<OperationResult<string>> ValidateForDisableAsync(DiseblePrestamoDto dto);
-        Task<OperationResult<string>> ValidateForRegistrarDevolucionAsync(int idPrestamo);
+        Task<OperationResult<string>> ValidateForRegistrarDevolucionAsync(RegistrarDevolucionDto dto);
     }
 }

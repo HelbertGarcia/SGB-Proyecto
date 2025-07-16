@@ -13,7 +13,7 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
         public int IDPenalizacion { get; set; }
         public DateTime? FechaInicio { get; set; }
         public DateTime? FechaFin { get; set; }
-        public DateTime? FechaDevolucion { get; set; }
+        
 
 
 

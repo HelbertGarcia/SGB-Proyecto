@@ -76,6 +76,8 @@ namespace SGB.Persistence.Repositories
             return await base.FindByConditionAsync(l => l.Titulo.Contains(titulo) && l.EstaActivo);
         }
 
+
+
         public async Task<OperationResult<Libro>> BuscarPorIsbnAsync(string isbn)
         {
             if (string.IsNullOrWhiteSpace(isbn))

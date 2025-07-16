@@ -11,20 +11,19 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto.Validat
     {
         public AddPenalizacionDtoValidator()
         {
-            RuleFor(x => x.UsuarioId)
-                     .GreaterThan(0).WithMessage("El ID del usuario debe ser mayor a cero.");
-
-            RuleFor(x => x.Motivo)
-                .NotEmpty().WithMessage("El motivo no puede estar vacío.")
-                .MaximumLength(200).WithMessage("El motivo no debe superar los 200 caracteres.");
-
             RuleFor(x => x.FechaInicio)
-                .LessThan(x => x.FechaFin)
-                .WithMessage("La fecha de inicio debe ser menor que la fecha de fin.");
+            .NotEmpty().WithMessage("La fecha de inicio es obligatoria.");
 
             RuleFor(x => x.FechaFin)
                 .GreaterThan(x => x.FechaInicio)
-                .WithMessage("La fecha de fin debe ser mayor que la fecha de inicio.");
+                .WithMessage("La fecha de fin debe ser posterior a la de inicio.");
+
+            RuleFor(x => x.Monto)
+                .NotNull().GreaterThan(0)
+                .WithMessage("El monto debe ser mayor que cero.");
+
+            RuleFor(x => x.UsuarioId)
+                .GreaterThan(0).WithMessage("El usuario es obligatorio.");
         }
     }
 

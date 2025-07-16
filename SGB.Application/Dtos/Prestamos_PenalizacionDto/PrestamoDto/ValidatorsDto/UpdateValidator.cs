@@ -19,9 +19,7 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto.ValidatosDt
                 .When(x => x.FechaInicio.HasValue && x.FechaFin.HasValue)
                 .WithMessage("La fecha de vencimiento debe ser posterior a la fecha de inicio.");
 
-            RuleFor(x => x.Estado)
-                .MaximumLength(50).WithMessage("El estado no debe superar los 50 caracteres.")
-                .When(x => !string.IsNullOrWhiteSpace(x.Estado));
+         
         }
     }
 }

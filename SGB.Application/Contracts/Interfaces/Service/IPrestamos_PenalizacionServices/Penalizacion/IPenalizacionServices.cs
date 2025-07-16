@@ -4,6 +4,6 @@ using SGB.Domain.Base;
 
 public interface IPenalizacionServices : IBaseService<AddPenalizacionDto, UpdatePenalizacionDto, DisablePenalizacionDto, PenalizacionResponseDto>
 {
-    Task<OperationResult<object>> CalcularPenalizacionPorRetrasoAsync(int idPrestamo);
+    Task<OperationResult<PenalizacionResponseDto>> CalcularPenalizacionPorRetrasoAsync(int idPrestamo);
     Task<OperationResult<List<PenalizacionResponseDto>>> ObtenerPenalizacionesActivasPorUsuarioAsync(int usuarioId);
 }

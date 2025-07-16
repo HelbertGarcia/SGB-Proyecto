@@ -1,5 +1,4 @@
-﻿
-using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
+﻿using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Domain.Entities.Penalizaciones;
 using System;
 
@@ -9,9 +8,14 @@ namespace SGB.Application.Extensions.Mappers.PenalizacionesMapper
     {
         public Penalizacion MapFromDto(AddPenalizacionDto dto)
         {
-            // Asumiendo que el constructor de Penalizacion es:
-            // Penalizacion(int usuarioId, string motivo, DateTime fechaInicio, DateTime fechaFin)
-            return new Penalizacion(dto.UsuarioId, dto.Motivo, dto.FechaInicio, dto.FechaFin);
+            return new Penalizacion(
+                dto.UsuarioId,
+                dto.Motivo,
+                dto.FechaInicio,
+                dto.FechaFin,
+                dto.IDPrestamo,
+                dto.Monto ?? 0
+            );
         }
 
         public void ApplyUpdateDto(Penalizacion entity, UpdatePenalizacionDto dto)
@@ -25,8 +29,7 @@ namespace SGB.Application.Extensions.Mappers.PenalizacionesMapper
             if (dto.FechaFin.HasValue)
                 entity.ExtenderPenalizacion(dto.FechaFin.Value);
 
-            if (dto.FechaDevolucion.HasValue)
-                entity.FechaDevolucion = dto.FechaDevolucion.Value;
+           
         }
 
         public PenalizacionResponseDto MapToDto(Penalizacion entity)
@@ -38,10 +41,12 @@ namespace SGB.Application.Extensions.Mappers.PenalizacionesMapper
                 Motivo = entity.Motivo,
                 FechaInicio = entity.FechaInicio,
                 FechaFin = entity.FechaFin,
-                FechaDevolucion = entity.FechaDevolucion,
+                Monto = entity.Monto,
                 EstaActivo = entity.EstaActivo,
-                Monto = entity.Monto // si existe en la entidad
+                IDPrestamo = entity.IDPrestamo // ✅ CORRECTO
             };
         }
+
+
     }
 }

@@ -17,6 +17,7 @@ namespace SGB.Persistence.Repositories
     {
         private readonly ILogger<PenalizacionRepository> _logger;
         private readonly IConfiguration _configuration;
+        private readonly string? _ConnectionStrings;
 
         public PenalizacionRepository(
             SGBContext context,
@@ -26,6 +27,7 @@ namespace SGB.Persistence.Repositories
         {
             _logger = loggerFactory.CreateLogger<PenalizacionRepository>();
             _configuration = configuration;
+            _ConnectionStrings = _configuration.GetConnectionString("SGBDatabase");
         }
 
         public async Task<OperationResult<List<Penalizacion>>> GetPenalizacionesActivasPorUsuarioAsync(int usuarioId)
@@ -56,31 +58,7 @@ namespace SGB.Persistence.Repositories
 
 
 
-        // Si decides eliminar este método, simplemente bórralo
-        /*
-        public async Task<OperationResult> GetMotivosPenalizacionesPorUsuarioAsync(int usuarioId)
-        {
-            if (usuarioId <= 0)
-                return OperationResult.Failure("El ID del usuario es inválido.");
-
-            try
-            {
-                var motivos = await Entity
-                    .AsNoTracking()
-                    .Where(p => p.IDUsuario == usuarioId)
-                    .Select(p => new { p.Id, p.Motivo })
-                    .ToListAsync();
-
-                return OperationResult.Success(motivos);
-            }
-            catch (Exception ex)
-            {
-                var errorMsg = _configuration["ErrorMessages:Penalizaciones:GetMotivosError"] ?? "Error al obtener los motivos de penalización.";
-                _logger.LogError(ex, errorMsg);
-                return OperationResult.Failure(errorMsg);
-            }
-        }
-        */
+     
 
        
     }

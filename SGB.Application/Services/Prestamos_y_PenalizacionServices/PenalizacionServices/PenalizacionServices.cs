@@ -138,50 +138,54 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
 
 
         //cambios
-        public async Task<OperationResult<object>> CalcularPenalizacionPorRetrasoAsync(int idPrestamo)
+        public async Task<OperationResult<PenalizacionResponseDto>> CalcularPenalizacionPorRetrasoAsync(int idPrestamo)
         {
-            var businessValidation = await _businessValidator.ValidateForCalcularPenalizacionAsync(idPrestamo);
-            if (!businessValidation.IsSuccess)
-                return OperationResult<object>.Failure(businessValidation.Message);
+            // 1. Validación de negocio
+            var validation = await _businessValidator.ValidateForCalcularPenalizacionAsync(idPrestamo);
+            if (!validation.IsSuccess)
+                return OperationResult<PenalizacionResponseDto>.Failure(validation.Message);
 
             try
             {
+                // 2. Obtener el préstamo
                 var prestamoResult = await _prestamoRepository.GetByIdAsync(idPrestamo);
                 if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
-                    return OperationResult<object>.Failure("Préstamo no encontrado.");
+                    return OperationResult<PenalizacionResponseDto>.Failure("Préstamo no encontrado.");
 
                 var prestamo = prestamoResult.Data;
 
-                if (!prestamo.FechaDevolucion.HasValue)
-                    return OperationResult<object>.Failure("El préstamo no tiene fecha de devolución registrada.");
+                // 3. Calcular días de retraso
+                var diasRetrasados = (prestamo.FechaDevolucion.Value - prestamo.FechaFin).Days;
+                diasRetrasados = diasRetrasados <= 0 ? 1 : diasRetrasados;
 
-                var diasRetraso = (prestamo.FechaDevolucion.Value - prestamo.FechaFin).Days;
-                if (diasRetraso <= 0)
-                    return OperationResult<object>.Failure("No hay retraso en la devolución.");
+                // 4. Calcular monto
+                var montoPorDia = decimal.Parse(_configuration["Penalizacion:MontoPorDiaRetraso"] ?? "10");
+                var montoFinal = diasRetrasados * montoPorDia;
 
-                var fechaInicio = prestamo.FechaFin.AddDays(1);
-                var fechaFin = fechaInicio.AddDays(diasRetraso);
-
+                // 5. Crear entidad penalización
                 var penalizacion = new Penalizacion(
-                    prestamo.UsuarioId,
-                    $"Retraso de {diasRetraso} día(s) en devolución del libro ISBN {prestamo.ISBN}",
-                    fechaInicio,
-                    fechaFin
+                    idUsuario: prestamo.UsuarioId,
+                    motivo: "Retraso en la devolución del préstamo.",
+                    fechaInicio: prestamo.FechaDevolucion.Value,  // fecha real de entrega
+                    fechaFin: prestamo.FechaDevolucion.Value.AddDays(30), // sanción por 30 días
+                    idPrestamo: prestamo.Id,
+                    monto: montoFinal
                 );
 
+                // 6. Guardar
                 var result = await _penalizacionRepository.AddAsync(penalizacion);
                 if (!result.IsSuccess)
-                    return OperationResult<object>.Failure(result.Message);
+                    return OperationResult<PenalizacionResponseDto>.Failure(result.Message);
 
-                return OperationResult<object>.Success(_mapper.MapToDto(penalizacion), "Penalización generada correctamente.");
+                var dto = _mapper.MapToDto(penalizacion);
+                return OperationResult<PenalizacionResponseDto>.Success(dto, "Penalización creada correctamente por retraso.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al calcular penalización");
-                return OperationResult<object>.Failure("Error inesperado al calcular penalización.");
+                _logger.LogError(ex, "Error al calcular penalización.");
+                return OperationResult<PenalizacionResponseDto>.Failure("Ocurrió un error al generar la penalización.");
             }
         }
-
 
 
 
@@ -191,19 +195,32 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             try
             {
                 var result = await _penalizacionRepository.GetAllAsync();
-                if (!result.IsSuccess || result.Data == null)
-                    return OperationResult<IEnumerable<PenalizacionResponseDto>>.Failure(result.Message ?? "Error al obtener penalizaciones.");
+
+                if (!result.IsSuccess)
+                {
+                    _logger.LogWarning("Error desde el repositorio: {Message}", result.Message);
+                    return OperationResult<IEnumerable<PenalizacionResponseDto>>.Failure("Error al obtener penalizaciones.");
+                }
+
+                if (result.Data == null || !result.Data.Any())
+                {
+                    _logger.LogInformation("No hay penalizaciones registradas.");
+                    return OperationResult<IEnumerable<PenalizacionResponseDto>>.Failure("No se encontraron penalizaciones registradas.");
+                }
 
                 var data = result.Data.Select(_mapper.MapToDto).ToList();
+                _logger.LogInformation("Cantidad de penalizaciones mapeadas a DTO: {Count}", data.Count);
 
                 return OperationResult<IEnumerable<PenalizacionResponseDto>>.Success(data, "Penalizaciones obtenidas correctamente.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener penalizaciones");
-                return OperationResult<IEnumerable<PenalizacionResponseDto>>.Failure("Error inesperado al obtener penalizaciones.");
+                _logger.LogError(ex, "Error inesperado en GetAllAsync");
+                return OperationResult<IEnumerable<PenalizacionResponseDto>>.Failure("Ocurrió un error inesperado al obtener los datos.");
             }
         }
+
+
 
 
         public async Task<OperationResult<PenalizacionResponseDto>> GetByIdAsync(int id)
@@ -226,7 +243,9 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             }
         }
 
-        
+
+
+
         public async Task<OperationResult<List<PenalizacionResponseDto>>> ObtenerPenalizacionesActivasPorUsuarioAsync(int usuarioId)
         {
             if (usuarioId <= 0)
@@ -238,7 +257,6 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
                 if (!result.IsSuccess || result.Data == null)
                     return OperationResult<List<PenalizacionResponseDto>>.Failure(result.Message ?? "Error al obtener penalizaciones activas.");
 
-                // Aquí mapeamos la lista de Penalizacion a PenalizacionResponseDto
                 var data = result.Data.Select(_mapper.MapToDto).ToList();
 
                 return OperationResult<List<PenalizacionResponseDto>>.Success(data, result.Message);

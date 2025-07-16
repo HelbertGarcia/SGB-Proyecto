@@ -22,6 +22,7 @@ public sealed class PrestamoService : IPrestamosServices
     private readonly IValidator<DiseblePrestamoDto> _disableValidator;
     private readonly IPrestamoBusinessValidator _businessValidator;
     private readonly IPrestamoMapper _mapper;
+    private readonly IPenalizacionServices _penalizacionService;  // <-- Inyección del servicio de penalización
 
     public PrestamoService(
         IPrestamoRepository prestamoRepository,
@@ -31,7 +32,8 @@ public sealed class PrestamoService : IPrestamosServices
         IValidator<UpdatePrestamoDto> updateValidator,
         IValidator<DiseblePrestamoDto> disableValidator,
         IPrestamoBusinessValidator businessValidator,
-        IPrestamoMapper mapper
+        IPrestamoMapper mapper,
+         IPenalizacionServices penalizacionService  // <-- Nuevo parámetro
     )
     {
         _prestamoRepository = prestamoRepository;
@@ -42,6 +44,7 @@ public sealed class PrestamoService : IPrestamosServices
         _disableValidator = disableValidator;
         _businessValidator = businessValidator;
         _mapper = mapper;
+        _penalizacionService = penalizacionService;  // <-- Asignación
     }
 
 
@@ -155,33 +158,58 @@ public sealed class PrestamoService : IPrestamosServices
 
 
 
-    public async Task<OperationResult<string>> RegistrarDevolucionAsync(int idPrestamo)
+    public async Task<OperationResult<string>> RegistrarDevolucionAsync(RegistrarDevolucionDto dto)
     {
-        var businessValidation = await _businessValidator.ValidateForRegistrarDevolucionAsync(idPrestamo);
-        if (!businessValidation.IsSuccess)
-            return OperationResult<string>.Failure(businessValidation.Message);
+        // Buscar préstamo
+        var prestamoResult = await _prestamoRepository.GetByIdAsync(dto.IdPrestamo);
+        if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
+            return OperationResult<string>.Failure("Préstamo no encontrado.");
+
+        var prestamo = prestamoResult.Data;
+
+        // Validar que no tenga devolución ya registrada
+        if (prestamo.FechaDevolucion.HasValue)
+            return OperationResult<string>.Failure("Este préstamo ya fue devuelto previamente.");
 
         try
         {
-            var prestamoResult = await _prestamoRepository.GetByIdAsync(idPrestamo);
-            if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
-                return OperationResult<string>.Failure("Préstamo no encontrado.");
+            // Registrar devolución con la fecha proporcionada
+            prestamo.RegistrarDevolucion(dto.FechaDevolucion);
+        
 
-            var prestamo = prestamoResult.Data;
-            prestamo.RegistrarDevolucion();
-
+            // Actualizar el préstamo en base de datos
             var updateResult = await _prestamoRepository.UpdateAsync(prestamo);
             if (!updateResult.IsSuccess)
                 return OperationResult<string>.Failure(updateResult.Message);
 
-            return OperationResult<string>.Success("Devolución registrada correctamente.");
+            string mensaje = "Devolución registrada correctamente.";
+
+            // Si se devolvió con retraso, aplicar penalización
+            if (prestamo.Estado == EstadoPrestamo.DevueltoConAtraso)
+            {
+                var penalizacionResult = await _penalizacionService.CalcularPenalizacionPorRetrasoAsync(dto.IdPrestamo);
+
+                if (penalizacionResult.IsSuccess)
+                {
+                    mensaje += $" Penalización generada: {penalizacionResult.Message}";
+                    _logger.LogInformation($"Penalización creada para préstamo {dto.IdPrestamo}.");
+                }
+                else
+                {
+                    mensaje += " Devolución tardía detectada, pero no se pudo generar penalización.";
+                    _logger.LogWarning($"No se generó penalización para préstamo {dto.IdPrestamo}: {penalizacionResult.Message}");
+                }
+            }
+
+            return OperationResult<string>.Success(mensaje);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al registrar devolución");
-            return OperationResult<string>.Failure("Error inesperado al registrar devolución.");
+            _logger.LogError(ex, "Error al registrar devolución.");
+            return OperationResult<string>.Failure("Ocurrió un error inesperado al registrar la devolución.");
         }
     }
+
 
 
 
@@ -230,15 +258,35 @@ public sealed class PrestamoService : IPrestamosServices
 
 
 
-
+    //cambios 
     public async Task<OperationResult<IEnumerable<PrestamoResponseDto>>> GetAllAsync()
     {
-        var result = await _prestamoRepository.GetAllAsync();
-        if (!result.IsSuccess)
-            return OperationResult<IEnumerable<PrestamoResponseDto>>.Failure(result.Message);
+        try
+        {
+            var result = await _prestamoRepository.GetAllAsync();
 
-        var dtos = result.Data.Select(_mapper.MapToDto);
-        return OperationResult<IEnumerable<PrestamoResponseDto>>.Success(dtos);
+            if (!result.IsSuccess)
+            {
+                _logger.LogWarning("Error desde el repositorio: {Message}", result.Message);
+                return OperationResult<IEnumerable<PrestamoResponseDto>>.Failure("Error al obtener préstamos.");
+            }
+
+            if (result.Data == null || !result.Data.Any())
+            {
+                _logger.LogInformation("No hay préstamos registrados.");
+                return OperationResult<IEnumerable<PrestamoResponseDto>>.Failure("No se encontraron préstamos registrados.");
+            }
+
+            var dtos = result.Data.Select(_mapper.MapToDto).ToList();
+            _logger.LogInformation("Cantidad de préstamos mapeados a DTO: {Count}", dtos.Count);
+
+            return OperationResult<IEnumerable<PrestamoResponseDto>>.Success(dtos, "Préstamos obtenidos correctamente.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error inesperado al obtener préstamos.");
+            return OperationResult<IEnumerable<PrestamoResponseDto>>.Failure("Ocurrió un error inesperado al obtener los préstamos.");
+        }
     }
 
 
@@ -258,6 +306,9 @@ public sealed class PrestamoService : IPrestamosServices
         var dto = _mapper.MapToDto(result.Data);
         return OperationResult<PrestamoResponseDto>.Success(dto);
     }
+
+
+
 
 
     public async Task<OperationResult<bool>> PuedePrestarAsync(int usuarioId)

@@ -3,8 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto.ValidatosDto;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
-using SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices;
-//using SGB.Application.Services.Prestamos_y_PenalizacionServices.PrestamoServices;
 using SGB.Persistence.Repositories;
 using System;
 using System.Collections.Generic;
@@ -38,6 +36,9 @@ namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia
             services.AddScoped<IPrestamoBusinessValidator, PrestamoBusinessValidator>();
 
             services.AddTransient<IPrestamoMapper, PrestamoMapper>();
+
+            services.AddScoped<ILibroRepository, LibroRepository>();
+
         }
     }
 }

@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
 {
-    public class PrestamoResponseDto
+    public class PrestamoResponseDto : PrestamoDto
     {
         public int Id { get; set; }
-        public int UsuarioId { get; set; }
-        public string ISBN { get; set; }
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFin { get; set; }
         public DateTime? FechaDevolucion { get; set; }

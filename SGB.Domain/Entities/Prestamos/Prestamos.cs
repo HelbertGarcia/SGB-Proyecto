@@ -65,15 +65,22 @@ namespace SGB.Domain.Entities.Prestamos
             FechaActualizacion = DateTime.UtcNow;
         }
 
-        public void RegistrarDevolucion()
+        public void RegistrarDevolucion(DateTime fechaDevolucion)
         {
-            if (Estado != EstadoPrestamo.Activo && Estado != EstadoPrestamo.Atrasado)
-                throw new InvalidOperationException("No se puede registrar la devolución de un préstamo que no está activo o atrasado.");
+            if (FechaDevolucion.HasValue)
+                throw new InvalidOperationException("La devolución ya fue registrada.");
 
-            FechaDevolucion = DateTime.UtcNow;
-            Estado = FechaDevolucion > FechaFin ? EstadoPrestamo.DevueltoConAtraso : EstadoPrestamo.Devuelto;
-            FechaActualizacion = DateTime.UtcNow;
+            FechaDevolucion = fechaDevolucion;
+
+            Estado = FechaDevolucion > FechaFin
+                ? EstadoPrestamo.DevueltoConAtraso
+                : EstadoPrestamo.Devuelto;
+
+            EstaActivo = false; // Marcar como inactivo al devolver
+
+            ActualizarFechaModificacion();
         }
+
 
         public void ActualizarEstadoSiEstaAtrasado()
         {
@@ -107,6 +114,6 @@ namespace SGB.Domain.Entities.Prestamos
         Atrasado,
         Devuelto,
         DevueltoConAtraso,
-        Pendiente
+        
     }
 }

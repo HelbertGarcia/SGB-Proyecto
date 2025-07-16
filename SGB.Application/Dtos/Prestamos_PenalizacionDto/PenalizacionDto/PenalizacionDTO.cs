@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
-    public abstract class PenalizacionDto : DtoBase
+    public abstract class PenalizacionDto : DTOBase
     {
         public string Motivo { get; set; } = string.Empty;
         public int UsuarioId { get; set; }

@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
+using SGB.Application.Services.Prestamos_y_PenalizacionServices;
 using SGB.Domain.Base;
 
 namespace SGB.Api.Controllers
@@ -49,24 +50,47 @@ namespace SGB.Api.Controllers
             }
 
             return Ok(resultado.Data);
-        }
 
+        }
         [HttpPost]
         [ProducesResponseType(typeof(PrestamoResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddPrestamo([FromBody] AddPrestamoDto addPrestamoDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Datos inválidos del modelo.",
+                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                });
 
             var result = await _prestamosService.AddAsync(addPrestamoDto);
 
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return BadRequest(new
+                {
+                    success = false,
+                    message = result.Message
+                });
 
-            // Devuelve 201 Created con ruta para obtener el recurso creado
             return CreatedAtAction(nameof(GetPrestamoById), new { id = result.Data.Id }, result.Data);
         }
+
+
+
+
+        [HttpPost("Registrar-devolucion")]
+        public async Task<IActionResult> RegistrarDevolucion([FromBody] RegistrarDevolucionDto dto)
+        {
+            var result = await _prestamosService.RegistrarDevolucionAsync(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result); // Esto enviará el mensaje de error
+
+            return Ok(result); // Esto enviará el mensaje de éxito en el body
+        }
+
 
         [HttpPut("{id:int}")]
         [ProducesResponseType(typeof(PrestamoResponseDto), StatusCodes.Status200OK)]
@@ -93,6 +117,9 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
+
+        
+
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -117,6 +144,8 @@ namespace SGB.Api.Controllers
                 message = "Préstamo eliminado (desactivado) correctamente."
             });
         }
+
+       
 
         private bool EsNotFound(string message)
         {

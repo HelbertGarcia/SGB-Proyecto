@@ -9,11 +9,10 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.BaseDto
 {
-    public abstract class DtoBase
+    public abstract class DTOBase
     {
-        public DateTime FechaCreacion { get; set; }
-        public DateTime FechaActualizacion { get; set; }
+        //public DateTime? ChangeTime { get; set; }
+        //public int UserID { get; set; }
     }
 
 }
-
