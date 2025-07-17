@@ -1,12 +1,10 @@
 ﻿using Moq;
-using Xunit;
 using SGB.Application.Validators.BusinessValidators.Configuracion;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Application.Dtos.AdministracionDto;
 using SGB.Domain.Entities.Configuracion;
 using SGB.Domain.Base;
 using SGB.Application.Contracts.Repository.Interfaces;
-using System.Threading.Tasks;
 
 namespace SGB.Application.Test.ValidatorTests
 {
@@ -27,9 +25,8 @@ namespace SGB.Application.Test.ValidatorTests
             // Arrange
             var dto = new AddConfiguracionDto { Nombre = "Duplicado" };
             var existing = new Configuracion("Duplicado", "Valor", "Desc");
-
             _repoMock.Setup(r => r.ObtenerPorNombreAsync(dto.Nombre))
-                     .ReturnsAsync(OperationResult<Configuracion>.Success(existing));
+            .ReturnsAsync(OperationResult<Configuracion>.Success(existing));
 
             // Act
             var result = await _validator.ValidateForAddAsync(dto);
@@ -45,7 +42,7 @@ namespace SGB.Application.Test.ValidatorTests
             // Arrange
             var dto = new AddConfiguracionDto { Nombre = "Nueva" };
             _repoMock.Setup(r => r.ObtenerPorNombreAsync(dto.Nombre))
-                     .ReturnsAsync(OperationResult<Configuracion>.Success(null));
+            .ReturnsAsync(OperationResult<Configuracion>.Success(null));
 
             // Act
             var result = await _validator.ValidateForAddAsync(dto);
@@ -60,7 +57,7 @@ namespace SGB.Application.Test.ValidatorTests
             // Arrange
             var dto = new UpdateConfiguracionDto { IDConfiguracion = 1, Nombre = "Actualizada" };
             _repoMock.Setup(r => r.ObtenerPorIdAsync(dto.IDConfiguracion))
-                     .ReturnsAsync(OperationResult<Configuracion>.Failure("No existe"));
+            .ReturnsAsync(OperationResult<Configuracion>.Failure("No existe"));
 
             // Act
             var result = await _validator.ValidateForUpdateAsync(dto);
@@ -77,12 +74,10 @@ namespace SGB.Application.Test.ValidatorTests
             var dto = new UpdateConfiguracionDto { IDConfiguracion = 1, Nombre = "Duplicado" };
             var actual = new Configuracion("Original", "val", "desc") { IDConfiguracion = 1 };
             var duplicado = new Configuracion("Duplicado", "otro", "otro") { IDConfiguracion = 2 };
-
             _repoMock.Setup(r => r.ObtenerPorIdAsync(dto.IDConfiguracion))
-                     .ReturnsAsync(OperationResult<Configuracion>.Success(actual));
-
+            .ReturnsAsync(OperationResult<Configuracion>.Success(actual));
             _repoMock.Setup(r => r.ObtenerPorNombreAsync(dto.Nombre))
-                     .ReturnsAsync(OperationResult<Configuracion>.Success(duplicado));
+           .ReturnsAsync(OperationResult<Configuracion>.Success(duplicado));
 
             // Act
             var result = await _validator.ValidateForUpdateAsync(dto);
@@ -98,12 +93,10 @@ namespace SGB.Application.Test.ValidatorTests
             // Arrange
             var dto = new UpdateConfiguracionDto { IDConfiguracion = 1, Nombre = "NombreActualizado" };
             var actual = new Configuracion("Original", "val", "desc") { IDConfiguracion = 1 };
-
             _repoMock.Setup(r => r.ObtenerPorIdAsync(dto.IDConfiguracion))
-                     .ReturnsAsync(OperationResult<Configuracion>.Success(actual));
-
+            .ReturnsAsync(OperationResult<Configuracion>.Success(actual));
             _repoMock.Setup(r => r.ObtenerPorNombreAsync(dto.Nombre))
-                     .ReturnsAsync(OperationResult<Configuracion>.Success(null));
+            .ReturnsAsync(OperationResult<Configuracion>.Success(null));
 
             // Act
             var result = await _validator.ValidateForUpdateAsync(dto);
@@ -117,9 +110,8 @@ namespace SGB.Application.Test.ValidatorTests
         {
             // Arrange
             var entity = new Configuracion("ProtegidaSistema", "val", "desc") { IDConfiguracion = 1 };
-
             _repoMock.Setup(r => r.ObtenerPorIdAsync(1))
-                     .ReturnsAsync(OperationResult<Configuracion>.Success(entity));
+            .ReturnsAsync(OperationResult<Configuracion>.Success(entity));
 
             // Act
             var result = await _validator.ValidateForDeleteAsync(1);
@@ -128,5 +120,8 @@ namespace SGB.Application.Test.ValidatorTests
             Assert.False(result.IsSuccess);
             Assert.Equal("Esta configuración es protegida y no puede eliminarse.", result.Message);
         }
+
+
+
     }
 }

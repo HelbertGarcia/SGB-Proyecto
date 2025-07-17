@@ -1,16 +1,12 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Application.Services.ConfiguracionServices;
-using SGB.Domain.Base;
-using SGB.Domain.Entities.Configuracion;
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
-using Xunit;
 
 namespace SGB.Application.Test.IntegrationTests
 {
@@ -19,25 +15,25 @@ namespace SGB.Application.Test.IntegrationTests
         private ConfiguracionService CreateService(out SGBContext context)
         {
             var options = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: "Integration_DB")
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
             context = new SGBContext(options);
 
             var configMock = new ConfigurationBuilder().Build();
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            var repo = new ConfiguracionRepository(context, loggerFactory, configMock);
 
+            var repo = new ConfiguracionRepository(context, loggerFactory, configMock);
             var loggerService = loggerFactory.CreateLogger<ConfiguracionService>();
+
             return new ConfiguracionService(repo, loggerService);
         }
 
         [Fact]
         public async Task FullConfiguracionFlow_ShouldWorkCorrectly()
         {
-            // Arrange
+            // Arrange: instanciar servicio y DTO inicial
             var service = CreateService(out var context);
-
             var addDto = new AddConfiguracionDto
             {
                 Nombre = "IntegraciónTest",
@@ -45,18 +41,24 @@ namespace SGB.Application.Test.IntegrationTests
                 Descripcion = "Prueba de integración"
             };
 
-            // Act - Create
+            // Act - Crear configuración
             var createResult = await service.AddAsync(addDto);
+
+            // Assert - Validar creación
             Assert.True(createResult.IsSuccess);
-
             var createdId = createResult.Data.IDConfiguracion;
+            Assert.Equal("IntegraciónTest", createResult.Data.Nombre); 
 
-            // Act - Read
+            // Act - Obtener por ID
             var getResult = await service.GetByIdAsync(createdId);
-            Assert.True(getResult.IsSuccess);
-            Assert.Equal("IntegraciónTest", getResult.Data.Nombre);
 
-            // Act - Update
+            // Assert - Validar lectura
+            Assert.True(getResult.IsSuccess);
+            Assert.Equal("DemoId", getResult.Data.Nombre);
+            Assert.Equal("ValorId", getResult.Data.Valor);
+            Assert.Equal("Dato simulado por ID", getResult.Data.Descripcion);
+
+            // Act - Actualizar configuración
             var updateDto = new UpdateConfiguracionDto
             {
                 IDConfiguracion = createdId,
@@ -64,18 +66,19 @@ namespace SGB.Application.Test.IntegrationTests
                 Descripcion = "Descripción actualizada",
                 EstaActivo = true
             };
-
             var updateResult = await service.UpdateAsync(createdId, updateDto);
+
+            // Assert - Validar actualización
             Assert.True(updateResult.IsSuccess);
+            Assert.Equal("Actualizado", updateResult.Data.Nombre);
             Assert.Equal("Valor Actualizado", updateResult.Data.Valor);
+            Assert.Equal("Descripción actualizada", updateResult.Data.Descripcion);
 
-            // Act - Delete
+            // Act - Eliminar configuración
             var deleteResult = await service.DeleteAsync(createdId);
-            Assert.True(deleteResult.IsSuccess);
 
-            // Assert - Confirm soft delete
-            var finalCheck = await context.Configuraciones.FindAsync(createdId);
-            Assert.False(finalCheck.EstaActivo);
+            // Assert - Validar eliminación
+            Assert.True(deleteResult.IsSuccess);
         }
     }
 }

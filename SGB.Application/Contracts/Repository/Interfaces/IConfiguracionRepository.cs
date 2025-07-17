@@ -1,6 +1,5 @@
 ﻿using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
-using System.Threading.Tasks;
 
 namespace SGB.Application.Contracts.Repository.Interfaces
 {

@@ -8,7 +8,6 @@ using SGB.Application.Services.ConfiguracionServices;
 using SGB.Application.Validators.BusinessValidators.Configuracion;
 using SGB.Application.Validators.FluentValidator.Configuracion;
 using SGB.Persistence.Repositories;
-using SGB.Application.Extensions.Mappers;
 
 namespace SGB.IOC.Dependencies.ConfiguracionDependency
 {
@@ -18,14 +17,13 @@ namespace SGB.IOC.Dependencies.ConfiguracionDependency
         {
             service.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
             service.AddTransient<IConfiguracionService, ConfiguracionService>();
-
             service.AddTransient<IConfiguracionMapper, ConfiguracionMapper>();
-
             service.AddTransient<IConfiguracionValidator, ConfiguracionValidator>();
+
+            service.AddLogging();
+          
             service.AddValidatorsFromAssemblyContaining<AddConfiguracionDtoValidator>();
-            service.AddValidatorsFromAssemblyContaining<UpdateConfiguracionDtoValidator>();
-            service.AddValidatorsFromAssemblyContaining<ConfiguracionDtoValidator>();
-            service.AddValidatorsFromAssemblyContaining<DeleteConfiguracionDtoValidator>();
+
             return service;
         }
     }

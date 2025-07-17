@@ -6,8 +6,6 @@ using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
-using System;
-using System.Threading.Tasks;
 
 namespace SGB.Persistence.Repositories
 {
@@ -16,16 +14,14 @@ namespace SGB.Persistence.Repositories
         private readonly ILogger<ConfiguracionRepository> _logger;
         private readonly IConfiguration _configuration;
 
-        public ConfiguracionRepository(SGBContext context,
-                                       ILoggerFactory loggerFactory,
-                                       IConfiguration configuration)
-            : base(context, loggerFactory, configuration)
+        public ConfiguracionRepository(SGBContext context,ILoggerFactory loggerFactory, IConfiguration configuration)
+        :base(context, loggerFactory, configuration)
         {
             _configuration = configuration;
             _logger = loggerFactory.CreateLogger<ConfiguracionRepository>();
         }
 
-        #region "Métodos Heredados Sobrescritos"
+        #region "Metodos Heredados Sobrescritos"
         public override async Task<OperationResult<bool>> DeleteAsync(int id)
         {
             try
@@ -35,12 +31,8 @@ namespace SGB.Persistence.Repositories
                 {
                     return OperationResult<bool>.Failure("Configuración no encontrada.");
                 }
-
                 configuracion.Deshabilitar(); 
-
-                var updateResult = await base.UpdateAsync(configuracion);
-
-               
+                var updateResult = await base.UpdateAsync(configuracion);              
                 return OperationResult<bool>.Success(updateResult.IsSuccess, updateResult.Message);
             }
             catch (Exception ex)
@@ -50,22 +42,19 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<bool>.Failure(errorMessage);
             }
         }
-
         #endregion
 
-        #region "Implementación de IConfiguracionRepository"
+
+        #region "Implementacion IConfiguracionRepository"
         public async Task<OperationResult<Configuracion>> ObtenerPorNombreAsync(string nombre)
         {
             if (string.IsNullOrWhiteSpace(nombre))
             {
                 return OperationResult<Configuracion>.Failure("El nombre de la configuración no puede estar vacío.");
             }
-
             try
             {
-                var configuracion = await Entity.AsNoTracking()
-                                                .FirstOrDefaultAsync(c => c.Nombre == nombre);
-
+                var configuracion = await Entity.AsNoTracking().FirstOrDefaultAsync(c => c.Nombre == nombre);
                 return OperationResult<Configuracion>.Success(configuracion);
             }
             catch (Exception ex)
@@ -80,12 +69,9 @@ namespace SGB.Persistence.Repositories
         {
             try
             {
-                var configuracion = await Entity.AsNoTracking()
-                                                .FirstOrDefaultAsync(c => c.IDConfiguracion == idConfiguracion);
-
+                var configuracion = await Entity.AsNoTracking() .FirstOrDefaultAsync(c => c.IDConfiguracion == idConfiguracion);
                 if (configuracion == null)
                     return OperationResult<Configuracion>.Failure("Configuración no encontrada.");
-
                 return OperationResult<Configuracion>.Success(configuracion);
             }
             catch (Exception ex)
@@ -96,5 +82,7 @@ namespace SGB.Persistence.Repositories
             }
         }
         #endregion
+
+
     }
 }

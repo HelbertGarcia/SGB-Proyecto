@@ -2,13 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.InMemory;
-using Xunit;
 
 namespace SGB.Persistence.Test
 {
