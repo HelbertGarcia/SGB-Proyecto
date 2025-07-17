@@ -81,7 +81,12 @@ namespace SGB.Persistence.Test
         public async Task ObtenerPorNombreAsync_ShouldReturnFailure_WhenNombreIsEmpty()
         {
             // Arrange
-            var repo = CreateRepository(new Mock<SGBContext>().Object);
+            var options = new DbContextOptionsBuilder<SGBContext>()
+                .UseInMemoryDatabase(databaseName: "GetByEmptyName_DB")
+                .Options;
+
+            using var context = new SGBContext(options);
+            var repo = CreateRepository(context);
 
             // Act
             var result = await repo.ObtenerPorNombreAsync("");
@@ -118,10 +123,15 @@ namespace SGB.Persistence.Test
         public async Task ObtenerPorIdAsync_ShouldReturnFailure_WhenNotFound()
         {
             // Arrange
-            var repo = CreateRepository(new Mock<SGBContext>().Object);
+            var options = new DbContextOptionsBuilder<SGBContext>()
+                .UseInMemoryDatabase(databaseName: "GetByIdNotFound_DB")
+                .Options;
+
+            using var context = new SGBContext(options);
+            var repo = CreateRepository(context);
 
             // Act
-            var result = await repo.ObtenerPorIdAsync(999);
+            var result = await repo.ObtenerPorIdAsync(999); // ID inexistente
 
             // Assert
             Assert.False(result.IsSuccess);
