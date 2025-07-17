@@ -1,11 +1,11 @@
 ﻿using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Domain.Base;
-using SGB.Persistence.Interfaces;
+using SGB.Application.Contracts.Repository.Interfaces;
 
 namespace SGB.Application.Validators.BusinessValidators.Configuracion
 {
-    public class ConfiguracionValidator : IConfiguracionValidator   
+    public class ConfiguracionValidator : IConfiguracionValidator
     {
         private readonly IConfiguracionRepository _configuracionRepository;
 
@@ -14,79 +14,51 @@ namespace SGB.Application.Validators.BusinessValidators.Configuracion
             _configuracionRepository = configuracionRepository;
         }
 
-        public async Task<OperationResult> ValidateForAddAsync(AddConfiguracionDto dto)
+        public async Task<OperationResult<bool>> ValidateForAddAsync(AddConfiguracionDto dto)
         {
             var existente = await _configuracionRepository.ObtenerPorNombreAsync(dto.Nombre);
-            if (existente.Success && existente.Data != null)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "Ya existe una configuración con ese nombre."
-                };
-            }
-            return new OperationResult
-            {
-                Success = true
-            };
+
+            if (existente.IsSuccess && existente.Data != null)
+                return OperationResult<bool>.Failure("Ya existe una configuración con ese nombre.");
+
+            return OperationResult<bool>.Success(true);
         }
 
-        public async Task<OperationResult> ValidateForUpdateAsync(UpdateConfiguracionDto dto)
+        public async Task<OperationResult<bool>> ValidateForUpdateAsync(UpdateConfiguracionDto dto)
         {
             var actual = await _configuracionRepository.ObtenerPorIdAsync(dto.IDConfiguracion);
-            if (!actual.Success || actual.Data == null)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "La configuración que desea actualizar no existe."
-                };
-            }
+
+            if (!actual.IsSuccess || actual.Data == null)
+                return OperationResult<bool>.Failure("La configuración que desea actualizar no existe.");
+
             if (!string.IsNullOrWhiteSpace(dto.Nombre))
             {
                 var duplicado = await _configuracionRepository.ObtenerPorNombreAsync(dto.Nombre);
-                if (duplicado.Success && duplicado.Data != null && duplicado.Data.IDConfiguracion != dto.IDConfiguracion)
+
+                if (duplicado.IsSuccess &&
+                    duplicado.Data != null &&
+                    duplicado.Data.IDConfiguracion != dto.IDConfiguracion)
                 {
-                    return new OperationResult
-                    {
-                        Success = false,
-                        Message = "Ya existe otra configuración con ese nombre."
-                    };
+                    return OperationResult<bool>.Failure("Ya existe otra configuración con ese nombre.");
                 }
             }
-            return new OperationResult
-            {
-                Success = true
-            };
+
+            return OperationResult<bool>.Success(true);
         }
 
-        public async Task<OperationResult> ValidateForDeleteAsync(int id)
+        public async Task<OperationResult<bool>> ValidateForDeleteAsync(int id)
         {
             var actual = await _configuracionRepository.ObtenerPorIdAsync(id);
-            if (!actual.Success || actual.Data == null)
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "La configuración que desea eliminar no existe."
-                };
-            }
-            var nombre = actual.Data.Nombre?.ToLower() ?? string.Empty;
+
+            if (!actual.IsSuccess || actual.Data == null)
+                return OperationResult<bool>.Failure("La configuración que desea eliminar no existe.");
+
+            var nombre = actual.Data.Nombre?.ToLowerInvariant() ?? string.Empty;
+
             if (nombre.Contains("sistema") || nombre.Contains("protegida"))
-            {
-                return new OperationResult
-                {
-                    Success = false,
-                    Message = "Esta configuración es protegida y no puede eliminarse."
-                };
-            }
-            return new OperationResult
-            {
-                Success = true
-            };
+                return OperationResult<bool>.Failure("Esta configuración es protegida y no puede eliminarse.");
+
+            return OperationResult<bool>.Success(true);
         }
-
-
-
     }
 }

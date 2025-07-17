@@ -10,6 +10,7 @@ namespace SGB.Api.Controllers
     public class AdminController : Controller
     {
         private readonly IConfiguracionService _configuracionService;
+
         public AdminController(IConfiguracionService configuracionService)
         {
             _configuracionService = configuracionService;
@@ -20,7 +21,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> ObtenerTodo()
         {
             var resultado = await _configuracionService.GetAllAsync();
-            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
         }
 
         // GET: api/admin/configuraciones/{id}
@@ -28,7 +29,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> ObtenerPorId(int id)
         {
             var resultado = await _configuracionService.GetByIdAsync(id);
-            return resultado.Success ? Ok(resultado) : NotFound(resultado);
+            return resultado.IsSuccess ? Ok(resultado) : NotFound(resultado);
         }
 
         // PUT: api/admin/configuraciones
@@ -36,19 +37,18 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateConfiguracionDto dto)
         {
             if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-            dto.IDConfiguracion = id;
-            var resultado = await _configuracionService.UpdateAsync(dto);
-            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
+                return BadRequest(ModelState);
+
+            var resultado = await _configuracionService.UpdateAsync(id, dto);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
         }
 
         // DELETE (soft): api/admin/configuraciones
         [HttpDelete("Delete_Configuraciones")]
         public async Task<IActionResult> Eliminar(int id)
         {
-            var dto = new DeleteConfiguracionDto { IDConfiguracion = id };
-            var resultado = await _configuracionService.DeleteAsync(dto);
-            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
+            var resultado = await _configuracionService.DeleteAsync(id);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
         }
 
         // POST: api/admin/configuraciones
@@ -56,9 +56,10 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> Crear([FromBody] AddConfiguracionDto dto)
         {
             if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-            var resultado = await _configuracionService.SaveAsync(dto);
-            return resultado.Success ? Ok(resultado) : BadRequest(resultado);
+                return BadRequest(ModelState);
+
+            var resultado = await _configuracionService.AddAsync(dto);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
         }
     }
 }

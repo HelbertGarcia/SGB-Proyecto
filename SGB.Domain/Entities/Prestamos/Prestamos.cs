@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,9 @@ namespace SGB.Domain.Entities.Prestamos
 {
     public class Prestamo : BaseEntity
     {
-        public int EjemplarId { get; private set; }
+        [Key]
+        public int Id { get; private set; }
+        public string EjemplarId { get; private set; }
         public int UsuarioId { get; private set; }
         public DateTime FechaPrestamo { get; private set; }
         public DateTime FechaVencimiento { get; private set; }
@@ -18,9 +21,9 @@ namespace SGB.Domain.Entities.Prestamos
 
         private Prestamo() : base() { }
 
-        public Prestamo(int ejemplarId, int usuarioId, int diasDePrestamo) : base()
+        public Prestamo(string ejemplarId, int usuarioId, int diasDePrestamo) : base()
         {
-            if (ejemplarId <= 0)
+            if (string.IsNullOrWhiteSpace(ejemplarId))
                 throw new ArgumentException("El Id del ejemplar es inválido.", nameof(ejemplarId));
 
             if (usuarioId <= 0)

@@ -2,7 +2,7 @@
 
 namespace SGB.Application.Dtos.AdministracionDto
 {
-    public class GetConfiguracionDto : BaseConfiguracion
+    public class ConfiguracionDto : BaseConfiguracion
     {
         public int IDConfiguracion { get; set; }
         public DateTime FechaCreacion { get; set; }

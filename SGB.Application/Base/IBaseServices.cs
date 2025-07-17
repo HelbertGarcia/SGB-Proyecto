@@ -2,19 +2,12 @@
 
 namespace SGB.Application.Base
 {
-    
-    public interface IBaseService<TAddDto, TUpdateDto>
+    public interface IBaseService<TAddDto, TUpdateDto, TDto>
     {
-        Task<OperationResult> AddAsync(TAddDto dto);
-
-       
-        Task<OperationResult> UpdateAsync(int id, TUpdateDto dto);
-
-     
-        Task<OperationResult> DeleteAsync(int id);
-
-        Task<OperationResult> GetAllAsync();
-
-        Task<OperationResult> GetByIdAsync(int id);
+        Task<OperationResult<TDto>> AddAsync(TAddDto dto);
+        Task<OperationResult<TDto>> UpdateAsync(int id, TUpdateDto dto);
+        Task<OperationResult<bool>> DeleteAsync(int id);
+        Task<OperationResult<IEnumerable<TDto>>> GetAllAsync();
+        Task<OperationResult<TDto>> GetByIdAsync(int id);
     }
 }

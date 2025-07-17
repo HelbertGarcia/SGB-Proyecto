@@ -1,18 +1,20 @@
 ﻿using SGB.Domain.Base;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SGB.Domain.Entities.Notificaciones
 {
-    public class Notificacion: BaseEntity
+    public class Notificacion : BaseEntity
     {
-        public int IDNotificacion { get;  set; }
-        public int IDUsuario { get;  set; }
-        public string Mensaje { get;  set; }
-        public string TipoNotificacion { get;  set; }
+        [Key]
+        public int IDNotificacion { get; set; }
+        public int IDUsuario { get; set; }
+        public string Mensaje { get; set; }
+        public string TipoNotificacion { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime? FechaEnvio { get; set; }
 
@@ -25,7 +27,7 @@ namespace SGB.Domain.Entities.Notificaciones
             ValidarYAsignarTipoNotificacion(tipoNotificacion);
 
             FechaCreacion = DateTime.UtcNow;
-            FechaEnvio = null; 
+            FechaEnvio = null;
         }
 
         public void MarcarComoEnviada()

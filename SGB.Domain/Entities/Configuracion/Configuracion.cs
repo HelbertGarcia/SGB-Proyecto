@@ -13,7 +13,7 @@ namespace SGB.Domain.Entities.Configuracion
         public DateTime FechaCreacion { get; set; }
 
         public bool EstaActivo { get; set; }
-        ///
+        
         public Configuracion(string nombre, string valor, string descripcion)
         {
             Nombre = nombre;

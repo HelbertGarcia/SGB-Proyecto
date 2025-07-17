@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Notificaciones;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
-using SGB.Persistence.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,6 @@ namespace SGB.Persistence.Repositories
         private readonly ILogger<NotificacionRepository> _logger;
         private readonly IConfiguration _configuration;
 
-        // 1. CONSTRUCTOR CORREGIDO: Inyecta ILoggerFactory y pasa las dependencias a la clase base.
         public NotificacionRepository(SGBContext context,
                                       ILoggerFactory loggerFactory,
                                       IConfiguration configuration)
@@ -30,33 +29,34 @@ namespace SGB.Persistence.Repositories
             _logger = loggerFactory.CreateLogger<NotificacionRepository>();
         }
 
-        public async Task<OperationResult> ContarPorTipoAsync(int idUsuario)
+        #region "Implementación de INotificacionRepository"
+
+        public async Task<OperationResult<Dictionary<string, int>>> ContarPorTipoAsync(int idUsuario)
         {
             if (idUsuario <= 0)
             {
-                return await Task.FromResult(new OperationResult
-                {
-                    Success = false,
-                    Message = _configuration["ErrorMessages:Global:ValidationError"] ?? "ID de usuario inválido."
-                });
+                return OperationResult<Dictionary<string, int>>.Failure("ID de usuario inválido.");
             }
 
             try
             {
-                var data = await _context.Notificacion 
+                var data = await _context.Notificaciones
                                          .Where(n => n.IDUsuario == idUsuario)
                                          .AsNoTracking()
                                          .GroupBy(n => n.TipoNotificacion)
                                          .ToDictionaryAsync(g => g.Key, g => g.Count());
 
-                return new OperationResult { Data = data };
+                return OperationResult<Dictionary<string, int>>.Success(data);
             }
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:Notificaciones:GenerateError"] ?? "Ocurrió un error al contar las notificaciones.";
                 _logger.LogError(ex, "{ErrorMessage} para el usuario ID: {UsuarioID}", errorMessage, idUsuario);
-                return new OperationResult { Success = false, Message = errorMessage };
+
+                return OperationResult<Dictionary<string, int>>.Failure(errorMessage);
             }
         }
+
+        #endregion
     }
 }

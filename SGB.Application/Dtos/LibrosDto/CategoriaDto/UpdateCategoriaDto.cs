@@ -9,11 +9,6 @@ namespace SGB.Application.Dtos.LibrosDto.CategoriaDto
 {
     public record UpdateCategoriaDto
     {
-        [Required(ErrorMessage = "El nombre de la categoría es obligatorio.")]
-        [StringLength(100)]
-        public string Nombre { get; set; }
 
-        [StringLength(500)]
-        public string Descripcion { get; set; }
     }
 }

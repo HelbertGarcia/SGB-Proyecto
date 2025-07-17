@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using SGB.Persistence.Context;
 using SGB.Application.Contracts.Service.IConfiguracionService;
 using SGB.Application.Services.ConfiguracionServices;
-using SGB.Persistence.Interfaces;
 using SGB.Persistence.Repositories;
 using SGB.IOC.Dependencies.ConfiguracionDependency;
+using SGB.Application.Contracts.Repository.Interfaces;
 
 namespace SGB.Api
 {

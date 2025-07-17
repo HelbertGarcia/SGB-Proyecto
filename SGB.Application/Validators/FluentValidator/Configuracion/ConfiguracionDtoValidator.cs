@@ -3,9 +3,9 @@ using SGB.Application.Dtos.AdministracionDto;
 
 namespace SGB.Application.Validators.FluentValidator.Configuracion
 {
-    public class GetConfiguracionDtoValidator : AbstractValidator<GetConfiguracionDto>
+    public class ConfiguracionDtoValidator : AbstractValidator<ConfiguracionDto>
     {
-        public GetConfiguracionDtoValidator()
+        public ConfiguracionDtoValidator()
         {
             RuleFor(c => c.IDConfiguracion).GreaterThan(0).WithMessage("El ID de configuración debe ser mayor a 0");
 

@@ -1,10 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.IConfiguracionService;
 using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Domain.Base;
+using System.Linq;
 using SGB.Domain.Entities.Configuracion;
-using SGB.Persistence.Interfaces;
 
 namespace SGB.Application.Services.ConfiguracionServices
 {
@@ -19,165 +20,156 @@ namespace SGB.Application.Services.ConfiguracionServices
             _logger = logger;
         }
 
-        public async Task<OperationResult> GetAllAsync()
+        public async Task<OperationResult<ConfiguracionDto>> AddAsync(AddConfiguracionDto dto)
         {
-            var result = new OperationResult();
-            try
-            {
-                var configuraciones = await _repository.GetAllAsync();
-                result.Data = configuraciones
-                    .Select(c => new GetConfiguracionDto
-                    {
-                        IDConfiguracion = c.IDConfiguracion,
-                        Nombre = c.Nombre,
-                        Valor = c.Valor,
-                        Descripcion = c.Descripcion,
-                        FechaCreacion = c.FechaCreacion,
-                        EstaActivo = c.EstaActivo
-                    })
-                    .OrderByDescending(c => c.FechaCreacion)
-                    .ToList();
-                result.Message = "Configuraciones obtenidas correctamente.";
-            }
-            catch (Exception ex)
-            {
-                result.Success = true;
-                result.Message = "Error al obtener las configuraciones.";
-                _logger.LogError(ex, result.Message);
-            }
-            return result;
-        }
-
-        public async Task<OperationResult> GetByIdAsync(int id)
-        {
-            var result = new OperationResult();
-            try
-            {
-                var config = await _repository.GetByIdAsync(id);
-                if (config == null)
-                {
-                    result.Success = true;
-                    result.Message = "Configuración no encontrada.";
-                    return result;
-                }
-                result.Data = new GetConfiguracionDto
-                {
-                    IDConfiguracion = config.IDConfiguracion,
-                    Nombre = config.Nombre,
-                    Valor = config.Valor,
-                    Descripcion = config.Descripcion,
-                    FechaCreacion = config.FechaCreacion,
-                    EstaActivo = config.EstaActivo
-                };
-                result.Message = "Configuración obtenida correctamente.";
-            }
-            catch (Exception ex)
-            {
-                result.Success = true;
-                result.Message = "Error al obtener la configuración.";
-                _logger.LogError(ex, result.Message);
-            }
-            return result;
-        }
-
-        public async Task<OperationResult> SaveAsync(AddConfiguracionDto dto)
-        {
-            var result = new OperationResult();
-
             try
             {
                 if (string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Valor))
+                    return OperationResult<ConfiguracionDto>.Failure("El nombre y el valor son obligatorios.");
+
+                var entity = new Configuracion(dto.Nombre, dto.Valor, dto.Descripcion);
+                var result = await _repository.AddAsync(entity);
+
+                if (!result.IsSuccess || result.Data == null)
+                    return OperationResult<ConfiguracionDto>.Failure(result.Message);
+
+                var dtoResult = new ConfiguracionDto
                 {
-                    result.Success = true;
-                    result.Message = "El nombre y el valor son obligatorios.";
-                    return result;
-                }
+                    IDConfiguracion = result.Data.IDConfiguracion,
+                    Nombre = result.Data.Nombre,
+                    Valor = result.Data.Valor,
+                    Descripcion = result.Data.Descripcion,
+                    FechaCreacion = result.Data.FechaCreacion,
+                    EstaActivo = result.Data.EstaActivo
+                };
 
-                var config = new Configuracion(dto.Nombre, dto.Valor, dto.Descripcion);
-                result = await _repository.AddAsync(config);
-
-                if (result.Success)
-                    result.Message = "Configuración guardada exitosamente.";
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Validación fallida al crear configuración");
-                result.Success = true;
-                result.Message = ex.Message;
+                return OperationResult<ConfiguracionDto>.Success(dtoResult, "Configuración guardada correctamente.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error inesperado al guardar configuración");
-                result.Success = true;
-                result.Message = $"Error interno: {ex.Message}";
+                _logger.LogError(ex, "Error inesperado al guardar configuración.");
+                return OperationResult<ConfiguracionDto>.Failure("Error interno al guardar configuración.");
             }
-
-            return result;
         }
 
-        public async Task<OperationResult> UpdateAsync(UpdateConfiguracionDto dto)
+        public async Task<OperationResult<ConfiguracionDto>> UpdateAsync(int id, UpdateConfiguracionDto dto)
         {
-            var result = new OperationResult();
             try
             {
-                var config = await _repository.GetByIdAsync(dto.IDConfiguracion);
-                if (config == null)
-                {
-                    result.Success = true;
-                    result.Message = "Configuración no encontrada.";
-                    return result;
-                }
-                config.Valor = dto.Valor;
-                config.Descripcion = dto.Descripcion;
-                config.EstaActivo = dto.EstaActivo ?? config.EstaActivo;
+                var result = await _repository.GetByIdAsync(id);
+                var entity = result.Data;
 
-                result = await _repository.UpdateAsync(config);
-                if (result.Success)
-                    result.Message = "Configuración actualizada correctamente.";
+                if (!result.IsSuccess || entity == null)
+                    return OperationResult<ConfiguracionDto>.Failure("Configuración no encontrada.");
+
+                entity.Valor = dto.Valor;
+                entity.Descripcion = dto.Descripcion;
+                entity.EstaActivo = dto.EstaActivo ?? entity.EstaActivo;
+
+                var updateResult = await _repository.UpdateAsync(entity);
+                if (!updateResult.IsSuccess || updateResult.Data == null)
+                    return OperationResult<ConfiguracionDto>.Failure(updateResult.Message);
+
+                var dtoResult = new ConfiguracionDto
+                {
+                    IDConfiguracion = updateResult.Data.IDConfiguracion,
+                    Nombre = updateResult.Data.Nombre,
+                    Valor = updateResult.Data.Valor,
+                    Descripcion = updateResult.Data.Descripcion,
+                    FechaCreacion = updateResult.Data.FechaCreacion,
+                    EstaActivo = updateResult.Data.EstaActivo
+                };
+
+                return OperationResult<ConfiguracionDto>.Success(dtoResult, "Configuración actualizada correctamente.");
             }
             catch (Exception ex)
             {
-                result.Success = true;
-                result.Message = "Error al actualizar la configuración.";
-                _logger.LogError(ex, result.Message);
+                _logger.LogError(ex, "Error al actualizar configuración.");
+                return OperationResult<ConfiguracionDto>.Failure("Error al actualizar la configuración.");
             }
-            return result;
         }
 
-        public async Task<OperationResult> DeleteAsync(DeleteConfiguracionDto dto)
+        public async Task<OperationResult<bool>> DeleteAsync(int id)
         {
-            var result = new OperationResult();
-
             try
             {
-                if (dto.IDConfiguracion <= 0)
-                {
-                    result.Success = true;
-                    result.Message = "ID de configuración inválido.";
-                    return result;
-                }
-                var config = await _repository.GetByIdAsync(dto.IDConfiguracion);
-                if (config == null)
-                {
-                    result.Success = true;
-                    result.Message = "Configuración no encontrada.";
-                    return result;
-                }
-                result = await _repository.DeleteAsync(config.IDConfiguracion);
+                if (id <= 0)
+                    return OperationResult<bool>.Failure("ID inválido para eliminación.");
 
-                if (result.Success)
-                    result.Message = "Configuración eliminada correctamente.";
+                var result = await _repository.GetByIdAsync(id);
+                var entity = result.Data;
+
+                if (!result.IsSuccess || entity == null)
+                    return OperationResult<bool>.Failure("Configuración no encontrada.");
+
+                var deleteResult = await _repository.DeleteAsync(entity.IDConfiguracion);
+                return deleteResult.IsSuccess
+                    ? OperationResult<bool>.Success(true, "Configuración eliminada correctamente.")
+                    : OperationResult<bool>.Failure(deleteResult.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar configuración");
-                result.Success = true;
-                result.Message = $"Error al eliminar la configuración: {ex.Message}";
+                _logger.LogError(ex, "Error al eliminar configuración.");
+                return OperationResult<bool>.Failure("Error al eliminar la configuración.");
             }
-            return result;
         }
 
+        public async Task<OperationResult<IEnumerable<ConfiguracionDto>>> GetAllAsync()
+        {
+            try
+            {
+                var result = await _repository.GetAllAsync();
 
+                if (!result.IsSuccess || result.Data == null)
+                    return OperationResult<IEnumerable<ConfiguracionDto>>.Failure(result.Message);
 
+                var dtos = result.Data.Select(c => new ConfiguracionDto
+                {
+                    IDConfiguracion = c.IDConfiguracion,
+                    Nombre = c.Nombre,
+                    Valor = c.Valor,
+                    Descripcion = c.Descripcion,
+                    FechaCreacion = c.FechaCreacion,
+                    EstaActivo = c.EstaActivo
+                });
+
+                return OperationResult<IEnumerable<ConfiguracionDto>>.Success(dtos, "Configuraciones obtenidas correctamente.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener las configuraciones.");
+                return OperationResult<IEnumerable<ConfiguracionDto>>.Failure("Error al obtener las configuraciones.");
+            }
+        }
+
+        public async Task<OperationResult<ConfiguracionDto>> GetByIdAsync(int id)
+        {
+            try
+            {
+                var result = await _repository.GetByIdAsync(id);
+                var entity = result.Data;
+
+                if (!result.IsSuccess || entity == null)
+                    return OperationResult<ConfiguracionDto>.Failure("Configuración no encontrada.");
+
+                var dto = new ConfiguracionDto
+                {
+                    IDConfiguracion = entity.IDConfiguracion,
+                    Nombre = entity.Nombre,
+                    Valor = entity.Valor,
+                    Descripcion = entity.Descripcion,
+                    FechaCreacion = entity.FechaCreacion,
+                    EstaActivo = entity.EstaActivo
+                };
+
+                return OperationResult<ConfiguracionDto>.Success(dto, "Configuración obtenida correctamente.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener configuración por ID.");
+                return OperationResult<ConfiguracionDto>.Failure("Error al obtener la configuración.");
+            }
+        }
     }
 }
+

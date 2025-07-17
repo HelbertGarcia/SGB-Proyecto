@@ -1,41 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Dtos\RolDto\**" />
-    <EmbeddedResource Remove="Dtos\RolDto\**" />
-    <None Remove="Dtos\RolDto\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Contracts\Repositorio\**" />
+		<Compile Remove="Dtos\RolDto\**" />
+		<Compile Remove="Services\NotificacionesServices\**" />
+		<Compile Remove="Services\Prestamos_y_PenalizacionServices\**" />
+		<Compile Remove="Services\Reporte_EstaditicaServices\**" />
+		<Compile Remove="Services\UsuarioServices\**" />
+		<EmbeddedResource Remove="Contracts\Repositorio\**" />
+		<EmbeddedResource Remove="Dtos\RolDto\**" />
+		<EmbeddedResource Remove="Services\NotificacionesServices\**" />
+		<EmbeddedResource Remove="Services\Prestamos_y_PenalizacionServices\**" />
+		<EmbeddedResource Remove="Services\Reporte_EstaditicaServices\**" />
+		<EmbeddedResource Remove="Services\UsuarioServices\**" />
+		<None Remove="Contracts\Repositorio\**" />
+		<None Remove="Dtos\RolDto\**" />
+		<None Remove="Services\NotificacionesServices\**" />
+		<None Remove="Services\Prestamos_y_PenalizacionServices\**" />
+		<None Remove="Services\Reporte_EstaditicaServices\**" />
+		<None Remove="Services\UsuarioServices\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Contracts\Repositorio\" />
-    <Folder Include="Contracts\Service\ILibroServices\" />
-    <Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
-    <Folder Include="Contracts\Service\INotificacionesServices\" />
-    <Folder Include="Contracts\Service\IPrestamos_y_ PenalizacionServices\" />
-    <Folder Include="Contracts\Service\IUsuarioServices\" />
-    <Folder Include="Services\LibrosServices\" />
-    <Folder Include="Services\Prestamos_y_PenalizacionServices\PenalizacionServices\" />
-    <Folder Include="Services\Prestamos_y_PenalizacionServices\PrestamoServices\" />
-    <Folder Include="Services\UsuarioServices\" />
-    <Folder Include="Services\Reporte_EstaditicaServices\" />
-    <Folder Include="Services\NotificacionesServices\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
+		<Folder Include="Contracts\Service\INotificacionesServices\" />
+		<Folder Include="Contracts\Service\IPrestamos_y_ PenalizacionServices\" />
+		<Folder Include="Contracts\Service\IUsuarioServices\" />
+		<Folder Include="Services\ConfiguracionServices\" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="12.0.0" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="FluentValidation" Version="12.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SGB.Domain\SGB.Domain.csproj" />
-    <ProjectReference Include="..\SGB.Persistence\SGB.Persistence.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SGB.Domain\SGB.Domain.csproj" />
+		<ProjectReference Include="..\SGB.Presentation\SGB.Presentation.csproj" />
+	</ItemGroup>
 
 </Project>

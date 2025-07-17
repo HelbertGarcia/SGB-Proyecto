@@ -6,8 +6,8 @@ namespace SGB.Application.Validators.BusinessValidators.Configuracion
 {
     public interface IConfiguracionValidator
     {
-        Task<OperationResult> ValidateForAddAsync(AddConfiguracionDto dto);
-        Task<OperationResult> ValidateForDeleteAsync(int id);
-        Task<OperationResult> ValidateForUpdateAsync(UpdateConfiguracionDto dto);
+        Task<OperationResult<bool>> ValidateForAddAsync(AddConfiguracionDto dto);
+        Task<OperationResult<bool>> ValidateForDeleteAsync(int id);
+        Task<OperationResult<bool>> ValidateForUpdateAsync(UpdateConfiguracionDto dto);
     }
 }
