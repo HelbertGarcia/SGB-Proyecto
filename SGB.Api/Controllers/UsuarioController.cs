@@ -46,7 +46,7 @@ namespace SGB.Api.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var resultado = await _usuarioServices.AddUsuarioAsync(usuarioDto);
-            if (!resultado.IsSuccess) return BadRequest(resultado);
+            if (!resultado.isSuccess) return BadRequest(resultado);
 
             var usuarioCreado = (UsuarioDto)resultado.Data!;
             return CreatedAtAction(nameof(GetById), new { id = usuarioCreado.IDUsuario }, usuarioCreado);

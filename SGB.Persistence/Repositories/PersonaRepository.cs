@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SGB.Application.Contracts.Repository.Interfaces;
+using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
 
 namespace SGB.Persistence.Repositories
 {
@@ -77,13 +78,13 @@ namespace SGB.Persistence.Repositories
             {
                 return OperationResult<IEnumerable<Persona>>.Failure("ID de rol inválido.");
             }
-            // Reutilizamos el método genérico de la clase base.
+           
             return await base.FindByConditionAsync(u => u.IdRol == idRol && u.EstaActivo);
         }
 
         public async Task<OperationResult<IEnumerable<Persona>>> ObtenerTodosActivosAsync()
         {
-            // Reutilizamos el método genérico de la clase base.
+            
             return await base.FindByConditionAsync(u => u.EstaActivo);
         }
 
@@ -97,7 +98,7 @@ namespace SGB.Persistence.Repositories
             return await CambiarEstadoCuentaAsync(idUsuario, false, "desactivar");
         }
 
-        // Método privado para no repetir código entre Activar y Desactivar.
+        
         private async Task<OperationResult<bool>> CambiarEstadoCuentaAsync(int idUsuario, bool estado, string accion)
         {
             if (idUsuario <= 0)
@@ -112,7 +113,7 @@ namespace SGB.Persistence.Repositories
                 usuario.EstaActivo = estado;
                 var repoResult = await base.UpdateAsync(usuario);
 
-                // Devolvemos el resultado booleano de la operación de actualización.
+                
                 return OperationResult<bool>.Success(repoResult.IsSuccess, repoResult.Message);
             }
             catch (Exception ex)
@@ -121,6 +122,28 @@ namespace SGB.Persistence.Repositories
                 _logger.LogError(ex, "{ErrorMessage} para el ID: {UsuarioID}", errorMessage, idUsuario);
                 return OperationResult<bool>.Failure(errorMessage);
             }
+        }
+
+      
+      
+        Task<OperationResult<bool>> IPersonaRepository.UpdateAsync(UsuarioDto usuario)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<OperationResult<IEnumerable<UsuarioDto>>> SearchAsync(string termino)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<OperationResult<Persona>> IPersonaRepository.AddAsync(UsuarioDto usuarioEntity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<OperationResult<IEnumerable<UsuarioDto>>> ObtenerTodosConDetallesAsync()
+        {
+            throw new NotImplementedException();
         }
         #endregion
     }

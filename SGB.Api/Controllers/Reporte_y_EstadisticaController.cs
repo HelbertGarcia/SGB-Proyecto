@@ -17,7 +17,7 @@ namespace SGB.Api.Controllers
 
       
         [HttpGet("libros-mas-prestados")]
-        public async Task<IActionResult> GetLibrosMasPrestados()
+        public async Task<IActionResult> GenerarLibrosMasPrestadosAsync()
         {
             var resultado = await _reporteService.GenerarLibrosMasPrestadosAsync();
             if (!resultado.IsSuccess) return BadRequest(resultado);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Application.Dtos.UsuarioDto.UsuarioDto
 {
-    public record DeleteUsuarioDto
+    public record DisableUsuarioDto
     {
         [Required(ErrorMessage = "El ID del usuario es obligatorio.")]
         public int IDUsuario { get; set; }

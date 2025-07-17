@@ -1,59 +1,78 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using SGB.Application.Contracts.Service.IUsuarioServices;
-using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
-using SGB.Domain.Base;
-using SGB.Domain.Entities.Usuario;
-using SGB.Persistence.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using SGB.Application.Contracts.Repository.Interfaces;
+using SGB.Application.Contracts.Service.IUsuarioServices;
+using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
+using SGB.Application.interfaces.Interfaces;
+using SGB.Domain.Base;
+using SGB.Domain.Entities.Usuario;
+
 
 namespace SGB.Application.Services.UsuarioServices
 {
     public sealed class UsuarioService : IUsuarioServices
     {
-        private readonly IUsuarioServices _usuarioRepository;
+        private readonly IPersonaRepository _personaRepository;
         private readonly ILogger<UsuarioService> _logger;
         private readonly IConfiguration _configuration;
 
         public UsuarioService(
-            IUsuarioServices usuarioRepository,
+           
+            IPersonaRepository personaRepository,
             ILoggerFactory loggerFactory,
             IConfiguration configuration)
         {
-            _usuarioRepository = usuarioRepository;
+            _personaRepository = personaRepository;
             _logger = loggerFactory.CreateLogger<UsuarioService>();
             _configuration = configuration;
         }
 
-        public async Task<OperationResult<UsuarioDto>> AddUsuarioAsync(SaveUsuarioDto dto)
+
+        public async Task<OperationResult<UsuarioDto>> AddAsync(SaveUsuarioDto dto)
         {
+
             try
             {
                 if (dto is null)
                     return OperationResult<UsuarioDto>.Failure("Datos nulos.");
 
-                var usuario = new UsuarioDto
+                var usuarioEntity = new UsuarioDto
                 {
                     Nombre = dto.Nombre,
                     Email = dto.Email,
                     PasswordHash = dto.PasswordHash,
                     IDRol = dto.IDRol,
-                    FechaCreacion = DateTime.UtcNow
+                    FechaCreacion = DateTime.UtcNow,
+                    EstaActivo = true
                 };
 
-                var result = await _usuarioRepository.AddAsync(usuario);
-                if (!result.IsSuccess)
-                    return OperationResult<UsuarioDto>.Failure(result.Message);
 
-                return OperationResult<UsuarioDto>.Success(result.Data!, "Usuario creado exitosamente.");
+                var createdEntity = await _personaRepository.AddAsync(usuarioEntity);
+
+
+                var usuario = new UsuarioDto
+                {
+                    IDUsuario = createdEntity.IDUsuario,
+                    Nombre = createdEntity.Nombre,
+                    Email = createdEntity.Email,
+                    IDRol = createdEntity.IDRol,
+                    FechaCreacion = createdEntity.FechaCreacion,
+                    EstaActivo = createdEntity.EstaActivo
+                };
+
+                return OperationResult<UsuarioDto>.Success(usuario, "Usuario creado exitosamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al agregar el usuario: {Email}", dto?.Email);
                 return OperationResult<UsuarioDto>.Failure(_configuration["ErrorMessages:Global:UnexpectedError"]);
             }
+
+
+
         }
 
         public async Task<OperationResult<UsuarioDto>> UpdateAsync(int id, UpdateUsuarioDto dto)
@@ -74,7 +93,7 @@ namespace SGB.Application.Services.UsuarioServices
                     FechaActualizacion = DateTime.UtcNow
                 };
 
-                var result = await _usuarioRepository.UpdateAsync(usuario);
+                var result = await _personaRepository.UpdateAsync(usuario);
                 if (!result.IsSuccess)
                     return OperationResult<UsuarioDto>.Failure(result.Message);
 
@@ -91,7 +110,7 @@ namespace SGB.Application.Services.UsuarioServices
         {
             try
             {
-                var result = await _usuarioRepository.DeleteAsync(id);
+                var result = await _personaRepository.DeleteAsync(id);
                 if (!result.IsSuccess)
                     return OperationResult<bool>.Failure(result.Message);
 
@@ -108,11 +127,11 @@ namespace SGB.Application.Services.UsuarioServices
         {
             try
             {
-                var result = await _usuarioRepository.GetByIdAsync(id);
+                var result = await _personaRepository.GetByIdAsync(id);
                 if (!result.IsSuccess)
                     return OperationResult<UsuarioDto>.Failure(result.Message);
 
-                return result;
+                return await GetByIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -125,11 +144,11 @@ namespace SGB.Application.Services.UsuarioServices
         {
             try
             {
-                var result = await _usuarioRepository.GetAllAsync();
+                var result = await _personaRepository.GetAllAsync();
                 if (!result.IsSuccess)
                     return OperationResult<IEnumerable<UsuarioDto>>.Failure(result.Message);
 
-                return result;
+                return await _personaRepository.ObtenerTodosConDetallesAsync();
             }
             catch (Exception ex)
             {
@@ -145,7 +164,7 @@ namespace SGB.Application.Services.UsuarioServices
                 if (string.IsNullOrWhiteSpace(termino))
                     return await GetAllAsync();
 
-                var result = await _usuarioRepository.SearchAsync(termino);
+                var result = await _personaRepository.SearchAsync(termino);
                 if (!result.IsSuccess)
                     return OperationResult<IEnumerable<UsuarioDto>>.Failure(result.Message);
 
@@ -163,17 +182,19 @@ namespace SGB.Application.Services.UsuarioServices
             throw new NotImplementedException();
         }
 
-        public Task AddAsync(UsuarioDto usuario)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OperationResult<UsuarioDto>> AddAsync(SaveUsuarioDto dto)
-        {
-            throw new NotImplementedException();
-        }
+      
 
         public Task<OperationResult<IEnumerable<UsuarioDto>>> SearchAsync(string termino)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateAsync(UsuarioDto usuario)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<object?> IUsuarioServices.AddUsuarioAsync(SaveUsuarioDto usuarioDto)
         {
             throw new NotImplementedException();
         }

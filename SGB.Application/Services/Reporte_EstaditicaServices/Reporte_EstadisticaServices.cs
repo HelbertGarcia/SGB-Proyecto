@@ -27,20 +27,20 @@ namespace SGB.Application.Services.Reporte_EstaditicaServices
             _configuration = configuration;
         }
 
-        public async Task<OperationResult<IEnumerable<UsuarioDto>>> GenerarLibrosMasPrestadosAsync()
+        public async Task<OperationResult<IEnumerable<LibroDto>>> GenerarLibrosMasPrestadosAsync()
         {
             try
             {
                 var result = await _repository.GetLibrosMasPrestadosAsync();
                 if (!result.IsSuccess)
-                    return OperationResult<IEnumerable<UsuarioDto>>.Failure(result.Message);
+                    return OperationResult<IEnumerable<LibroDto>>.Failure(result.Message);
 
-                return OperationResult<IEnumerable<UsuarioDto>>.Success(result.Data!, "Reporte de libros más prestados generado correctamente.");
+                return OperationResult<IEnumerable<LibroDto>>.Success((IEnumerable<LibroDto>)result.Data!, "Reporte de libros más prestados generado correctamente.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al generar el reporte de libros más prestados.");
-                return OperationResult<IEnumerable<UsuarioDto>>.Failure(_configuration["ErrorMessages:Global:UnexpectedError"]);
+                return OperationResult<IEnumerable<LibroDto>>.Failure(_configuration["ErrorMessages:Global:UnexpectedError"]);
             }
         }
 
@@ -61,7 +61,7 @@ namespace SGB.Application.Services.Reporte_EstaditicaServices
             }
         }
 
-        public async Task<OperationResult<IEnumerable<UsuarioDto>>> GenerarUsuariosConPenalizacionesActivasAsync()
+        public async Task<OperationResult<IEnumerable<UsuarioDto>>> GenerarUsuariosConPenalizacionesActivasAsync(int id)
         {
             try
             {
@@ -69,7 +69,7 @@ namespace SGB.Application.Services.Reporte_EstaditicaServices
                 if (!result.IsSuccess)
                     return OperationResult<IEnumerable<UsuarioDto>>.Failure(result.Message);
 
-                return OperationResult<IEnumerable<UsuarioDto>>.Success(result.Data!, "Usuarios con penalizaciones activas generados correctamente.");
+                return OperationResult<IEnumerable<UsuarioDto>>.Success((IEnumerable<UsuarioDto>)result.Data!, "Usuarios con penalizaciones activas generados correctamente.");
             }
             catch (Exception ex)
             {

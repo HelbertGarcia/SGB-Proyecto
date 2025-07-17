@@ -11,6 +11,12 @@ namespace SGB.Domain.Base
         public bool IsSuccess { get; private set; }
         public string Message { get; private set; } = string.Empty;
         public T? Data { get; private set; }
+        public int IDUsuario { get; set; }
+        public string Nombre { get; set; }
+        public string Email { get; set; }
+        public int IDRol { get; set; }
+        public DateTime FechaCreacion { get; set; }
+        public bool EstaActivo { get; set; }
 
         private OperationResult(bool isSuccess, string message, T? data = default)
         {
@@ -29,6 +35,6 @@ namespace SGB.Domain.Base
             return new OperationResult<T>(false, message);
         }
 
-    
+       
     }
 }

@@ -1,6 +1,6 @@
 namespace SGB.Persistence.Test
 {
-    public class UnitTest1
+    public class UnitTestUsuarioRespository
     {
         [Fact]
         public void Test1()

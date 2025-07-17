@@ -1,4 +1,6 @@
-﻿using SGB.Domain.Base;
+﻿using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
+using SGB.Domain.Base;
+using SGB.Domain.Entities.Usuario;
 using System.Threading.Tasks;
 
 namespace SGB.Application.Contracts.Repository.Interfaces
@@ -16,5 +18,9 @@ namespace SGB.Application.Contracts.Repository.Interfaces
         Task<OperationResult<bool>> ActivarCuentaAsync(int idUsuario);
 
         Task<OperationResult<bool>> DesactivarCuentaAsync(int idUsuario);
+        Task <OperationResult<Persona>> AddAsync(UsuarioDto usuarioEntity);
+        Task <OperationResult<bool>>UpdateAsync(UsuarioDto usuario);
+        Task<OperationResult<IEnumerable<UsuarioDto>>> SearchAsync(string termino);
+        Task<OperationResult<IEnumerable<UsuarioDto>>> ObtenerTodosConDetallesAsync();
     }
 }
