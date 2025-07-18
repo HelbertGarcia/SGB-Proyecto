@@ -64,12 +64,27 @@ namespace SGB.Persistence.Base
             try
             {
                 var entityToDelete = await Entity.FindAsync(id);
-                if (entityToDelete == null)
-                    return OperationResult<bool>.Failure("Entidad no encontrada para eliminar.");
 
-                Entity.Remove(entityToDelete);
-                await _context.SaveChangesAsync();
-                return OperationResult<bool>.Success(true, "Entidad eliminada exitosamente.");
+                if (entityToDelete == null)
+                {
+                    return OperationResult<bool>.Failure("Entidad no encontrada para eliminar.");
+                }
+
+                var estaActivoProperty = typeof(T).GetProperty("EstaActivo");
+
+                if (estaActivoProperty != null && estaActivoProperty.PropertyType == typeof(bool))
+                {
+                    estaActivoProperty.SetValue(entityToDelete, false);
+
+                    var updateResult = await this.UpdateAsync(entityToDelete);
+                    return OperationResult<bool>.Success(updateResult.IsSuccess, updateResult.Message);
+                }
+                else
+                {
+                    Entity.Remove(entityToDelete);
+                    await _context.SaveChangesAsync();
+                    return OperationResult<bool>.Success(true, "Entidad eliminada físicamente.");
+                }
             }
             catch (Exception ex)
             {

@@ -5,13 +5,9 @@ using SGB.Application.Contracts.Service.ILibroServices;
 using SGB.Application.Dtos.LibrosDto.LibroDto;
 using SGB.Application.Validators.BusinessValidators;
 using SGB.Domain.Base;
-using SGB.Domain.Entities.Categoria;
 using SGB.Domain.Entities.Libro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using SGB.Domain.Entities.Prestamos;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace SGB.Application.Services.LibrosServices
 {
@@ -20,25 +16,21 @@ namespace SGB.Application.Services.LibrosServices
         private readonly ILibroBusinessValidator _libroValidator;
         private readonly ILibroRepository _libroRepository;
         private readonly IPrestamoRepository _prestamoRepository;
-        private readonly ICategoriaRepository _categoriaRepository; // La dependencia que faltaba
+        private readonly ICategoriaRepository _categoriaRepository; 
         private readonly ILogger<LibroService> _logger;
         private readonly IConfiguration _configuration;
 
-        // --- CONSTRUCTOR CORREGIDO Y COMPLETO ---
-        // Ahora sí incluye todas las dependencias necesarias.
         public LibroService(
-            ILibroRepository libroRepository,
-            ILibroBusinessValidator libroValidator,
-            IPrestamoRepository prestamoRepository,
-            ICategoriaRepository categoriaRepository, // Se añade como parámetro
-            ILoggerFactory loggerFactory,
-            IConfiguration configuration)
+        ILibroRepository libroRepository,
+        IPrestamoRepository prestamoRepository,
+        ICategoriaRepository categoriaRepository,
+        ILogger<LibroService> logger, 
+        IConfiguration configuration)
         {
             _libroRepository = libroRepository;
-            _libroValidator = libroValidator;
             _prestamoRepository = prestamoRepository;
-            _categoriaRepository = categoriaRepository; // Se inicializa correctamente
-            _logger = loggerFactory.CreateLogger<LibroService>();
+            _categoriaRepository = categoriaRepository;
+            _logger = logger; 
             _configuration = configuration;
         }
 
@@ -55,7 +47,6 @@ namespace SGB.Application.Services.LibrosServices
                 if (resultadoExistencia.IsSuccess && resultadoExistencia.Data != null)
                     return OperationResult<LibroDto>.Failure(_configuration["ErrorMessages:Libros:IsbnAlreadyExists"]);
 
-                // Esta línea ahora funcionará porque _categoriaRepository está inicializado.
                 var categoriaResult = await _categoriaRepository.GetByIdAsync(dto.IDCategoria);
                 if (!categoriaResult.IsSuccess || categoriaResult.Data == null)
                     return OperationResult<LibroDto>.Failure("La categoría especificada no existe.");
@@ -92,24 +83,31 @@ namespace SGB.Application.Services.LibrosServices
         {
             try
             {
-                // 1. DELEGA la validación de negocio.
-                var validationResult = await _libroValidator.ValidateForUpdateAsync(id, dto);
-                if (!validationResult.IsSuccess)
-                    return OperationResult<LibroDto>.Failure(validationResult.Message);
+                var libroEntidad = await _libroRepository.ObtenerParaActualizacionAsync(id);
+                if (libroEntidad == null)
+                {
+                    //-- CORRECCIÓN: Se añade un mensaje por defecto con '??'
+                    var errorMessage = _configuration["ErrorMessages:Global:ResourceNotFound"] ?? "El libro no fue encontrado.";
+                    return OperationResult<LibroDto>.Failure(errorMessage);
+                }
 
-                var libroEntidad = validationResult.Data;
+                var categoriaResult = await _categoriaRepository.GetByIdAsync(dto.IDCategoria);
+                if (!categoriaResult.IsSuccess || categoriaResult.Data == null)
+                {
+                    return OperationResult<LibroDto>.Failure("La nueva categoría especificada no existe.");
+                }
+
                 libroEntidad.ActualizarDetalles(dto.Titulo, dto.Autor, dto.Editorial, dto.FechaPublicacion, dto.IDCategoria);
 
                 var repoResult = await _libroRepository.UpdateAsync(libroEntidad);
                 if (!repoResult.IsSuccess)
                     return OperationResult<LibroDto>.Failure(repoResult.Message);
 
-                // Después de actualizar, devolvemos el DTO completo.
                 return await GetByIdAsync(id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en el servicio al actualizar libro con ID: {ID}", id);
+                _logger.LogError(ex, "Error al actualizar el libro con ID: {ID}", id);
                 return OperationResult<LibroDto>.Failure(_configuration["ErrorMessages:Global:UnexpectedError"]);
             }
         }
@@ -118,12 +116,14 @@ namespace SGB.Application.Services.LibrosServices
         {
             try
             {
-                // 1. DELEGA la validación de negocio.
-                var validationResult = await _libroValidator.ValidateForDeleteAsync(id);
-                if (!validationResult.IsSuccess)
-                    return validationResult;
+                var prestamosActivos = await _prestamoRepository.FindByConditionAsync(p => p.Id == id && p.Estado == EstadoPrestamo.Activo);
+                if (prestamosActivos.IsSuccess && prestamosActivos.Data.Any())
+                {
+                    //-- CORRECCIÓN: Se añade un mensaje por defecto con '??'
+                    var errorMessage = _configuration["ErrorMessages:Libros:BookIsOnLoan"] ?? "El libro no se puede eliminar porque está prestado.";
+                    return OperationResult<bool>.Failure(errorMessage);
+                }
 
-                // 2. Si la validación pasa, ACTÚA.
                 return await _libroRepository.DeleteAsync(id);
             }
             catch (Exception ex)
@@ -136,13 +136,11 @@ namespace SGB.Application.Services.LibrosServices
 
         public async Task<OperationResult<LibroDto>> GetByIdAsync(int id)
         {
-            // Llama al método del repositorio que ya devuelve el DTO de forma eficiente.
             return await _libroRepository.ObtenerDetallesDTOPorIdAsync(id);
         }
 
         public async Task<OperationResult<IEnumerable<LibroDto>>> GetAllAsync()
         {
-            // Llama al método del repositorio que devuelve la lista de DTOs de forma eficiente.
             return await _libroRepository.ObtenerTodosConDetallesAsync();
         }
 
@@ -150,16 +148,12 @@ namespace SGB.Application.Services.LibrosServices
 
         #region Implementación de ILibroService (Métodos Específicos)
 
-        // --- Implementación de los métodos específicos de ILibroService ---
-
         public async Task<OperationResult<LibroDto>> BuscarPorIsbnAsync(string isbn)
         {
             try
             {
-                // 1. Llama al método correcto del repositorio. Este devuelve OperationResult<Libro>.
                 var resultadoRepo = await _libroRepository.BuscarPorIsbnAsync(isbn);
 
-                // 2. Comprueba si la operación del repositorio falló o si no se encontraron datos.
                 if (!resultadoRepo.IsSuccess)
                 {
                     return OperationResult<LibroDto>.Failure(resultadoRepo.Message);
@@ -169,7 +163,6 @@ namespace SGB.Application.Services.LibrosServices
                     return OperationResult<LibroDto>.Success(null, "Libro no encontrado.");
                 }
 
-                // 3. Si se encontró la entidad, el servicio hace el trabajo de mapeo.
                 var libroEntidad = resultadoRepo.Data;
                 var categoriaResult = await _categoriaRepository.GetByIdAsync(libroEntidad.IDCategoria);
 
@@ -204,20 +197,16 @@ namespace SGB.Application.Services.LibrosServices
 
             try
             {
-                // 1. Se crea el filtro para la búsqueda.
                 Expression<Func<Libro, bool>> filtro = l =>
                     (l.Titulo.Contains(terminoBusqueda) || l.Autor.Contains(terminoBusqueda))
                     && l.EstaActivo;
 
-                // 2. Se llama al método genérico del repositorio.
                 var resultadoRepo = await _libroRepository.FindByConditionAsync(filtro);
                 if (!resultadoRepo.IsSuccess)
                 {
                     return OperationResult<IEnumerable<LibroDto>>.Failure(resultadoRepo.Message);
                 }
 
-                // 3. El servicio se encarga de mapear la lista de entidades a una lista de DTOs.
-                //    (Esta es la parte ineficiente que discutimos, pero es correcta según la interfaz actual).
                 var librosEncontrados = resultadoRepo.Data;
                 var listaDto = new List<LibroDto>();
 

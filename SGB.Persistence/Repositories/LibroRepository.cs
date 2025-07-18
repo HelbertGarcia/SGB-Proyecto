@@ -162,7 +162,6 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<IEnumerable<LibroDto>>.Failure(errorMessage);
             }
         }
-
         #endregion
     }
 }

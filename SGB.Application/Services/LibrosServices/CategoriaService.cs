@@ -6,10 +6,6 @@ using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using SGB.Application.Validators.BusinessValidators;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Categoria;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SGB.Application.Services.LibrosServices
 {
@@ -23,12 +19,12 @@ namespace SGB.Application.Services.LibrosServices
         public CategoriaService(
             ICategoriaRepository categoriaRepository,
             ICategoriaBusinessValidator categoriaValidator,
-            ILoggerFactory loggerFactory,
+            ILogger<CategoriaService> logger,
             IConfiguration configuration)
         {
             _categoriaRepository = categoriaRepository;
             _categoriaValidator = categoriaValidator;
-            _logger = loggerFactory.CreateLogger<CategoriaService>();
+            _logger = logger;
             _configuration = configuration;
         }
 
