@@ -29,7 +29,6 @@ namespace SGB.Domain.Entities.Penalizaciones
         [Column("FechaFin")]
         public DateTime FechaFin { get; private set; }
 
-
         [Column("Monto")]
         public decimal Monto { get; set; }
 
@@ -44,10 +43,9 @@ namespace SGB.Domain.Entities.Penalizaciones
 
         public Penalizacion(int idUsuario, string motivo, DateTime fechaInicio, DateTime fechaFin, int idPrestamo, decimal monto)
         {
-            ValidarYAsignarIdUsuario(idUsuario);
-            ValidarYAsignarMotivo(motivo);
-            ValidarFechas(fechaInicio, fechaFin);
-
+            // Asignar sin validar ni lanzar excepción
+            IDUsuario = idUsuario;
+            Motivo = motivo ?? string.Empty;
             FechaInicio = fechaInicio;
             FechaFin = fechaFin;
             Monto = monto;
@@ -73,14 +71,13 @@ namespace SGB.Domain.Entities.Penalizaciones
             if (nuevaFechaFin <= FechaFin)
                 throw new ArgumentException("La nueva fecha debe ser posterior a la actual.", nameof(nuevaFechaFin));
 
-            ValidarFechas(FechaInicio, nuevaFechaFin);
             FechaFin = nuevaFechaFin;
             ActualizarFechaModificacion();
         }
 
         public void CambiarMotivo(string nuevoMotivo)
         {
-            ValidarYAsignarMotivo(nuevoMotivo);
+            Motivo = nuevoMotivo ?? string.Empty;
             ActualizarFechaModificacion();
         }
 
@@ -90,30 +87,6 @@ namespace SGB.Domain.Entities.Penalizaciones
 
         #endregion
 
-        #region Validaciones
-
-        private void ValidarYAsignarIdUsuario(int idUsuario)
-        {
-            if (idUsuario <= 0)
-                throw new ArgumentException("El ID del usuario no es válido.", nameof(idUsuario));
-
-            IDUsuario = idUsuario;
-        }
-
-        private void ValidarYAsignarMotivo(string motivo)
-        {
-            if (string.IsNullOrWhiteSpace(motivo) || motivo.Length > 200)
-                throw new ArgumentException("El motivo de la penalización es inválido.", nameof(motivo));
-
-            Motivo = motivo.Trim();
-        }
-
-        private void ValidarFechas(DateTime fechaInicio, DateTime fechaFin)
-        {
-            if (fechaInicio >= fechaFin)
-                throw new ArgumentException("La fecha de inicio debe ser anterior a la de fin.");
-        }
-
-        #endregion
+        // Quité métodos privados de validación ya que no se usan
     }
 }

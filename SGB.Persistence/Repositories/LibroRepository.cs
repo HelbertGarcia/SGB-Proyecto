@@ -31,6 +31,7 @@ namespace SGB.Persistence.Repositories
         }
 
         #region "Overridden Base Methods"
+
         /*
         public override async Task<OperationResult<bool>> DeleteAsync(int id)
         {
@@ -56,6 +57,7 @@ namespace SGB.Persistence.Repositories
             }
         }
         */
+
         #endregion
 
         #region "ILibroRepository Implementation"
@@ -75,8 +77,6 @@ namespace SGB.Persistence.Repositories
 
             return await base.FindByConditionAsync(l => l.Titulo.Contains(titulo) && l.EstaActivo);
         }
-
-
 
         public async Task<OperationResult<Libro>> BuscarPorIsbnAsync(string isbn)
         {
@@ -105,7 +105,7 @@ namespace SGB.Persistence.Repositories
                                       where libro.Id == id
                                       select new LibroDto
                                       {
-                                         // Id = libro.Id,
+                                          Id = libro.Id,
                                           ISBN = libro.ISBN,
                                           Titulo = libro.Titulo,
                                           Autor = libro.Autor,
@@ -127,9 +127,7 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<LibroDto>.Failure(errorMessage);
             }
         }
-        
 
-        
         public async Task<Libro> ObtenerParaActualizacionAsync(int id)
         {
             return await Entity.FindAsync(id);
@@ -139,13 +137,12 @@ namespace SGB.Persistence.Repositories
         {
             try
             {
-
                 var listaDto = await (from libro in Entity
                                       join categoria in _context.Categorias on libro.IDCategoria equals categoria.Id
                                       where libro.EstaActivo
                                       select new LibroDto
                                       {
-                                          //Id = libro.Id,
+                                          Id = libro.Id,
                                           ISBN = libro.ISBN,
                                           Titulo = libro.Titulo,
                                           Autor = libro.Autor,
@@ -167,13 +164,7 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<IEnumerable<LibroDto>>.Failure(errorMessage);
             }
         }
-
+        #endregion
     }
 }
-
-        
-    
-
-        
-        #endregion
  

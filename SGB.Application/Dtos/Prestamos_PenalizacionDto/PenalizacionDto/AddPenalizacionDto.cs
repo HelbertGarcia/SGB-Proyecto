@@ -14,7 +14,7 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 
         public int IDPrestamo { get; set; }
 
-        public decimal? Monto { get; set; }
+        public decimal Monto { get; set; }
 
     }
 }

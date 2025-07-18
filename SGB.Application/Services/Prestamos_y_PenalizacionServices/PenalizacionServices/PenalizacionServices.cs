@@ -48,6 +48,8 @@ namespace SGB.Application.Services.Prestamos_y_PenalizacionServices.Penalizacion
             _mapper = mapper;
         }
 
+      
+
         public async Task<OperationResult<PenalizacionResponseDto>> AddAsync(AddPenalizacionDto dto)
         {
             var dtoValidation = await _addValidator.ValidateAsync(dto);

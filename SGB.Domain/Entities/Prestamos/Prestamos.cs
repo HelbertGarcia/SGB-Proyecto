@@ -42,18 +42,11 @@ namespace SGB.Domain.Entities.Prestamos
       
 
         // Constructor sin parámetros para EF Core
-        private Prestamo() { }
-
+       
+        public Prestamo() { }
         public Prestamo(int usuarioId, string isbn, DateTime fechaInicio, DateTime fechaFin)
         {
-            if (usuarioId <= 0)
-                throw new ArgumentException("El Id del usuario es inválido.", nameof(usuarioId));
 
-            if (string.IsNullOrWhiteSpace(isbn) || isbn.Length > 13)
-                throw new ArgumentException("ISBN inválido.", nameof(isbn));
-
-            if (fechaFin <= fechaInicio)
-                throw new ArgumentException("La fecha de fin debe ser mayor que la fecha de inicio.", nameof(fechaFin));
 
             UsuarioId = usuarioId;
             ISBN = isbn;

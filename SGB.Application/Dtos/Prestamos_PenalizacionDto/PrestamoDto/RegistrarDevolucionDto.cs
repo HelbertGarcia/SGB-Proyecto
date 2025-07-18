@@ -9,6 +9,6 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto
     public class RegistrarDevolucionDto
     {
         public int IdPrestamo { get; set; }
-        public DateTime FechaDevolucion { get; set; } // ← ¡clave!
+        public DateTime FechaDevolucion { get; set; } 
     }
 }

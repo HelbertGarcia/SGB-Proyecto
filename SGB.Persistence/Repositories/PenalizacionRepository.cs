@@ -17,7 +17,7 @@ namespace SGB.Persistence.Repositories
     {
         private readonly ILogger<PenalizacionRepository> _logger;
         private readonly IConfiguration _configuration;
-        private readonly string? _ConnectionStrings;
+       
 
         public PenalizacionRepository(
             SGBContext context,
@@ -27,8 +27,144 @@ namespace SGB.Persistence.Repositories
         {
             _logger = loggerFactory.CreateLogger<PenalizacionRepository>();
             _configuration = configuration;
-            _ConnectionStrings = _configuration.GetConnectionString("SGBDatabase");
+           
         }
+
+
+
+        public override async Task<OperationResult<Penalizacion>> AddAsync(Penalizacion entity)
+        {
+            if (entity == null)
+            {
+                var msg = "La penalización no puede ser nula.";
+                _logger.LogWarning(msg);
+                return OperationResult<Penalizacion>.Failure(msg);
+            }
+
+            if (entity.IDUsuario <= 0)
+            {
+                var msg = "El ID de usuario es inválido.";
+                _logger.LogWarning(msg);
+                return OperationResult<Penalizacion>.Failure(msg);
+            }
+
+
+            if (string.IsNullOrWhiteSpace(entity.Motivo))
+            {
+                var msg = "El motivo de la penalización no puede ser nulo o vacío.";
+                _logger.LogWarning(msg);
+                return OperationResult<Penalizacion>.Failure(msg);
+            }
+
+            if (entity.FechaInicio == default || entity.FechaFin == default)
+            {
+                var msg = "Las fechas de inicio y fin de la penalización no pueden estar vacías.";
+                _logger.LogWarning(msg);
+                return OperationResult<Penalizacion>.Failure(msg);
+            }
+
+
+
+            _logger.LogInformation("Agregando penalización para usuario {UsuarioId}.", entity.IDUsuario);
+
+            var result = await base.AddAsync(entity);
+
+            if (result.IsSuccess)
+                _logger.LogInformation("Penalización agregada con ID {PenalizacionId}.", result.Data.Id);
+            else
+                _logger.LogError("Error al agregar penalización: {Mensaje}", result.Message);
+
+            return result;
+        }
+
+        public override async Task<OperationResult<Penalizacion>> UpdateAsync(Penalizacion entity)
+        {
+            if (entity == null)
+            {
+                var msg = "La penalización no puede ser nula.";
+                _logger.LogWarning(msg);
+                return OperationResult<Penalizacion>.Failure(msg);
+            }
+
+            if (entity.Id <= 0)
+            {
+                var msg = "El ID de la penalización no es válido.";
+                _logger.LogWarning(msg);
+                return OperationResult<Penalizacion>.Failure(msg);
+            }
+
+          
+
+            _logger.LogInformation("Actualizando penalización ID {PenalizacionId}.", entity.Id);
+
+            var result = await base.UpdateAsync(entity);
+
+            if (result.IsSuccess)
+                _logger.LogInformation("Penalización actualizada ID {PenalizacionId}.", entity.Id);
+            else
+                _logger.LogError("Error al actualizar penalización ID {PenalizacionId}: {Mensaje}", entity.Id, result.Message);
+
+            return result;
+        }
+
+        public override async Task<OperationResult<Penalizacion>> DisableAsync(int id)
+        {
+            if (id <= 0)
+            {
+                var msg = "ID inválido para desactivar penalización.";
+                _logger.LogWarning(msg);
+                return OperationResult<Penalizacion>.Failure(msg);
+            }
+
+            _logger.LogInformation("Desactivando penalización ID {PenalizacionId}.", id);
+
+            var result = await base.DisableAsync(id);
+
+            if (result.IsSuccess)
+                _logger.LogInformation("Penalización desactivada ID {PenalizacionId}.", id);
+            else
+                _logger.LogError("Error al desactivar penalización ID {PenalizacionId}: {Mensaje}", id, result.Message);
+
+            return result;
+        }
+
+        public override async Task<OperationResult<Penalizacion>> GetByIdAsync(int id)
+        {
+            if (id <= 0)
+            {
+                var msg = "ID inválido para consultar penalización.";
+                _logger.LogWarning(msg);
+                return OperationResult<Penalizacion>.Failure(msg);
+            }
+
+            _logger.LogInformation("Consultando penalización ID {PenalizacionId}.", id);
+
+            var result = await base.GetByIdAsync(id);
+
+            if (!result.IsSuccess)
+                _logger.LogWarning("No se encontró penalización con ID {PenalizacionId}.", id);
+
+            return result;
+        }
+
+        public override async Task<OperationResult<IEnumerable<Penalizacion>>> GetAllAsync()
+        {
+            _logger.LogInformation("Consultando todas las penalizaciones.");
+
+            var result = await base.GetAllAsync();
+
+            if (!result.IsSuccess)
+                _logger.LogWarning("Error obteniendo penalizaciones: {Mensaje}", result.Message);
+
+            return result;
+        }
+
+
+
+
+
+
+        //metodo unico 
 
         public async Task<OperationResult<List<Penalizacion>>> GetPenalizacionesActivasPorUsuarioAsync(int usuarioId)
         {
@@ -55,10 +191,6 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<List<Penalizacion>>.Failure(errorMsg);
             }
         }
-
-
-
-     
 
        
     }

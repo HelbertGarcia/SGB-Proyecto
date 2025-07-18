@@ -14,7 +14,7 @@ namespace SGB.Application.Extensions.Mappers.PenalizacionesMapper
                 dto.FechaInicio,
                 dto.FechaFin,
                 dto.IDPrestamo,
-                dto.Monto ?? 0
+                dto.Monto  
             );
         }
 

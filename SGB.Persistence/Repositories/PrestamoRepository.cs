@@ -26,10 +26,156 @@ namespace SGB.Persistence.Repositories
         {
             _configuration = configuration;
             _logger = loggerFactory.CreateLogger<PrestamoRepository>();
-            _ConnectionStrings = _configuration.GetConnectionString("SGBDatabase");
+          
+           
         }
 
+
+
+
+        public override async Task<OperationResult<Prestamo>> AddAsync(Prestamo entity)
+        {
+            if (entity == null)
+            {
+                var msg = "El préstamo no puede ser nulo.";
+                _logger.LogWarning(msg);
+                return OperationResult<Prestamo>.Failure(msg);
+            }
+
+            if (entity.UsuarioId <= 0)
+            {
+                var msg = "El ID de usuario es inválido.";
+                _logger.LogWarning(msg);
+                return OperationResult<Prestamo>.Failure(msg);
+            }
+
+            if (string.IsNullOrWhiteSpace(entity.ISBN))
+            {
+                var msg = "El ISBN es obligatorio.";
+                _logger.LogWarning(msg);
+                return OperationResult<Prestamo>.Failure(msg);
+            }
+
+            if (string.IsNullOrWhiteSpace(entity.ISBN) || entity.ISBN.Length != 13 || !entity.ISBN.All(char.IsDigit))
+                throw new ArgumentException("El ISBN debe contener exactamente 13 dígitos numéricos.");
+
+         
+
+
+            _logger.LogInformation("Agregando préstamo para usuario {UsuarioId}.", entity.UsuarioId);
+
+            var result = await base.AddAsync(entity);
+
+            if (result.IsSuccess)
+                _logger.LogInformation("Préstamo agregado con ID {PrestamoId}.", result.Data.Id);
+            else
+                _logger.LogError("Error al agregar préstamo: {Mensaje}", result.Message);
+
+            return result;
+        }
+
+        public override async Task<OperationResult<Prestamo>> UpdateAsync(Prestamo entity)
+        {
+            if (entity == null)
+            {
+                var msg = "El préstamo no puede ser nulo.";
+                _logger.LogWarning(msg);
+                return OperationResult<Prestamo>.Failure(msg);
+            }
+
+          
+
+            if (entity.Id <= 0)
+            {
+                var msg = "El ID del préstamo no es válido.";
+                _logger.LogWarning(msg);
+                return OperationResult<Prestamo>.Failure(msg);
+            }
+
+          
+
+            _logger.LogInformation("Actualizando préstamo ID {PrestamoId}.", entity.Id);
+
+            var result = await base.UpdateAsync(entity);
+
+            if (result.IsSuccess)
+                _logger.LogInformation("Préstamo actualizado ID {PrestamoId}.", entity.Id);
+            else
+                _logger.LogError("Error al actualizar préstamo ID {PrestamoId}: {Mensaje}", entity.Id, result.Message);
+
+            return result;
+        }
+
+        public override async Task<OperationResult<Prestamo>> DisableAsync(int id)
+        {
+            if (id <= 0)
+            {
+                var msg = "ID inválido para desactivar préstamo.";
+                _logger.LogWarning(msg);
+                return OperationResult<Prestamo>.Failure(msg);
+            }
+
+            var exists = await Entity.AnyAsync(p => p.Id == id);
+            if (!exists)
+            {
+                var msg = $"No se encontró préstamo con ID {id} para desactivar.";
+                _logger.LogWarning(msg);
+                return OperationResult<Prestamo>.Failure(msg);
+            }
+
+            _logger.LogInformation("Desactivando préstamo ID {PrestamoId}.", id);
+
+            var result = await base.DisableAsync(id);
+
+            if (result.IsSuccess)
+                _logger.LogInformation("Préstamo desactivado ID {PrestamoId}.", id);
+            else
+                _logger.LogError("Error al desactivar préstamo ID {PrestamoId}: {Mensaje}", id, result.Message);
+
+            return result;
+        }
+
+        public override async Task<OperationResult<Prestamo>> GetByIdAsync(int id)
+        {
+            if (id <= 0)
+            {
+                var msg = "ID inválido para consultar préstamo.";
+                _logger.LogWarning(msg);
+                return OperationResult<Prestamo>.Failure(msg);
+            }
+
+            _logger.LogInformation("Consultando préstamo ID {PrestamoId}.", id);
+
+            var result = await base.GetByIdAsync(id);
+
+            if (!result.IsSuccess)
+                _logger.LogWarning("No se encontró préstamo con ID {PrestamoId}.", id);
+
+            return result;
+        }
+
+        public override async Task<OperationResult<IEnumerable<Prestamo>>> GetAllAsync()
+        {
+
+            _logger.LogInformation("Consultando todos los préstamos.");
+
+            var result = await base.GetAllAsync();
+
+            if (!result.IsSuccess)
+                _logger.LogWarning("Error obteniendo préstamos: {Mensaje}", result.Message);
+
+            return result;
+        }
+
+        //metodos unicos 
+
+
         #region "Implementación de IPrestamoRepository"
+
+
+
+
+
 
         public async Task<OperationResult<DateTime>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId)
         {
@@ -108,7 +254,7 @@ namespace SGB.Persistence.Repositories
                         (p.Estado == EstadoPrestamo.Activo || p.Estado == EstadoPrestamo.Atrasado))
                     .ToListAsync();
 
-                return OperationResult<List<Prestamo>>.Success(prestamosActivos);
+                return OperationResult<List<Prestamo>>.Success(prestamosActivos); // lista vacía si no tiene préstamos, lo cual es válido
             }
             catch (Exception ex)
             {
@@ -118,6 +264,9 @@ namespace SGB.Persistence.Repositories
             }
         }
 
-       
+
+
+
+
     }
 }
