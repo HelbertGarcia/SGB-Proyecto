@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Prestamos;
 using SGB.Persistence.Base;
@@ -8,16 +9,15 @@ using SGB.Persistence.Context;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using SGB.Application.Contracts.Repository.Interfaces;
 using System.Collections.Generic;
 using SGB.Application.Loggers;
+using SGB.Persistence.Repositories.Prestamos_Penalizacion_Repositorys.validator;
 
 namespace SGB.Persistence.Repositories
 {
     public class PrestamoRepository : BaseRepository<Prestamo>, IPrestamoRepository
     {
         private readonly IAppLogger<PrestamoRepository> _logger;
-        private readonly string? _ConnectionStrings;
         private readonly IConfiguration _configuration;
 
         public PrestamoRepository(SGBContext context,
@@ -34,32 +34,25 @@ namespace SGB.Persistence.Repositories
         {
             try
             {
-                if (entity == null)
+                var (isValid, message) = ValidationHelpers.ValidateEntityNotNull(entity, nameof(Prestamo));
+                if (!isValid)
                 {
-                    var msg = "El préstamo no puede ser nulo.";
-                    _logger.Error(msg);
-                    return OperationResult<Prestamo>.Failure(msg);
+                    _logger.Error(message);
+                    return OperationResult<Prestamo>.Failure(message);
                 }
 
-                if (entity.UsuarioId <= 0)
+                (isValid, message) = ValidationHelpers.ValidateId(entity.UsuarioId, nameof(entity.UsuarioId));
+                if (!isValid)
                 {
-                    var msg = "El ID de usuario es inválido: {0}";
-                    _logger.Error(msg, entity.UsuarioId);
-                    return OperationResult<Prestamo>.Failure("El ID de usuario es inválido.");
+                    _logger.Error(message);
+                    return OperationResult<Prestamo>.Failure(message);
                 }
 
-                if (string.IsNullOrWhiteSpace(entity.ISBN))
+                (isValid, message) = ValidationHelpers.ValidateIsbn(entity.ISBN);
+                if (!isValid)
                 {
-                    var msg = "El ISBN es obligatorio para el préstamo del usuario {0}";
-                    _logger.Error(msg, entity.UsuarioId);
-                    return OperationResult<Prestamo>.Failure("El ISBN es obligatorio.");
-                }
-
-                if (string.IsNullOrWhiteSpace(entity.ISBN) || entity.ISBN.Length != 13 || !entity.ISBN.All(char.IsDigit))
-                {
-                    var msg = "El ISBN debe contener exactamente 13 dígitos numéricos. ISBN recibido: {0}";
-                    _logger.Error(msg, entity.ISBN);
-                    throw new ArgumentException("El ISBN debe contener exactamente 13 dígitos numéricos.");
+                    _logger.Error(message);
+                    return OperationResult<Prestamo>.Failure(message);
                 }
 
                 _logger.Info("Iniciando proceso de agregar préstamo para usuario {0} con ISBN {1}", entity.UsuarioId, entity.ISBN);
@@ -67,13 +60,9 @@ namespace SGB.Persistence.Repositories
                 var result = await base.AddAsync(entity);
 
                 if (result.IsSuccess)
-                {
                     _logger.Info("Préstamo agregado exitosamente con ID {0} para usuario {1}", result.Data.Id, entity.UsuarioId);
-                }
                 else
-                {
                     _logger.Error("Error al agregar préstamo para usuario {0}: {1}", entity.UsuarioId, result.Message);
-                }
 
                 return result;
             }
@@ -84,22 +73,24 @@ namespace SGB.Persistence.Repositories
             }
         }
 
+
+
         public override async Task<OperationResult<Prestamo>> UpdateAsync(Prestamo entity)
         {
             try
             {
-                if (entity == null)
+                var (isValid, message) = ValidationHelpers.ValidateEntityNotNull(entity, nameof(Prestamo));
+                if (!isValid)
                 {
-                    var msg = "El préstamo no puede ser nulo.";
-                    _logger.Error(msg);
-                    return OperationResult<Prestamo>.Failure(msg);
+                    _logger.Error(message);
+                    return OperationResult<Prestamo>.Failure(message);
                 }
 
-                if (entity.Id <= 0)
+                (isValid, message) = ValidationHelpers.ValidateId(entity.Id, nameof(entity.Id));
+                if (!isValid)
                 {
-                    var msg = "El ID del préstamo no es válido: {0}";
-                    _logger.Error(msg, entity.Id);
-                    return OperationResult<Prestamo>.Failure("El ID del préstamo no es válido.");
+                    _logger.Error(message);
+                    return OperationResult<Prestamo>.Failure(message);
                 }
 
                 _logger.Info("Iniciando actualización de préstamo ID {0} para usuario {1}", entity.Id, entity.UsuarioId);
@@ -107,13 +98,9 @@ namespace SGB.Persistence.Repositories
                 var result = await base.UpdateAsync(entity);
 
                 if (result.IsSuccess)
-                {
                     _logger.Info("Préstamo actualizado exitosamente ID {0}", entity.Id);
-                }
                 else
-                {
                     _logger.Error("Error al actualizar préstamo ID {0}: {1}", entity.Id, result.Message);
-                }
 
                 return result;
             }
@@ -124,23 +111,25 @@ namespace SGB.Persistence.Repositories
             }
         }
 
+
+
         public override async Task<OperationResult<Prestamo>> DisableAsync(int id)
         {
             try
             {
-                if (id <= 0)
+                var (isValid, message) = ValidationHelpers.ValidateId(id, nameof(id));
+                if (!isValid)
                 {
-                    var msg = "ID inválido para desactivar préstamo: {0}";
-                    _logger.Error(msg, id);
-                    return OperationResult<Prestamo>.Failure("ID inválido para desactivar préstamo.");
+                    _logger.Error(message);
+                    return OperationResult<Prestamo>.Failure(message);
                 }
 
                 var exists = await Entity.AnyAsync(p => p.Id == id);
                 if (!exists)
                 {
-                    var msg = "No se encontró préstamo con ID {0} para desactivar";
-                    _logger.Error(msg, id);
-                    return OperationResult<Prestamo>.Failure($"No se encontró préstamo con ID {id} para desactivar.");
+                    var msg = $"No se encontró préstamo con ID {id} para desactivar";
+                    _logger.Error(msg);
+                    return OperationResult<Prestamo>.Failure(msg);
                 }
 
                 _logger.Info("Iniciando desactivación de préstamo ID {0}", id);
@@ -148,13 +137,9 @@ namespace SGB.Persistence.Repositories
                 var result = await base.DisableAsync(id);
 
                 if (result.IsSuccess)
-                {
                     _logger.Info("Préstamo desactivado exitosamente ID {0}", id);
-                }
                 else
-                {
                     _logger.Error("Error al desactivar préstamo ID {0}: {1}", id, result.Message);
-                }
 
                 return result;
             }
@@ -165,15 +150,17 @@ namespace SGB.Persistence.Repositories
             }
         }
 
+
+
         public override async Task<OperationResult<Prestamo>> GetByIdAsync(int id)
         {
             try
             {
-                if (id <= 0)
+                var (isValid, message) = ValidationHelpers.ValidateId(id, nameof(id));
+                if (!isValid)
                 {
-                    var msg = "ID inválido para consultar préstamo: {0}";
-                    _logger.Error(msg, id);
-                    return OperationResult<Prestamo>.Failure("ID inválido para consultar préstamo.");
+                    _logger.Error(message);
+                    return OperationResult<Prestamo>.Failure(message);
                 }
 
                 _logger.Info("Consultando préstamo ID {0}", id);
@@ -181,13 +168,9 @@ namespace SGB.Persistence.Repositories
                 var result = await base.GetByIdAsync(id);
 
                 if (!result.IsSuccess)
-                {
                     _logger.Info("No se encontró préstamo con ID {0}", id);
-                }
                 else
-                {
                     _logger.Info("Préstamo encontrado exitosamente ID {0}", id);
-                }
 
                 return result;
             }
@@ -197,6 +180,10 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<Prestamo>.Failure("Error interno al consultar el préstamo.");
             }
         }
+
+
+
+
 
         public override async Task<OperationResult<IEnumerable<Prestamo>>> GetAllAsync()
         {
@@ -225,17 +212,21 @@ namespace SGB.Persistence.Repositories
             }
         }
 
+
+
+
+
         #region "Implementación de IPrestamoRepository"
 
         public async Task<OperationResult<DateTime>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId)
         {
             try
             {
-                if (prestamoId <= 0)
+                var (isValid, message) = ValidationHelpers.ValidateId(prestamoId, nameof(prestamoId));
+                if (!isValid)
                 {
-                    var msg = "ID de préstamo inválido: {0}";
-                    _logger.Error(msg, prestamoId);
-                    return OperationResult<DateTime>.Failure("ID de préstamo inválido.");
+                    _logger.Error(message);
+                    return OperationResult<DateTime>.Failure(message);
                 }
 
                 _logger.Info("Consultando fecha de vencimiento para préstamo ID {0}", prestamoId);
@@ -265,15 +256,18 @@ namespace SGB.Persistence.Repositories
             }
         }
 
-        public async Task<OperationResult<List<(int PrestamoId, string Estado)>>> GetEstadosPrestamosPorUsuarioAsync(int usuarioId)
+
+
+
+       /* public async Task<OperationResult<List<(int PrestamoId, string Estado)>>> GetEstadosPrestamosPorUsuarioAsync(int usuarioId)
         {
             try
             {
-                if (usuarioId <= 0)
+                var (isValid, message) = ValidationHelpers.ValidateId(usuarioId, nameof(usuarioId));
+                if (!isValid)
                 {
-                    var msg = "ID de usuario inválido: {0}";
-                    _logger.Error(msg, usuarioId);
-                    return OperationResult<List<(int, string)>>.Failure("ID de usuario inválido.");
+                    _logger.Error(message);
+                    return OperationResult<List<(int, string)>>.Failure(message);
                 }
 
                 _logger.Info("Consultando estados de préstamos para usuario ID {0}", usuarioId);
@@ -293,17 +287,19 @@ namespace SGB.Persistence.Repositories
                 _logger.Error(ex, "Error al obtener estados de préstamos para usuario ID {0}", usuarioId);
                 return OperationResult<List<(int, string)>>.Failure(errorMessage);
             }
-        }
+        }*/
+
+
 
         public async Task<OperationResult<List<Prestamo>>> GetPrestamosActivosPorUsuarioAsync(int usuarioId)
         {
             try
             {
-                if (usuarioId <= 0)
+                var (isValid, message) = ValidationHelpers.ValidateId(usuarioId, nameof(usuarioId));
+                if (!isValid)
                 {
-                    var msg = "ID de usuario inválido para consulta de préstamos activos: {0}";
-                    _logger.Error(msg, usuarioId);
-                    return OperationResult<List<Prestamo>>.Failure("ID de usuario inválido.");
+                    _logger.Error(message);
+                    return OperationResult<List<Prestamo>>.Failure(message);
                 }
 
                 _logger.Info("Consultando préstamos activos para usuario ID {0}", usuarioId);

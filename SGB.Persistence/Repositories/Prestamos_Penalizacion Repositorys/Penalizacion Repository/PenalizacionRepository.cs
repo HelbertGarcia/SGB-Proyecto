@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using SGB.Application.Loggers;
+using SGB.Persistence.Repositories.Prestamos_Penalizacion_Repositorys.validator;
 
 namespace SGB.Persistence.Repositories
 {
@@ -34,32 +35,33 @@ namespace SGB.Persistence.Repositories
         {
             try
             {
-                if (entity == null)
+                var (isValid, message) = ValidationHelpers.ValidateEntityNotNull(entity, nameof(Penalizacion));
+                if (!isValid)
                 {
-                    var msg = "La penalización no puede ser nula.";
-                    _logger.Error(msg);
-                    return OperationResult<Penalizacion>.Failure(msg);
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
                 }
 
-                if (entity.IDUsuario <= 0)
+                (isValid, message) = ValidationHelpers.ValidateId(entity.IDUsuario, nameof(entity.IDUsuario));
+                if (!isValid)
                 {
-                    var msg = "El ID de usuario es inválido: {0}";
-                    _logger.Error(msg, entity.IDUsuario);
-                    return OperationResult<Penalizacion>.Failure("El ID de usuario es inválido.");
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
                 }
 
-                if (string.IsNullOrWhiteSpace(entity.Motivo))
+                (isValid, message) = ValidationHelpers.ValidateStringNotNullOrWhitespace(entity.Motivo, nameof(entity.Motivo));
+                if (!isValid)
                 {
-                    var msg = "El motivo de la penalización no puede ser nulo o vacío para usuario {0}";
-                    _logger.Error(msg, entity.IDUsuario);
-                    return OperationResult<Penalizacion>.Failure("El motivo de la penalización no puede ser nulo o vacío.");
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
                 }
 
-                if (entity.FechaInicio == default || entity.FechaFin == default)
+
+                (isValid, message) = ValidationHelpers.ValidateDateRange(entity.FechaInicio, entity.FechaFin);
+                if (!isValid)
                 {
-                    var msg = "Las fechas de inicio y fin de la penalización no pueden estar vacías para usuario {0}. FechaInicio: {1}, FechaFin: {2}";
-                    _logger.Error(msg, entity.IDUsuario, entity.FechaInicio, entity.FechaFin);
-                    return OperationResult<Penalizacion>.Failure("Las fechas de inicio y fin de la penalización no pueden estar vacías.");
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
                 }
 
                 _logger.Info("Iniciando proceso de agregar penalización para usuario {0}. Motivo: {1}, FechaInicio: {2}, FechaFin: {3}",
@@ -67,14 +69,11 @@ namespace SGB.Persistence.Repositories
 
                 var result = await base.AddAsync(entity);
 
+
                 if (result.IsSuccess)
-                {
                     _logger.Info("Penalización agregada exitosamente con ID {0} para usuario {1}", result.Data.Id, entity.IDUsuario);
-                }
                 else
-                {
                     _logger.Error("Error al agregar penalización para usuario {0}: {1}", entity.IDUsuario, result.Message);
-                }
 
                 return result;
             }
@@ -85,39 +84,48 @@ namespace SGB.Persistence.Repositories
             }
         }
 
+
+
         public override async Task<OperationResult<Penalizacion>> UpdateAsync(Penalizacion entity)
         {
             try
             {
-                if (entity == null)
+                var (isValid, message) = ValidationHelpers.ValidateEntityNotNull(entity, nameof(Penalizacion));
+                if (!isValid)
                 {
-                    var msg = "La penalización no puede ser nula.";
-                    _logger.Error(msg);
-                    return OperationResult<Penalizacion>.Failure(msg);
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
                 }
 
-                if (entity.Id <= 0)
+                (isValid, message) = ValidationHelpers.ValidateId(entity.Id, nameof(entity.Id));
+                if (!isValid)
                 {
-                    var msg = "El ID de la penalización no es válido: {0}";
-                    _logger.Error(msg, entity.Id);
-                    return OperationResult<Penalizacion>.Failure("El ID de la penalización no es válido.");
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
+                }
+
+                (isValid, message) = ValidationHelpers.ValidateDateRange(entity.FechaInicio, entity.FechaFin);
+                if (!isValid)
+                {
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
                 }
 
                 _logger.Info("Iniciando actualización de penalización ID {0} para usuario {1}", entity.Id, entity.IDUsuario);
 
                 var result = await base.UpdateAsync(entity);
 
+
                 if (result.IsSuccess)
-                {
                     _logger.Info("Penalización actualizada exitosamente ID {0}", entity.Id);
-                }
+
                 else
-                {
                     _logger.Error("Error al actualizar penalización ID {0}: {1}", entity.Id, result.Message);
-                }
 
                 return result;
+
             }
+
             catch (Exception ex)
             {
                 _logger.Error(ex, "Excepción no controlada al actualizar penalización ID {0}", entity?.Id ?? 0);
@@ -125,29 +133,38 @@ namespace SGB.Persistence.Repositories
             }
         }
 
+
+
         public override async Task<OperationResult<Penalizacion>> DisableAsync(int id)
         {
             try
             {
-                if (id <= 0)
+                var (isValid, message) = ValidationHelpers.ValidateId(id, nameof(id));
+                if (!isValid)
                 {
-                    var msg = "ID inválido para desactivar penalización: {0}";
-                    _logger.Error(msg, id);
-                    return OperationResult<Penalizacion>.Failure("ID inválido para desactivar penalización.");
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
+                }
+
+
+
+                var exists = await Entity.AnyAsync(p => p.Id == id);
+                if (!exists)
+                {
+                    var msg = $"No se encontró penalización con ID {id} para desactivar";
+                    _logger.Error(msg);
+                    return OperationResult<Penalizacion>.Failure(msg);
                 }
 
                 _logger.Info("Iniciando desactivación de penalización ID {0}", id);
 
                 var result = await base.DisableAsync(id);
 
+
                 if (result.IsSuccess)
-                {
                     _logger.Info("Penalización desactivada exitosamente ID {0}", id);
-                }
                 else
-                {
                     _logger.Error("Error al desactivar penalización ID {0}: {1}", id, result.Message);
-                }
 
                 return result;
             }
@@ -158,15 +175,17 @@ namespace SGB.Persistence.Repositories
             }
         }
 
+
+
         public override async Task<OperationResult<Penalizacion>> GetByIdAsync(int id)
         {
             try
             {
-                if (id <= 0)
+                var (isValid, message) = ValidationHelpers.ValidateId(id, nameof(id));
+                if (!isValid)
                 {
-                    var msg = "ID inválido para consultar penalización: {0}";
-                    _logger.Error(msg, id);
-                    return OperationResult<Penalizacion>.Failure("ID inválido para consultar penalización.");
+                    _logger.Error(message);
+                    return OperationResult<Penalizacion>.Failure(message);
                 }
 
                 _logger.Info("Consultando penalización ID {0}", id);
@@ -174,13 +193,9 @@ namespace SGB.Persistence.Repositories
                 var result = await base.GetByIdAsync(id);
 
                 if (!result.IsSuccess)
-                {
                     _logger.Info("No se encontró penalización con ID {0}", id);
-                }
                 else
-                {
                     _logger.Info("Penalización encontrada exitosamente ID {0}", id);
-                }
 
                 return result;
             }
@@ -190,6 +205,10 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<Penalizacion>.Failure("Error interno al consultar la penalización.");
             }
         }
+
+
+
+
 
         public override async Task<OperationResult<IEnumerable<Penalizacion>>> GetAllAsync()
         {
@@ -216,17 +235,19 @@ namespace SGB.Persistence.Repositories
                 _logger.Error(ex, "Excepción no controlada al obtener todas las penalizaciones");
                 return OperationResult<IEnumerable<Penalizacion>>.Failure("Error interno al consultar las penalizaciones.");
             }
+
+
         }
 
         public async Task<OperationResult<List<Penalizacion>>> GetPenalizacionesActivasPorUsuarioAsync(int usuarioId)
         {
             try
             {
-                if (usuarioId <= 0)
+                var (isValid, message) = ValidationHelpers.ValidateId(usuarioId, nameof(usuarioId));
+                if (!isValid)
                 {
-                    var msg = "El ID del usuario es inválido: {0}";
-                    _logger.Error(msg, usuarioId);
-                    return OperationResult<List<Penalizacion>>.Failure("El ID del usuario es inválido.");
+                    _logger.Error(message);
+                    return OperationResult<List<Penalizacion>>.Failure(message);
                 }
 
                 _logger.Info("Consultando penalizaciones activas para usuario ID {0}", usuarioId);

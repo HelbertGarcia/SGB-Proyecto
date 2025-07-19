@@ -16,7 +16,7 @@ namespace SGB.Application.Test.ServiceTests
     {
         private readonly Mock<IPenalizacionRepository> _penalizacionRepoMock;
         private readonly Mock<IPrestamoRepository> _prestamoRepoMock;
-        private readonly Mock<IAppLogger<PenalizacionService>> _loggerMock; //logger
+        private readonly Mock<IAppLogger<PenalizacionService>> _loggerMock; 
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<IValidator<AddPenalizacionDto>> _addValidatorMock;
         private readonly Mock<IValidator<UpdatePenalizacionDto>> _updateValidatorMock;
@@ -78,6 +78,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.Contains("Error de validación", result.Message);
         }
 
+
+
         [Fact]
         public async Task AddAsync_ShouldReturnSuccess_WhenValidInput()
         {
@@ -117,6 +119,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.True(result.IsSuccess);
             Assert.Equal("Penalización registrada correctamente.", result.Message);
         }
+
+
 
        
         [Fact]
@@ -159,6 +163,9 @@ namespace SGB.Application.Test.ServiceTests
             Assert.Equal("Penalización actualizada correctamente.", result.Message);
         }
 
+
+
+
         [Fact]
         public async Task DeleteAsync_ShouldReturnFailure_WhenValidationFails()
         {
@@ -180,8 +187,6 @@ namespace SGB.Application.Test.ServiceTests
         }
 
 
-
-       
        
    
 

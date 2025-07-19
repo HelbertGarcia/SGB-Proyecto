@@ -17,7 +17,7 @@ namespace SGB.Application.Test.ServiceTests
     public class PrestamoServiceTest
     {
         private readonly Mock<IPrestamoRepository> _repoMock;
-        private readonly Mock<IAppLogger<PrestamoService>> _loggerMock; // CAMBIO aquí
+        private readonly Mock<IAppLogger<PrestamoService>> _loggerMock; 
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<IValidator<AddPrestamoDto>> _addValidatorMock;
         private readonly Mock<IValidator<UpdatePrestamoDto>> _updateValidatorMock;
@@ -30,7 +30,7 @@ namespace SGB.Application.Test.ServiceTests
         public PrestamoServiceTest()
         {
             _repoMock = new Mock<IPrestamoRepository>();
-            _loggerMock = new Mock<IAppLogger<PrestamoService>>(); // CAMBIO
+            _loggerMock = new Mock<IAppLogger<PrestamoService>>(); 
             _configurationMock = new Mock<IConfiguration>();
             _addValidatorMock = new Mock<IValidator<AddPrestamoDto>>();
             _updateValidatorMock = new Mock<IValidator<UpdatePrestamoDto>>();
@@ -71,6 +71,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.Equal("ISBN es requerido", result.Message);
         }
 
+
+
         [Fact]
         public async Task AddAsync_ShouldReturnFailure_WhenBusinessValidationFails()
         {
@@ -90,6 +92,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.False(result.IsSuccess);
             Assert.Equal("El usuario tiene penalizaciones activas.", result.Message);
         }
+
+
 
         [Fact]
         public async Task AddAsync_ShouldReturnSuccess_WhenValidInput()
@@ -118,6 +122,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.Equal(responseDto, result.Data);
         }
 
+
+
        
         [Fact]
         public async Task DeleteAsync_ShouldReturnFailure_WhenFluentValidationFails()
@@ -137,6 +143,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.False(result.IsSuccess);
             Assert.Equal("ID inválido", result.Message);
         }
+
+
 
         [Fact]
         public async Task DeleteAsync_ShouldReturnFailure_WhenPrestamoNotFound()
@@ -159,6 +167,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.False(result.IsSuccess);
             Assert.Equal("Préstamo no encontrado.", result.Message);
         }
+
+
 
         [Fact]
         public async Task DeleteAsync_ShouldReturnSuccess_WhenValidDelete()
@@ -185,6 +195,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.Equal("Préstamo desactivado correctamente.", result.Message);
         }
 
+
+
         [Fact]
         public async Task RegistrarDevolucionAsync_ShouldReturnFailure_WhenPrestamoNotFound()
         {
@@ -201,6 +213,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.False(result.IsSuccess);
             Assert.Equal("Préstamo no encontrado.", result.Message);
         }
+
+
 
         [Fact]
         public async Task RegistrarDevolucionAsync_ShouldReturnFailure_WhenAlreadyReturned()
@@ -220,6 +234,8 @@ namespace SGB.Application.Test.ServiceTests
             Assert.False(result.IsSuccess);
             Assert.Equal("Este préstamo ya fue devuelto previamente.", result.Message);
         }
+
+
 
         [Fact]
         public async Task RegistrarDevolucionAsync_ShouldReturnSuccess_WhenValidReturn()
@@ -241,9 +257,7 @@ namespace SGB.Application.Test.ServiceTests
             Assert.Equal("Devolución registrada correctamente.", result.Data);
         }
 
-        
-
-
+       
        
 
        

@@ -12,13 +12,13 @@ namespace SGB.Application.Contracts.Repository.Interfaces
     public interface IPrestamoRepository : IBaseRepository<Prestamo>
     {
        
-        /// Obtiene la fecha de vencimiento (FechaFin) de un préstamo por su ID.
+        // Obtiene la fecha de vencimiento FechaFin de un prestamo por su ID.
         
         Task<OperationResult<DateTime>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId);
 
      
        
-        /// Lista de préstamos activos y atrasados de un usuario.
+        //Lista de préstamos activos y atrasados de un usuario.
        
         Task<OperationResult<List<Prestamo>>> GetPrestamosActivosPorUsuarioAsync(int usuarioId);
 
