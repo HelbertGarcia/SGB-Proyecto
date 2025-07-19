@@ -7,6 +7,7 @@ using SGB.Application.Base.ValidatorServices.Prestamos;
 using SGB.Application.Contracts.Interfaces.Mappers.PrestamoMappers;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
+using SGB.Application.Loggers;
 using SGB.Application.Services.Prestamos_y_PenalizacionServices;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Prestamos;
@@ -16,7 +17,7 @@ namespace SGB.Application.Test.ServiceTests
     public class PrestamoServiceTest
     {
         private readonly Mock<IPrestamoRepository> _repoMock;
-        private readonly Mock<ILogger<PrestamoService>> _loggerMock;
+        private readonly Mock<IAppLogger<PrestamoService>> _loggerMock; // CAMBIO aquí
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<IValidator<AddPrestamoDto>> _addValidatorMock;
         private readonly Mock<IValidator<UpdatePrestamoDto>> _updateValidatorMock;
@@ -29,7 +30,7 @@ namespace SGB.Application.Test.ServiceTests
         public PrestamoServiceTest()
         {
             _repoMock = new Mock<IPrestamoRepository>();
-            _loggerMock = new Mock<ILogger<PrestamoService>>();
+            _loggerMock = new Mock<IAppLogger<PrestamoService>>(); // CAMBIO
             _configurationMock = new Mock<IConfiguration>();
             _addValidatorMock = new Mock<IValidator<AddPrestamoDto>>();
             _updateValidatorMock = new Mock<IValidator<UpdatePrestamoDto>>();

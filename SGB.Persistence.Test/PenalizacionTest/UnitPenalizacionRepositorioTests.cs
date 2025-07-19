@@ -5,9 +5,8 @@ using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
 using Xunit;
 using Moq;
-
 using SGB.Domain.Entities.Penalizaciones;
-
+using SGB.Application.Loggers;
 
 namespace SGB.Persistence.Test
 {
@@ -15,8 +14,7 @@ namespace SGB.Persistence.Test
     {
         private readonly DbContextOptions<SGBContext> _dbOptions;
         private readonly Mock<IConfiguration> _configMock;
-        private readonly Mock<ILogger<PenalizacionRepository>> _loggerMock;
-
+        private readonly Mock<IAppLogger<PenalizacionRepository>> _appLoggerMock;
 
         public UnitPenalizacionRepositorioTests()
         {
@@ -25,28 +23,26 @@ namespace SGB.Persistence.Test
                  .Options;
 
             _configMock = new Mock<IConfiguration>();
-            _loggerMock = new Mock<ILogger<PenalizacionRepository>>();
-
+            _appLoggerMock = new Mock<IAppLogger<PenalizacionRepository>>();
         }
 
         private PenalizacionRepository CreateRepository(SGBContext context)
         {
             var loggerFactoryMock = new Mock<ILoggerFactory>();
-            loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>()))
-                             .Returns(_loggerMock.Object);
 
-            return new PenalizacionRepository(context, loggerFactoryMock.Object, _configMock.Object);
+            // Solo necesitamos configurar el LoggerFactory para el BaseRepository
+            loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>()))
+                           .Returns(Mock.Of<ILogger>());
+
+            return new PenalizacionRepository(context, loggerFactoryMock.Object, _configMock.Object, _appLoggerMock.Object);
         }
 
         [Fact]
         public async Task AddAsync_ShouldReturnFailure_WhenPenalizacionIsNull()
         {
-
-            
             using var context = new SGBContext(_dbOptions);
             var repo = CreateRepository(context);
 
-            
             var result = await repo.AddAsync(null);
 
             Assert.False(result.IsSuccess);
@@ -96,10 +92,6 @@ namespace SGB.Persistence.Test
             Assert.Equal(penalizacion.IDUsuario, result.Data.IDUsuario);
         }
 
-      
-
-       
-
         [Fact]
         public async Task DisableAsync_ShouldReturnFailure_WhenIdInvalid()
         {
@@ -130,14 +122,5 @@ namespace SGB.Persistence.Test
             var disabledPenalizacion = await context.Penalizaciones.FindAsync(penalizacion.Id);
             Assert.False(disabledPenalizacion.EstaActivo);
         }
-
-      
-       
-
-
-
-
-
-
     }
 }

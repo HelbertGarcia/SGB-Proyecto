@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SGB.Api\SGB.Api.csproj" />
     <ProjectReference Include="..\SGB.Application\SGB.Application.csproj" />
   </ItemGroup>
 

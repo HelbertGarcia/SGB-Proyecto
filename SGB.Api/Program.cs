@@ -8,7 +8,8 @@ using SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PenalizacionDependencia;
 using SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto.Validators;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto.ValidatosDto;
-
+using SGB.Application.Loggers;
+using SGB.Infraestructure.Loggers;
 
 
 namespace SGB.Api
@@ -27,6 +28,8 @@ namespace SGB.Api
                 options.UseSqlServer(connectionString)
             );
 
+
+            builder.Services.AddScoped(typeof(IAppLogger<>), typeof(AppLogger<>));
 
 
             //registrar dependencias de Prestamo y Penalizacion

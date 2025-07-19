@@ -8,6 +8,7 @@ using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Application.Services.Prestamos_y_PenalizacionServices.PenalizacionServices;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Penalizaciones;
+using SGB.Application.Loggers;
 
 namespace SGB.Application.Test.ServiceTests
 {
@@ -15,7 +16,7 @@ namespace SGB.Application.Test.ServiceTests
     {
         private readonly Mock<IPenalizacionRepository> _penalizacionRepoMock;
         private readonly Mock<IPrestamoRepository> _prestamoRepoMock;
-        private readonly Mock<ILogger<PenalizacionService>> _loggerMock;
+        private readonly Mock<IAppLogger<PenalizacionService>> _loggerMock; //logger
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<IValidator<AddPenalizacionDto>> _addValidatorMock;
         private readonly Mock<IValidator<UpdatePenalizacionDto>> _updateValidatorMock;
@@ -28,7 +29,7 @@ namespace SGB.Application.Test.ServiceTests
         {
             _penalizacionRepoMock = new Mock<IPenalizacionRepository>();
             _prestamoRepoMock = new Mock<IPrestamoRepository>();
-            _loggerMock = new Mock<ILogger<PenalizacionService>>();
+            _loggerMock = new Mock<IAppLogger<PenalizacionService>>();
             _configurationMock = new Mock<IConfiguration>();
             _addValidatorMock = new Mock<IValidator<AddPenalizacionDto>>();
             _updateValidatorMock = new Mock<IValidator<UpdatePenalizacionDto>>();

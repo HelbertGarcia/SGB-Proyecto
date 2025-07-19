@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using SGB.Application.Base.ValidatorServices.Prestamos;
 using SGB.Application.Contracts.Interfaces.Mappers.PrestamoMappers;
 using SGB.Application.Extensions.Mappers.PrestamosMapper;
+using SGB.Application.Loggers;
 
 
 namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia
@@ -38,6 +39,8 @@ namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia
             services.AddTransient<IPrestamoMapper, PrestamoMapper>();
 
             services.AddScoped<ILibroRepository, LibroRepository>();
+      
+
 
         }
     }
