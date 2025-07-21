@@ -16,6 +16,7 @@ public sealed class PrestamoService : IPrestamosServices
     private readonly IValidator<AddPrestamoDto> _addValidator;
     private readonly IValidator<UpdatePrestamoDto> _updateValidator;
     private readonly IValidator<DiseblePrestamoDto> _disableValidator;
+    private readonly IValidator<RegistrarDevolucionDto> _registrarDevolucionValidator;
     private readonly IPrestamoBusinessValidator _businessValidator;
     private readonly IPrestamoMapper _mapper;
     private readonly IPenalizacionServices _penalizacionService;
@@ -27,6 +28,7 @@ public sealed class PrestamoService : IPrestamosServices
         IValidator<AddPrestamoDto> addValidator,
         IValidator<UpdatePrestamoDto> updateValidator,
         IValidator<DiseblePrestamoDto> disableValidator,
+        IValidator<RegistrarDevolucionDto> registrarDevolucionValidator,
         IPrestamoBusinessValidator businessValidator,
         IPrestamoMapper mapper,
         IPenalizacionServices penalizacionService
@@ -38,6 +40,7 @@ public sealed class PrestamoService : IPrestamosServices
         _addValidator = addValidator;
         _updateValidator = updateValidator;
         _disableValidator = disableValidator;
+        _registrarDevolucionValidator = registrarDevolucionValidator;
         _businessValidator = businessValidator;
         _mapper = mapper;
         _penalizacionService = penalizacionService;
@@ -140,14 +143,22 @@ public sealed class PrestamoService : IPrestamosServices
 
     public async Task<OperationResult<string>> RegistrarDevolucionAsync(RegistrarDevolucionDto dto)
     {
+        // 1. Validación básica del DTO (estructura, formatos)
+        var validation = await _registrarDevolucionValidator.ValidateAsync(dto);
+        if (!validation.IsValid)
+            return OperationResult<string>.Failure(string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
+
+        // 2. Validación de reglas de negocio
+        var businessValidation = await _businessValidator.ValidateForRegistrarDevolucionAsync(dto);
+        if (!businessValidation.IsSuccess)
+            return OperationResult<string>.Failure(businessValidation.Message);
+
+        // 3. Obtener el préstamo y registrar la devolución
         var prestamoResult = await _prestamoRepository.GetByIdAsync(dto.IdPrestamo);
         if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
             return OperationResult<string>.Failure("Préstamo no encontrado.");
 
         var prestamo = prestamoResult.Data;
-
-        if (prestamo.FechaDevolucion.HasValue)
-            return OperationResult<string>.Failure("Este préstamo ya fue devuelto previamente.");
 
         try
         {
@@ -182,6 +193,7 @@ public sealed class PrestamoService : IPrestamosServices
             return OperationResult<string>.Failure("Ocurrió un error inesperado al registrar la devolución.");
         }
     }
+
 
     public async Task<OperationResult<string>> ActualizarEstadoPrestamoPorVencimientoAsync(int idPrestamo)
     {

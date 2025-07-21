@@ -12,11 +12,14 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto.ValidatosDt
         public AddPrestamoDtoValidator()
         {
             RuleFor(x => x.UsuarioId)
-     .GreaterThan(0).WithMessage("El ID del usuario debe ser mayor a cero.");
+                .GreaterThan(0).WithMessage("El ID del usuario debe ser mayor a cero.");
+
 
             RuleFor(x => x.ISBN)
                 .NotEmpty().WithMessage("El ISBN no puede estar vacío.")
-                .Length(10, 13).WithMessage("El ISBN debe tener entre 10 y 13 caracteres.");
+                .Length(13).WithMessage("El ISBN debe tener exactamente 13 caracteres.");
+    
+
 
             RuleFor(x => x.FechaInicio)
                 .LessThan(x => x.FechaFin)

@@ -69,7 +69,7 @@ namespace SGB.Persistence.Base
 
                 if (entity is IEstaActivo estaActivoEntity)
                 {
-                    estaActivoEntity.Deshabilitar(); // Se ejecuta el método de dominio
+                    estaActivoEntity.Deshabilitar(); 
                 }
                 else
                 {

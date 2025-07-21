@@ -22,6 +22,7 @@ namespace SGB.Application.Test.ServiceTests
         private readonly Mock<IValidator<AddPrestamoDto>> _addValidatorMock;
         private readonly Mock<IValidator<UpdatePrestamoDto>> _updateValidatorMock;
         private readonly Mock<IValidator<DiseblePrestamoDto>> _disableValidatorMock;
+        private readonly Mock<IValidator<RegistrarDevolucionDto>> _registrardevolucionValidatorMock;
         private readonly Mock<IPrestamoBusinessValidator> _businessValidatorMock;
         private readonly Mock<IPrestamoMapper> _mapperMock;
         private readonly Mock<IPenalizacionServices> _penalizacionServiceMock;
@@ -35,6 +36,8 @@ namespace SGB.Application.Test.ServiceTests
             _addValidatorMock = new Mock<IValidator<AddPrestamoDto>>();
             _updateValidatorMock = new Mock<IValidator<UpdatePrestamoDto>>();
             _disableValidatorMock = new Mock<IValidator<DiseblePrestamoDto>>();
+            _registrardevolucionValidatorMock = new Mock<IValidator<RegistrarDevolucionDto>>();
+
             _businessValidatorMock = new Mock<IPrestamoBusinessValidator>();
             _mapperMock = new Mock<IPrestamoMapper>();
             _penalizacionServiceMock = new Mock<IPenalizacionServices>();
@@ -46,9 +49,11 @@ namespace SGB.Application.Test.ServiceTests
                 _addValidatorMock.Object,
                 _updateValidatorMock.Object,
                 _disableValidatorMock.Object,
+                _registrardevolucionValidatorMock.Object,
                 _businessValidatorMock.Object,
                 _mapperMock.Object,
                 _penalizacionServiceMock.Object
+
             );
         }
 
@@ -202,9 +207,17 @@ namespace SGB.Application.Test.ServiceTests
         {
             // Arrange
             var dto = new RegistrarDevolucionDto { IdPrestamo = 999, FechaDevolucion = DateTime.Now };
+            var validationResult = new ValidationResult();
 
-            _repoMock.Setup(r => r.GetByIdAsync(dto.IdPrestamo))
-                .ReturnsAsync(OperationResult<Prestamo>.Failure("No encontrado"));
+            _registrardevolucionValidatorMock.Setup(v => v.ValidateAsync(dto, default))
+                .ReturnsAsync(validationResult);
+
+            _businessValidatorMock.Setup(v => v.ValidateForRegistrarDevolucionAsync(dto))
+                .ReturnsAsync(OperationResult<string>.Success("Validación exitosa"));
+
+            _repoMock.SetupSequence(r => r.GetByIdAsync(dto.IdPrestamo))
+                .ReturnsAsync(OperationResult<Prestamo>.Failure("Préstamo no encontrado.")) // Validación
+                .ReturnsAsync(OperationResult<Prestamo>.Failure("Préstamo no encontrado.")); // Servicio
 
             // Act
             var result = await _service.RegistrarDevolucionAsync(dto);
@@ -222,7 +235,15 @@ namespace SGB.Application.Test.ServiceTests
             // Arrange
             var dto = new RegistrarDevolucionDto { IdPrestamo = 1, FechaDevolucion = DateTime.Now };
             var prestamo = new Prestamo(1, "1234567890123", DateTime.Now.AddDays(-10), DateTime.Now.AddDays(-3));
-            prestamo.RegistrarDevolucion(DateTime.Now.AddDays(-2));
+            prestamo.RegistrarDevolucion(DateTime.Now.AddDays(-2)); // Ya está devuelto
+
+            var validationResult = new ValidationResult();
+
+            _registrardevolucionValidatorMock.Setup(v => v.ValidateAsync(dto, default))
+                .ReturnsAsync(validationResult);
+
+            _businessValidatorMock.Setup(v => v.ValidateForRegistrarDevolucionAsync(dto))
+                .ReturnsAsync(OperationResult<string>.Failure("El préstamo ya fue devuelto."));
 
             _repoMock.Setup(r => r.GetByIdAsync(dto.IdPrestamo))
                 .ReturnsAsync(OperationResult<Prestamo>.Success(prestamo));
@@ -232,8 +253,9 @@ namespace SGB.Application.Test.ServiceTests
 
             // Assert
             Assert.False(result.IsSuccess);
-            Assert.Equal("Este préstamo ya fue devuelto previamente.", result.Message);
+            Assert.Equal("El préstamo ya fue devuelto.", result.Message);
         }
+
 
 
 
@@ -243,10 +265,19 @@ namespace SGB.Application.Test.ServiceTests
             // Arrange
             var dto = new RegistrarDevolucionDto { IdPrestamo = 1, FechaDevolucion = DateTime.Now };
             var prestamo = new Prestamo(1, "1234567890123", DateTime.Now.AddDays(-5), DateTime.Now.AddDays(2));
+            var validationResult = new ValidationResult();
 
-            _repoMock.Setup(r => r.GetByIdAsync(dto.IdPrestamo))
-                .ReturnsAsync(OperationResult<Prestamo>.Success(prestamo));
-            _repoMock.Setup(r => r.UpdateAsync(prestamo))
+            _registrardevolucionValidatorMock.Setup(v => v.ValidateAsync(dto, default))
+                .ReturnsAsync(validationResult);
+
+            _businessValidatorMock.Setup(v => v.ValidateForRegistrarDevolucionAsync(dto))
+                .ReturnsAsync(OperationResult<string>.Success("Validación exitosa"));
+
+            _repoMock.SetupSequence(r => r.GetByIdAsync(dto.IdPrestamo))
+                .ReturnsAsync(OperationResult<Prestamo>.Success(prestamo)) // Validación
+                .ReturnsAsync(OperationResult<Prestamo>.Success(prestamo)); // Servicio
+
+            _repoMock.Setup(r => r.UpdateAsync(It.IsAny<Prestamo>()))
                 .ReturnsAsync(OperationResult<Prestamo>.Success(prestamo));
 
             // Act
@@ -257,9 +288,9 @@ namespace SGB.Application.Test.ServiceTests
             Assert.Equal("Devolución registrada correctamente.", result.Data);
         }
 
-       
-       
 
-       
+
+
+
     }
 }

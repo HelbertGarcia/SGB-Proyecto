@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto.ValidatosDto;
+
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Persistence.Repositories;
 using System;
@@ -13,6 +14,8 @@ using SGB.Application.Base.ValidatorServices.Prestamos;
 using SGB.Application.Contracts.Interfaces.Mappers.PrestamoMappers;
 using SGB.Application.Extensions.Mappers.PrestamosMapper;
 using SGB.Application.Loggers;
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto.ValidatorsDto;
+
 
 
 namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia
@@ -31,6 +34,9 @@ namespace SGB.IOC.Dependencias.Prestamo_y_Penalizacion.PrestamoDependencia
             services.AddScoped<IValidator<AddPrestamoDto>, AddPrestamoDtoValidator>();
             services.AddScoped<IValidator<UpdatePrestamoDto>, UpdatePrestamoDtoValidator>();
             services.AddScoped<IValidator<DiseblePrestamoDto>, DisablePrestamoDtoValidator>();
+            services.AddScoped<IValidator<RegistrarDevolucionDto>, RegistrarDevolucionValidatorDto>();
+
+
 
 
             // Validator Services (Reglas de negocio)

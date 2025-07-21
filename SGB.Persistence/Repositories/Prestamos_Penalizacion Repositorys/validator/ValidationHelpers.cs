@@ -28,7 +28,7 @@ namespace SGB.Persistence.Repositories.Prestamos_Penalizacion_Repositorys.valida
             if (string.IsNullOrWhiteSpace(isbn))
                 return (false, "ISBN no puede estar vacío.");
             if (isbn.Length != 13 || !isbn.All(char.IsDigit))
-                return (false, "El ISBN debe contener exactamente 13 dígitos numéricos.");
+                return (false, "El ISBN debe contener exactamente 13 caracteres .");
             return (true, string.Empty);
         }
 

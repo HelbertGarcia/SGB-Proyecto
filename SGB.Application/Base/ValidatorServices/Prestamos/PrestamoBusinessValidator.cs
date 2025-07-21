@@ -6,6 +6,7 @@ using SGB.Domain.Base;
 using SGB.Domain.Entities.Prestamos;
 using System.Collections;
 
+
 namespace SGB.Application.Base.ValidatorServices.Prestamos
 {
     public class PrestamoBusinessValidator : IPrestamoBusinessValidator
@@ -32,14 +33,14 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
                 return OperationResult<string>.Failure("Datos de préstamo inválidos.");
 
           
-            /*
+            
 
             // Buscar libro por ISBN
             // Validar que el libro exista
             var libroResult = await _libroRepository.BuscarPorIsbnAsync(dto.ISBN);
             if (!libroResult.IsSuccess || libroResult.Data == null)
                 return OperationResult<string>.Failure("El libro con el ISBN proporcionado no existe.");
-            */
+            
 
             // Validar préstamos activos del usuario
             var prestamosActivosResult = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(dto.UsuarioId);
@@ -62,23 +63,26 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
         }
 
 
-
-
         public async Task<OperationResult<string>> ValidateForUpdateAsync(UpdatePrestamoDto dto)
         {
             if (dto == null)
                 return OperationResult<string>.Failure("Datos de actualización inválidos.");
 
-            var prestamo = await _prestamoRepository.GetByIdAsync(dto.IDPrestamo);
-            if (prestamo == null)
+            var prestamoResult = await _prestamoRepository.GetByIdAsync(dto.IDPrestamo);
+
+            if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
                 return OperationResult<string>.Failure("Préstamo no encontrado.");
 
-         
+            var prestamo = prestamoResult.Data;
+
+            if (prestamo.FechaDevolucion.HasValue)
+                return OperationResult<string>.Failure("No se puede modificar un préstamo que ya fue devuelto.");
+
+            if (!prestamo.EstaActivo)
+                return OperationResult<string>.Failure("No se puede modificar un préstamo inactivo.");
 
             return OperationResult<string>.Success("Validación exitosa.");
         }
-
-
 
 
 
@@ -89,7 +93,6 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
                 return OperationResult<string>.Failure("Datos inválidos para deshabilitar préstamo.");
 
             var prestamoResult = await _prestamoRepository.GetByIdAsync(dto.IDPrestamo);
-
             if (!prestamoResult.IsSuccess || prestamoResult.Data == null)
                 return OperationResult<string>.Failure("Préstamo no encontrado.");
 
@@ -97,6 +100,9 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
 
             if (!prestamo.EstaActivo)
                 return OperationResult<string>.Failure("El préstamo ya está desactivado.");
+
+            if (prestamo.FechaDevolucion.HasValue)
+                return OperationResult<string>.Failure("No se puede deshabilitar un préstamo que ya fue devuelto.");
 
             return OperationResult<string>.Success("Validación exitosa.");
         }
@@ -118,7 +124,11 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
 
             var prestamo = prestamoResult.Data;
 
-            if (prestamo.FechaDevolucion.HasValue)
+            if (!prestamo.EstaActivo)
+                return OperationResult<string>.Failure("No se puede registrar devolución de un préstamo inactivo.");
+
+
+            if (prestamo.Estado == EstadoPrestamo.Devuelto || prestamo.FechaDevolucion.HasValue)
                 return OperationResult<string>.Failure("El préstamo ya fue devuelto.");
 
             if (dto.FechaDevolucion < prestamo.FechaInicio)
@@ -126,6 +136,7 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
 
             return OperationResult<string>.Success("Validación exitosa.");
         }
+
 
 
     }

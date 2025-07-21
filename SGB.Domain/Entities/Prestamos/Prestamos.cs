@@ -84,13 +84,16 @@ namespace SGB.Domain.Entities.Prestamos
             }
         }
 
+
         public void Deshabilitar()
         {
             EstaActivo = false;
-            if (Estado == EstadoPrestamo.Activo || Estado == EstadoPrestamo.Atrasado)
+
+            if (!FechaDevolucion.HasValue)
             {
-                Estado = EstadoPrestamo.Devuelto;
+                Estado = EstadoPrestamo.Cancelado;
             }
+
             FechaActualizacion = DateTime.UtcNow;
         }
 
@@ -107,6 +110,7 @@ namespace SGB.Domain.Entities.Prestamos
         Atrasado,
         Devuelto,
         DevueltoConAtraso,
-        
+        Cancelado
+
     }
 }
