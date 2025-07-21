@@ -1,14 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SGB.Application.Contracts.Mappers.CategoriaMapper;
+using SGB.Application.Contracts.Mappers.LibroMapper;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.ILibroServices;
+using SGB.Application.Extensions.Mappers.CategoriaMapper;
+using SGB.Application.Extensions.Mappers.LibroMapper;
 using SGB.Application.Services.LibrosServices;
 using SGB.Application.Validators.BusinessValidators;
 using SGB.Application.Validators.FluentValidators.Libros; 
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
-using FluentValidation;
 
 namespace SGB.IOC
 {
@@ -29,6 +33,8 @@ namespace SGB.IOC
 
             services.AddTransient<ICategoriaBusinessValidator, CategoriaBusinessValidator>();
             services.AddTransient<ICategoriaService, CategoriaService>();
+            services.AddTransient<ICategoriaMapper, CategoriaMapper>();
+            services.AddTransient<ILibroMapper, LibroMapper>();
 
             services.AddValidatorsFromAssemblyContaining<AddLibroDtoValidator>();
 

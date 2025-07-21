@@ -162,6 +162,71 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<IEnumerable<LibroDto>>.Failure(errorMessage);
             }
         }
+
+        public async Task<OperationResult<LibroDto>> ObtenerDetallesDTOPorIsbnAsync(string isbn)
+        {
+            try
+            {
+                var libroDto = await (from libro in Entity
+                                      join categoria in _context.Categorias on libro.IDCategoria equals categoria.Id
+                                      where libro.ISBN == isbn
+                                      select new LibroDto
+                                      {
+                                          Id = libro.Id,
+                                          ISBN = libro.ISBN,
+                                          Titulo = libro.Titulo,
+                                          Autor = libro.Autor,
+                                          Editorial = libro.Editorial,
+                                          FechaPublicacion = libro.FechaPublicacion,
+                                          NombreCategoria = categoria.Nombre,
+                                          Estado = libro.EstaActivo ? "Disponible" : "Inactivo",
+                                          FechaRegistro = libro.FechaRegistro
+                                      })
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync();
+
+                return OperationResult<LibroDto>.Success(libroDto);
+            }
+            catch (System.Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:Libros:GetById"]; 
+                _logger.LogError(ex, "{ErrorMessage} para el ISBN: {ISBN}", errorMessage, isbn);
+                return OperationResult<LibroDto>.Failure(errorMessage);
+            }
+        }
+
+        public async Task<OperationResult<IEnumerable<LibroDto>>> BuscarConDetallesAsync(string terminoBusqueda)
+        {
+            try
+            {
+                var listaDto = await (from libro in Entity
+                                      join categoria in _context.Categorias on libro.IDCategoria equals categoria.Id
+                                      where (libro.Titulo.Contains(terminoBusqueda) || libro.Autor.Contains(terminoBusqueda))
+                                            && libro.EstaActivo
+                                      select new LibroDto
+                                      {
+                                          Id = libro.Id,
+                                          ISBN = libro.ISBN,
+                                          Titulo = libro.Titulo,
+                                          Autor = libro.Autor,
+                                          Editorial = libro.Editorial,
+                                          FechaPublicacion = libro.FechaPublicacion,
+                                          NombreCategoria = categoria.Nombre,
+                                          Estado = "Disponible",
+                                          FechaRegistro = libro.FechaRegistro
+                                      })
+                                      .AsNoTracking()
+                                      .ToListAsync();
+
+                return OperationResult<IEnumerable<LibroDto>>.Success(listaDto);
+            }
+            catch (System.Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:Libros:GetAll"];
+                _logger.LogError(ex, "{ErrorMessage} para el término: {Termino}", errorMessage, terminoBusqueda);
+                return OperationResult<IEnumerable<LibroDto>>.Failure(errorMessage);
+            }
+        }
         #endregion
     }
 }

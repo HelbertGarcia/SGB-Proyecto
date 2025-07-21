@@ -1,29 +1,32 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Application.Contracts.Mappers.CategoriaMapper;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.ILibroServices;
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using SGB.Application.Validators.BusinessValidators;
 using SGB.Domain.Base;
-using SGB.Domain.Entities.Categoria;
 
 namespace SGB.Application.Services.LibrosServices
 {
     public class CategoriaService : ICategoriaService
     {
         private readonly ICategoriaRepository _categoriaRepository;
-        private readonly ICategoriaBusinessValidator _categoriaValidator; 
+        private readonly ICategoriaBusinessValidator _categoriaValidator;
+        private readonly ICategoriaMapper _mapper; 
         private readonly ILogger<CategoriaService> _logger;
         private readonly IConfiguration _configuration;
 
         public CategoriaService(
             ICategoriaRepository categoriaRepository,
             ICategoriaBusinessValidator categoriaValidator,
-            ILogger<CategoriaService> logger,
+            ICategoriaMapper mapper,
+            ILogger<CategoriaService> logger, 
             IConfiguration configuration)
         {
             _categoriaRepository = categoriaRepository;
             _categoriaValidator = categoriaValidator;
+            _mapper = mapper;
             _logger = logger;
             _configuration = configuration;
         }
@@ -38,18 +41,13 @@ namespace SGB.Application.Services.LibrosServices
                     return OperationResult<CategoriaDto>.Failure(validationResult.Message);
                 }
 
-                var nuevaCategoria = new Categoria(dto.Nombre);
+                var nuevaCategoria = _mapper.MapFromDto(dto);
 
                 var repoResult = await _categoriaRepository.AddAsync(nuevaCategoria);
                 if (!repoResult.IsSuccess)
                     return OperationResult<CategoriaDto>.Failure(repoResult.Message);
 
-                var categoriaDto = new CategoriaDto(
-                    repoResult.Data.Id,
-                    repoResult.Data.Nombre,
-                    repoResult.Data.EstaActivo
-                );
-
+                var categoriaDto = _mapper.MapToDto(repoResult.Data);
                 return OperationResult<CategoriaDto>.Success(categoriaDto, "Categoría creada exitosamente.");
             }
             catch (Exception ex)
@@ -63,19 +61,20 @@ namespace SGB.Application.Services.LibrosServices
         {
             try
             {
-                var categoriaEntidad = await _categoriaRepository.GetByIdAsync(id);
-                if (!categoriaEntidad.IsSuccess || categoriaEntidad.Data == null)
+                var categoriaResult = await _categoriaRepository.GetByIdAsync(id);
+                if (!categoriaResult.IsSuccess || categoriaResult.Data == null)
                 {
                     return OperationResult<CategoriaDto>.Failure(_configuration["ErrorMessages:Global:ResourceNotFound"]);
                 }
+                var categoriaEntidad = categoriaResult.Data;
 
-                categoriaEntidad.Data.ActualizarNombre(dto.Nombre);
+                _mapper.ApplyUpdateDto(categoriaEntidad, dto);
 
-                var repoResult = await _categoriaRepository.UpdateAsync(categoriaEntidad.Data);
+                var repoResult = await _categoriaRepository.UpdateAsync(categoriaEntidad);
                 if (!repoResult.IsSuccess)
                     return OperationResult<CategoriaDto>.Failure(repoResult.Message);
 
-                var categoriaDto = new CategoriaDto(repoResult.Data.Id, repoResult.Data.Nombre, repoResult.Data.EstaActivo);
+                var categoriaDto = _mapper.MapToDto(repoResult.Data);
                 return OperationResult<CategoriaDto>.Success(categoriaDto);
             }
             catch (Exception ex)
@@ -110,17 +109,17 @@ namespace SGB.Application.Services.LibrosServices
             if (!result.IsSuccess || result.Data == null)
                 return OperationResult<CategoriaDto>.Failure(_configuration["ErrorMessages:Global:ResourceNotFound"]);
 
-            var dto = new CategoriaDto(result.Data.Id, result.Data.Nombre, result.Data.EstaActivo);
+            var dto = _mapper.MapToDto(result.Data);
             return OperationResult<CategoriaDto>.Success(dto);
         }
 
         public async Task<OperationResult<IEnumerable<CategoriaDto>>> GetAllAsync()
         {
-            var result = await _categoriaRepository.GetAllAsync();
+            var result = await _categoriaRepository.GetAllAsync(); 
             if (!result.IsSuccess)
                 return OperationResult<IEnumerable<CategoriaDto>>.Failure(result.Message);
 
-            var dtoList = result.Data.Select(c => new CategoriaDto(c.Id, c.Nombre, c.EstaActivo));
+            var dtoList = result.Data.Select(_mapper.MapToDto);
             return OperationResult<IEnumerable<CategoriaDto>>.Success(dtoList);
         }
     }

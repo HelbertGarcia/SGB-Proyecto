@@ -14,5 +14,7 @@ namespace SGB.Application.Contracts.Repository.Interfaces
         Task<Libro> ObtenerParaActualizacionAsync(int id);
         Task<OperationResult<LibroDto>> ObtenerDetallesDTOPorIdAsync(int id);
         Task<OperationResult<IEnumerable<LibroDto>>> ObtenerTodosConDetallesAsync();
+        Task<OperationResult<LibroDto>> ObtenerDetallesDTOPorIsbnAsync(string isbn);
+        Task<OperationResult<IEnumerable<LibroDto>>> BuscarConDetallesAsync(string terminoBusqueda);
     }
 }
