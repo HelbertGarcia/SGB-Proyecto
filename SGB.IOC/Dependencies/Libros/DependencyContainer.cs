@@ -10,9 +10,11 @@ using SGB.Application.Extensions.Mappers.CategoriaMapper;
 using SGB.Application.Extensions.Mappers.LibroMapper;
 using SGB.Application.Services.LibrosServices;
 using SGB.Application.Validators.BusinessValidators;
-using SGB.Application.Validators.FluentValidators.Libros; 
+using SGB.Application.Validators.FluentValidators.Libros;
+using SGB.Infraestructure.Loggers;
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
+using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.IOC
 {
@@ -24,6 +26,7 @@ namespace SGB.IOC
                 options.UseSqlServer(configuration.GetConnectionString("SGBDatabase"))
             );
 
+            services.AddSingleton(typeof(IAppLogger<>), typeof(AppLogger<>));
             services.AddScoped<ILibroRepository, LibroRepository>();
             services.AddScoped<ICategoriaRepository, CategoriaRepository>();
             services.AddScoped<IPrestamoRepository, PrestamoRepository>();
