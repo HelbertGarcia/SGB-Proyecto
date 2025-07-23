@@ -16,7 +16,7 @@ namespace SGB.Api.Controllers
             _libroService = libroService;
         }
 
-        [HttpGet(Name = "ObtenerTodosLosLibros")]
+        [HttpGet("GetAllLibros")]
         public async Task<IActionResult> GetAll()
         {
             var resultado = await _libroService.GetAllAsync();
@@ -24,7 +24,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpGet("{id}", Name = "ObtenerLibroPorId")]
+        [HttpGet("GetLibroById/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var resultado = await _libroService.GetByIdAsync(id);
@@ -32,7 +32,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpGet("buscar/isbn/{isbn}", Name = "BuscarLibroPorIsbn")]
+        [HttpGet("buscar/{isbn}")]
         public async Task<IActionResult> BuscarPorIsbn(string isbn)
         {
             var resultado = await _libroService.BuscarPorIsbnAsync(isbn);
@@ -40,7 +40,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpPost(Name = "CrearLibro")]
+        [HttpPost("AddLibro")]
         public async Task<IActionResult> Crear([FromBody] AddLibroDto libroDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -52,7 +52,7 @@ namespace SGB.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = libroCreado.Id }, libroCreado);
         }
 
-        [HttpPut("{id}", Name = "ActualizarLibro")]
+        [HttpPut("UpdateLibro/{id}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateLibroDto libroDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -66,7 +66,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpDelete("{id}", Name = "EliminarLibro")]
+        [HttpDelete("DisableLibro/{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var resultado = await _libroService.DeleteAsync(id);

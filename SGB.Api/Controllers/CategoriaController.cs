@@ -16,7 +16,7 @@ namespace SGB.Api.Controllers
             _categoriaService = categoriaService;
         }
 
-        [HttpGet(Name = "ObtenerTodasLasCategorias")]
+        [HttpGet("GetAllCategorias")]
         public async Task<IActionResult> GetAll()
         {
             var resultado = await _categoriaService.GetAllAsync();
@@ -24,7 +24,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpGet("{id}", Name = "ObtenerCategoriaPorId")]
+        [HttpGet("GetCategoriaById/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var resultado = await _categoriaService.GetByIdAsync(id);
@@ -32,7 +32,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpPost(Name = "CrearCategoria")]
+        [HttpPost("AddCategoria")]
         public async Task<IActionResult> Crear([FromBody] AddCategoriaDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -44,7 +44,7 @@ namespace SGB.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = categoriaCreada.Id }, categoriaCreada);
         }
 
-        [HttpPut("{id}", Name = "ActualizarCategoria")]
+        [HttpPut("UpdateCategoria/{id}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateCategoriaDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -58,7 +58,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpDelete("{id}", Name = "EliminarCategoria")]
+        [HttpDelete("DisableCategoria/{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var resultado = await _categoriaService.DeleteAsync(id);
