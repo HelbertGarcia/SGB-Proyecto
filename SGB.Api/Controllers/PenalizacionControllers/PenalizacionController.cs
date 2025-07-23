@@ -20,7 +20,7 @@ namespace SGB.Api.Controllers.PenalizacionControllers
             _penalizacionService = penalizacionService ?? throw new ArgumentNullException(nameof(penalizacionService));
         }
 
-        [HttpGet]
+        [HttpGet("GetPenalizaciones")]
         public async Task<IActionResult> GetAllPenalizaciones()
         {
             var result = await _penalizacionService.GetAllAsync();
@@ -29,7 +29,7 @@ namespace SGB.Api.Controllers.PenalizacionControllers
             return Ok(result.Data);
         }
 
-        [HttpGet("{idPenalizacion:int}")]
+        [HttpGet("GetPenalizacionById")]
         public async Task<IActionResult> GetPenalizacionById(int idPenalizacion)
         {
             var result = await _penalizacionService.GetByIdAsync(idPenalizacion);
@@ -38,7 +38,7 @@ namespace SGB.Api.Controllers.PenalizacionControllers
             return Ok(result.Data);
         }
 
-        [HttpPost]
+        [HttpPost("AddPenalizacion")]
         public async Task<IActionResult> AddPenalizacion([FromBody] AddPenalizacionDto addPenalizacionDto)
         {
             if (!ModelState.IsValid)
@@ -54,7 +54,7 @@ namespace SGB.Api.Controllers.PenalizacionControllers
                                    nuevaPenalizacionDto);
         }
 
-        [HttpPut("{idPenalizacion:int}")]
+        [HttpPut("UpdatePenalizacion")]
         public async Task<IActionResult> UpdatePenalizacion(int idPenalizacion, [FromBody] UpdatePenalizacionDto updatePenalizacionDto)
         {
             if (!ModelState.IsValid)
@@ -70,7 +70,7 @@ namespace SGB.Api.Controllers.PenalizacionControllers
             return Ok(result.Data);
         }
 
-        [HttpDelete("{idPenalizacion:int}")]
+        [HttpDelete("DisablePenalizacion")]
         public async Task<IActionResult> DisablePenalizacion(int idPenalizacion)
         {
             if (idPenalizacion <= 0)

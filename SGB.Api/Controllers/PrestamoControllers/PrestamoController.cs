@@ -20,7 +20,7 @@ namespace SGB.Api.Controllers
             _prestamosService = prestamosService ?? throw new ArgumentNullException(nameof(prestamosService));
         }
 
-        [HttpGet]
+        [HttpGet("GetPrestamos")]
         public async Task<IActionResult> GetAllPrestamos()
         {
             var resultado = await _prestamosService.GetAllAsync();
@@ -29,7 +29,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("GetPrestamosById")]
         public async Task<IActionResult> GetPrestamoById(int id)
         {
             var resultado = await _prestamosService.GetByIdAsync(id);
@@ -38,7 +38,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpPost]
+        [HttpPost("AddPrestamo")]
         public async Task<IActionResult> AddPrestamo([FromBody] AddPrestamoDto addPrestamoDto)
         {
             if (!ModelState.IsValid)
@@ -60,7 +60,7 @@ namespace SGB.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("UpdatePrestamo")]
         public async Task<IActionResult> UpdatePrestamo(int id, [FromBody] UpdatePrestamoDto updatePrestamoDto)
         {
             if (!ModelState.IsValid)
@@ -76,7 +76,7 @@ namespace SGB.Api.Controllers
             return Ok(resultado.Data);
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("DisablePrestamo")]
         public async Task<IActionResult> DeletePrestamo(int id)
         {
             var dto = new DiseblePrestamoDto { IDPrestamo = id };

@@ -33,15 +33,6 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
                 return OperationResult<string>.Failure("Datos de préstamo inválidos.");
 
           
-            
-
-            // Buscar libro por ISBN
-            // Validar que el libro exista
-            var libroResult = await _libroRepository.BuscarPorIsbnAsync(dto.ISBN);
-            if (!libroResult.IsSuccess || libroResult.Data == null)
-                return OperationResult<string>.Failure("El libro con el ISBN proporcionado no existe.");
-            
-
             // Validar préstamos activos del usuario
             var prestamosActivosResult = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(dto.UsuarioId);
             if (!prestamosActivosResult.IsSuccess)
