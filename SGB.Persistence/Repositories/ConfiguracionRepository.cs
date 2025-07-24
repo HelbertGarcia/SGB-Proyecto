@@ -6,19 +6,20 @@ using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
+using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Persistence.Repositories
 {
     public class ConfiguracionRepository : BaseRepository<Configuracion>, IConfiguracionRepository
     {
-        private readonly ILogger<ConfiguracionRepository> _logger;
+        private readonly IAppLogger<ConfiguracionRepository> _logger;
         private readonly IConfiguration _configuration;
 
-        public ConfiguracionRepository(SGBContext context,ILoggerFactory loggerFactory, IConfiguration configuration)
+        public ConfiguracionRepository(SGBContext context,ILoggerFactory loggerFactory, IConfiguration configuration, IAppLogger<ConfiguracionRepository> logger)
         :base(context, loggerFactory, configuration)
         {
             _configuration = configuration;
-            _logger = loggerFactory.CreateLogger<ConfiguracionRepository>();
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         #region "Metodos Heredados Sobrescritos"
@@ -38,7 +39,7 @@ namespace SGB.Persistence.Repositories
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:Configuracion:DeleteError"] ?? "Ocurrió un error al desactivar la configuración.";
-                _logger.LogError(ex, "{ErrorMessage} para el ID: {ConfigID}", errorMessage, id);
+                _logger.Error(ex, errorMessage + " para el ID: {ConfigID}", id);
                 return OperationResult<bool>.Failure(errorMessage);
             }
         }
@@ -60,7 +61,7 @@ namespace SGB.Persistence.Repositories
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:Configuracion:GetByNameError"] ?? "Ocurrió un error al buscar la configuración por nombre.";
-                _logger.LogError(ex, "{ErrorMessage} para el nombre: {Nombre}", errorMessage, nombre);
+                _logger.Error(ex, errorMessage + " para el nombre: {Nombre}", nombre);
                 return OperationResult<Configuracion>.Failure(errorMessage);
             }
         }
@@ -77,7 +78,7 @@ namespace SGB.Persistence.Repositories
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:Configuracion:GetByIdError"] ?? "Ocurrió un error al obtener la configuración por ID.";
-                _logger.LogError(ex, "{ErrorMessage} para el ID: {ConfigID}", errorMessage, idConfiguracion);
+                _logger.Error(ex, $"{errorMessage} para el ID: {idConfiguracion}");
                 return OperationResult<Configuracion>.Failure(errorMessage);
             }
         }

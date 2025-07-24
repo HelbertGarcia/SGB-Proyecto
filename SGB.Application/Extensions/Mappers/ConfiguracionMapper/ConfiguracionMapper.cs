@@ -3,6 +3,7 @@ using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Domain.Entities.Configuracion;
 
+
 namespace SGB.Application.Extensions.Mappers.ConfiguracionMapper
 {
     public class ConfiguracionMapper : IConfiguracionMapper

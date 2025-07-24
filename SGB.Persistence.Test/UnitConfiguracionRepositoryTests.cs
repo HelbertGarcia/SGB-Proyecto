@@ -5,6 +5,7 @@ using Moq;
 using SGB.Domain.Entities.Configuracion;
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
+using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Persistence.Test
 {
@@ -30,7 +31,9 @@ namespace SGB.Persistence.Test
             loggerFactoryMock.Setup(l => l.CreateLogger(It.IsAny<string>()))
                              .Returns(_loggerMock.Object);
 
-            return new ConfiguracionRepository(context, loggerFactoryMock.Object, _configMock.Object);
+            var appLoggerMock = new Mock<IAppLogger<ConfiguracionRepository>>().Object;
+
+            return new ConfiguracionRepository(context, loggerFactoryMock.Object, _configMock.Object, appLoggerMock);
         }
 
         [Fact]

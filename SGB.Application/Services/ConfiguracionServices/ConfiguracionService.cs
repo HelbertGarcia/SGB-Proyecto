@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.IConfiguracionService;
 using SGB.Application.Dtos.AdministracionDto;
@@ -10,10 +10,10 @@ namespace SGB.Application.Services.ConfiguracionServices
     public class ConfiguracionService : IConfiguracionService
     {
         private readonly IConfiguracionRepository _repository;
-        private readonly ILogger<ConfiguracionService> _logger;
+        private readonly IAppLogger<ConfiguracionService> _logger;
         private readonly bool _forzarSuccess = true;
 
-        public ConfiguracionService(IConfiguracionRepository repository, ILogger<ConfiguracionService> logger)
+        public ConfiguracionService(IConfiguracionRepository repository, IAppLogger<ConfiguracionService> logger)
         {
             _repository = repository;
             _logger = logger;

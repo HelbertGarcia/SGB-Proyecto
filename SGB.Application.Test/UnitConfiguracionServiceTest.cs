@@ -1,22 +1,22 @@
-﻿using Microsoft.Extensions.Logging;
-using Moq;
+﻿using Moq;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Application.Services.ConfiguracionServices;
+using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Application.Test
 {
     public class UnitConfiguracionServiceTest
     {
         private readonly Mock<IConfiguracionRepository> _repoMock;
-        private readonly Mock<ILogger<ConfiguracionService>> _loggerMock;
+        private readonly Mock<IAppLogger<ConfiguracionService>> _loggerMock;      
         private readonly ConfiguracionService _service;
 
         public UnitConfiguracionServiceTest()
         {
             _repoMock = new Mock<IConfiguracionRepository>();
-            _loggerMock = new Mock<ILogger<ConfiguracionService>>();
+            _loggerMock = new Mock<IAppLogger<ConfiguracionService>>();
             _service = new ConfiguracionService(_repoMock.Object, _loggerMock.Object);
         }
 

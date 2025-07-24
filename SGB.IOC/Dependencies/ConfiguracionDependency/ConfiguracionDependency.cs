@@ -7,7 +7,9 @@ using SGB.Application.Extensions.Mappers.ConfiguracionMapper;
 using SGB.Application.Services.ConfiguracionServices;
 using SGB.Application.Validators.BusinessValidators.Configuracion;
 using SGB.Application.Validators.FluentValidator.Configuracion;
+using SGB.Infraestructure.Loggers;
 using SGB.Persistence.Repositories;
+using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.IOC.Dependencies.ConfiguracionDependency
 {
@@ -15,6 +17,7 @@ namespace SGB.IOC.Dependencies.ConfiguracionDependency
     {
         public static IServiceCollection AddConfiguracionDependency(this IServiceCollection service)
         {
+            service.AddSingleton(typeof(IAppLogger<>), typeof(AppLogger<>));
             service.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
             service.AddTransient<IConfiguracionService, ConfiguracionService>();
             service.AddTransient<IConfiguracionMapper, ConfiguracionMapper>();

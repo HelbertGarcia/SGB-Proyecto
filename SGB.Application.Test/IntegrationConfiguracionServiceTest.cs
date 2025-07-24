@@ -2,11 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Moq;
 using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Application.Services.ConfiguracionServices;
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
+using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Application.Test.IntegrationTests
 {
@@ -23,13 +25,14 @@ namespace SGB.Application.Test.IntegrationTests
             var configMock = new ConfigurationBuilder().Build();
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
 
-            var repo = new ConfiguracionRepository(context, loggerFactory, configMock);
-            var loggerService = loggerFactory.CreateLogger<ConfiguracionService>();
+            var mockLoggerRepo = new Mock<IAppLogger<ConfiguracionRepository>>().Object;
+            var mockLoggerService = new Mock<IAppLogger<ConfiguracionService>>().Object;
 
-            return new ConfiguracionService(repo, loggerService);
+            var repo = new ConfiguracionRepository(context, loggerFactory, configMock, mockLoggerRepo);
+            return new ConfiguracionService(repo, mockLoggerService);
         }
 
-        [Fact]
+            [Fact]
         public async Task FullConfiguracionFlow_ShouldWorkCorrectly()
         {
             // Arrange: instanciar servicio y DTO inicial
