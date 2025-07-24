@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Contracts.Service.ILibroServices;
+using SGB.Application.Wrappers;
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using System.Threading.Tasks;
 
@@ -20,8 +21,26 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var resultado = await _categoriaService.GetAllAsync();
-            if (!resultado.IsSuccess) return BadRequest(resultado);
-            return Ok(resultado.Data);
+
+            if (!resultado.IsSuccess)
+            {
+                var errorResponse = new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message,
+                    Data = null
+                };
+                return BadRequest(errorResponse);
+            }
+
+            var successResponse = new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Categorías obtenidas correctamente.",
+                Data = resultado.Data
+            };
+
+            return Ok(successResponse);
         }
 
         [HttpGet("GetCategoriaById/{id}")]
