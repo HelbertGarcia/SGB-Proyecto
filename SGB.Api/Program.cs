@@ -16,7 +16,8 @@ namespace SGB.Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddDbContext<SGBContext>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            //  builder.Services.AddDbContext<SGBContext>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<SGBContext>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("SGBDatabase")));
 
             builder.Services.AddControllers();
             builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();

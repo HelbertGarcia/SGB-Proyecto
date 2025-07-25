@@ -21,7 +21,7 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> ObtenerTodo()
         {
             var resultado = await _configuracionService.GetAllAsync();
-            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado); ///////////////////////////////////////////////////
         }
 
         // GET: api/admin/configuraciones/{id}
