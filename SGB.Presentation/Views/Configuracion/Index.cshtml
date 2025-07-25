@@ -1,4 +1,4 @@
-﻿@model IEnumerable<SGB.Presentation.Models.ConfiguracionModel>
+﻿@model IEnumerable<SGB.Application.Dtos.AdministracionDto.ConfiguracionDto>
 
 @{
     ViewData["Title"] = "Lista de Configuraciones";
@@ -13,31 +13,31 @@
 <table class="table">
     <thead>
         <tr>
-            <th>@Html.DisplayNameFor(model => model.idConfiguracion)</th>
-            <th>@Html.DisplayNameFor(model => model.nombre)</th>
-            <th>@Html.DisplayNameFor(model => model.valor)</th>
-            <th>@Html.DisplayNameFor(model => model.descripcion)</th>
-            <th>@Html.DisplayNameFor(model => model.fechaCreacion)</th>
-            <th>@Html.DisplayNameFor(model => model.estaActivo)</th>
+            <th>@Html.DisplayNameFor(model => model.IDConfiguracion)</th>
+            <th>@Html.DisplayNameFor(model => model.Nombre)</th>
+            <th>@Html.DisplayNameFor(model => model.Valor)</th>
+            <th>@Html.DisplayNameFor(model => model.Descripcion)</th>
+            <th>@Html.DisplayNameFor(model => model.FechaCreacion)</th>
+            <th>@Html.DisplayNameFor(model => model.EstaActivo)</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@Html.DisplayFor(modelItem => item.idConfiguracion)</td>
-            <td>@Html.DisplayFor(modelItem => item.nombre)</td>
-            <td>@Html.DisplayFor(modelItem => item.valor)</td>
-            <td>@Html.DisplayFor(modelItem => item.descripcion)</td>
-            <td>@Html.DisplayFor(modelItem => item.fechaCreacion)</td>
-            <td>@Html.DisplayFor(modelItem => item.estaActivo)</td>
-            <td>
-                    @Html.ActionLink("Edit", "Edit", new { id = item.idConfiguracion })
-                    @Html.ActionLink("Details", "Details", new { id = item.idConfiguracion })
-                    @Html.ActionLink("Delete", "Delete", new { id = item.idConfiguracion })
-            </td>
-        </tr>
-    }
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.IDConfiguracion)</td>
+                <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
+                <td>@Html.DisplayFor(modelItem => item.Valor)</td>
+                <td>@Html.DisplayFor(modelItem => item.Descripcion)</td>
+                <td>@Html.DisplayFor(modelItem => item.FechaCreacion)</td>
+                <td>@Html.DisplayFor(modelItem => item.EstaActivo)</td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.IDConfiguracion }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.IDConfiguracion }) |
+                    @Html.ActionLink("Delete", "Delete", new { id = item.IDConfiguracion })
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

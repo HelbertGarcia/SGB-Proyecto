@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using SGB.Persistence.Context;
+
 namespace SGB.Presentation
 {
     public class Program
@@ -8,6 +11,7 @@ namespace SGB.Presentation
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SGBDatabase")));
 
             var app = builder.Build();
 
