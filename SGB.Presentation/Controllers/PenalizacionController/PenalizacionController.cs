@@ -179,8 +179,8 @@ namespace SGB.Presentation.Controllers.PenalizacionController
 
             var editModel = new PenalizacionEditModel
             {
-                
-               
+
+                IDPenalizacion = penalizacion.idPenalizacion,
                 FechaFin = penalizacion.fechaFin,
                 Motivo = penalizacion.motivo,
                Monto = penalizacion.monto,
@@ -212,8 +212,7 @@ namespace SGB.Presentation.Controllers.PenalizacionController
 
                 var dto = new
                 {
-                  
-                  
+                    IDPenalizacion = model.IDPenalizacion, 
                     FechaFin = model.FechaFin,
                     Motivo = model.Motivo,
                     Monto = model.Monto
