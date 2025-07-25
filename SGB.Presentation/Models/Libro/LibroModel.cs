@@ -1,4 +1,6 @@
-﻿namespace SGB.Presentation.Models.Libro
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
+namespace SGB.Presentation.Models.Libro
 {
     public class LibroModel
     {
@@ -8,7 +10,13 @@
         public string autor { get; set; }
         public string editorial { get; set; }
         public DateTime? fechaPublicacion { get; set; }
+
+        [ValidateNever]
         public string nombreCategoria { get; set; }
+
+        public int IDCategoria { get; set; }
+
+        [ValidateNever]
         public string estado { get; set; }
         public DateTime fechaRegistro { get; set; }
     }

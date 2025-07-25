@@ -47,8 +47,27 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var resultado = await _categoriaService.GetByIdAsync(id);
-            if (!resultado.IsSuccess || resultado.Data == null) return NotFound(resultado);
-            return Ok(resultado.Data);
+
+            if (!resultado.IsSuccess || resultado.Data == null)
+            {
+                var errorResponse = new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message ?? "Categoría no encontrada.",
+                    Data = null
+                };
+                return NotFound(errorResponse);
+            }
+
+            var successResponse = new ApiResponse<CategoriaDto>
+            {
+                IsSuccess = true,
+                Message = "Categoría obtenida correctamente.",
+                Data = resultado.Data
+            };
+
+            return Ok(successResponse);
+
         }
 
         [HttpPost("AddCategoria")]

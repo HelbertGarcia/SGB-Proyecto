@@ -1,0 +1,82 @@
+﻿@model IEnumerable<SGB.Presentation.Models.Libro.LibroModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.isbn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.titulo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.autor)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.editorial)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.fechaPublicacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.nombreCategoria)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.estado)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.fechaRegistro)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.isbn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.titulo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.autor)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.editorial)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.fechaPublicacion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.nombreCategoria)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.estado)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.fechaRegistro)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id=item.id}) |
+                @Html.ActionLink("Details", "Details", new { id=item.id }) |
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

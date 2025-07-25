@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using SGB.Application.Wrappers;
 using SGB.Presentation.Models.Categoria;
 
@@ -18,23 +19,18 @@ namespace SGB.Presentation.Controllers
                 {
                     client.BaseAddress = new Uri("https://localhost:7299/api/");
 
-                    // La ruta de la API es correcta según tu implementación
                     var response = await client.GetAsync("Categoria/GetAllCategorias");
 
                     if (response.IsSuccessStatusCode)
                     {
-                        // --- CORRECCIÓN CLAVE ---
-                        // 2. Se deserializa la respuesta en el modelo ApiResponse<T>
                         var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<CategoriaModel>>>();
 
-                        // 3. Se comprueba el estado de la operación y si hay datos
                         if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Data != null)
                         {
                             listaDeCategorias = apiResponse.Data;
                         }
                         else
                         {
-                            // Si la API reportó un fallo, se puede guardar el mensaje para mostrarlo al usuario
                             ViewBag.ErrorMessage = apiResponse?.Message ?? "Error desconocido desde la API.";
                         }
                     }
@@ -53,9 +49,41 @@ namespace SGB.Presentation.Controllers
         }
 
         // GET: CategoriaController/Details/5
-        public ActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            return View();
+            CategoriaModel categoria = null;
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://localhost:7299/api/");
+
+                    var response = await client.GetAsync($"Categoria/GetCategoriaById/{id}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<CategoriaModel>>();
+                        if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Data != null)
+                        {
+                            categoria = apiResponse.Data;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Ocurrió una excepción: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (categoria == null)
+            {
+                TempData["ErrorMessage"] = "La categoría solicitada no fue encontrada.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(categoria);
         }
 
         // GET: CategoriaController/Create
@@ -80,24 +108,80 @@ namespace SGB.Presentation.Controllers
         }
 
         // GET: CategoriaController/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            return View();
+            CategoriaModel categoria = null;
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://localhost:7299/api/");
+
+                    var response = await client.GetAsync($"Categoria/GetCategoriaById/{id}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<CategoriaModel>>();
+                        if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Data != null)
+                        {
+                            categoria = apiResponse.Data;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error al cargar la categoría: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (categoria == null)
+            {
+                TempData["ErrorMessage"] = "La categoría que intentas editar no fue encontrada.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(categoria);
         }
 
         // POST: CategoriaController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(int id, CategoriaModel categoria)
         {
-            try
+            if (id != categoria.id)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            catch
+
+            if (ModelState.IsValid)
             {
-                return View();
+                try
+                {
+                    var updateDto = new UpdateCategoriaDto { Nombre = categoria.nombre };
+
+                    using (var client = new HttpClient())
+                    {
+                        client.BaseAddress = new Uri("https://localhost:7299/api/");
+
+                        var response = await client.PutAsJsonAsync($"Categoria/UpdateCategoria/{id}", updateDto);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction(nameof(Index));
+                        }
+                        else
+                        {
+                            ModelState.AddModelError(string.Empty, "Ocurrió un error al actualizar la categoría.");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"Error de excepción: {ex.Message}");
+                }
             }
+            return View(categoria);
         }
 
         // GET: CategoriaController/Delete/5

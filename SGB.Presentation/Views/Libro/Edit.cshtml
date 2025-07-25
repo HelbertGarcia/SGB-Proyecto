@@ -1,0 +1,67 @@
+﻿@model SGB.Presentation.Models.Libro.LibroEditViewModel
+
+@{
+    ViewData["Title"] = "Editar Libro";
+}
+
+<h1>Editar Libro</h1>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" asp-route-id="@Model.Libro.id">
+
+            @* --- LÍNEA DE DEPURACIÓN AÑADIDA AQUÍ --- *@
+            @* Esta línea mostrará cualquier error de validación del modelo o los que se añadan manualmente *@
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @* El ID del libro se guarda en un campo oculto para que se envíe con el formulario *@
+            <input type="hidden" asp-for="Libro.id" />
+            <input type="hidden" asp-for="Libro.isbn" />
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.titulo" class="control-label"></label>
+                <input asp-for="Libro.titulo" class="form-control" />
+                <span asp-validation-for="Libro.titulo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.autor" class="control-label"></label>
+                <input asp-for="Libro.autor" class="form-control" />
+                <span asp-validation-for="Libro.autor" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.editorial" class="control-label"></label>
+                <input asp-for="Libro.editorial" class="form-control" />
+                <span asp-validation-for="Libro.editorial" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.fechaPublicacion" class="control-label"></label>
+                <input asp-for="Libro.fechaPublicacion" type="date" class="form-control" />
+                <span asp-validation-for="Libro.fechaPublicacion" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.IDCategoria" class="control-label">Categoría</label>
+                <select asp-for="Libro.IDCategoria" class="form-control" asp-items="Model.CategoriasDisponibles">
+                    <option value="">-- Seleccione una Categoría --</option>
+                </select>
+                <span asp-validation-for="Libro.IDCategoria" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-4">
+                <input type="submit" value="Guardar Cambios" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
