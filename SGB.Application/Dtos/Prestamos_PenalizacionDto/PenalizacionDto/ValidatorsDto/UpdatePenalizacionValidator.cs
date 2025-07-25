@@ -12,23 +12,19 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto.Validat
         public UpdatePenalizacionDtoValidator()
         {
             RuleFor(x => x.IDPenalizacion)
-                 .GreaterThan(0).WithMessage("El ID de la penalización debe ser mayor a cero.");
+                .GreaterThan(0)
+                .WithMessage("El ID de la penalización debe ser mayor a cero.");
 
             RuleFor(x => x.Motivo)
-                .MaximumLength(200)
-                .When(x => !string.IsNullOrWhiteSpace(x.Motivo))
-                .WithMessage("El motivo no debe superar los 200 caracteres.");
-
-            RuleFor(x => x.FechaInicio)
-                .LessThan(x => x.FechaFin)
-                .When(x => x.FechaInicio.HasValue && x.FechaFin.HasValue)
-                .WithMessage("La fecha de inicio debe ser menor que la fecha de fin.");
+               
+                .MaximumLength(200).WithMessage("El motivo no debe superar los 200 caracteres.");
 
             RuleFor(x => x.FechaFin)
-                .GreaterThan(x => x.FechaInicio)
-                .When(x => x.FechaInicio.HasValue && x.FechaFin.HasValue)
-                .WithMessage("La fecha de fin debe ser mayor que la fecha de inicio.");
+                
+                .GreaterThan(DateTime.MinValue).WithMessage("La fecha de fin debe ser válida.");
 
+            RuleFor(x => x.Monto)
+                .GreaterThan(0).WithMessage("El monto debe ser mayor a cero.");
         }
     }
 }

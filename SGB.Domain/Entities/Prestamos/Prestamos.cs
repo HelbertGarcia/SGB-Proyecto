@@ -39,6 +39,8 @@ namespace SGB.Domain.Entities.Prestamos
         [Column("EstaActiva")]
         public bool EstaActivo { get; set; } = true;
 
+     
+
       
 
         // Constructor sin parámetros para EF Core

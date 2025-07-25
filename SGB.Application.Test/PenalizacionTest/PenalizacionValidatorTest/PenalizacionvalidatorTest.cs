@@ -101,28 +101,8 @@ namespace SGB.Application.Test.ValidatorTests
             Assert.Equal("Penalización no encontrada.", result.Message);
         }
 
-        [Fact]
-        public async Task ValidateForUpdateAsync_ShouldReturnFailure_WhenFechaInicioIsGreaterThanFechaFin()
-        {
-            // Arrange
-            var dto = new UpdatePenalizacionDto
-            {
-                IDPenalizacion = 1,
-                FechaInicio = DateTime.Now.AddDays(5),
-                FechaFin = DateTime.Now.AddDays(1)
-            };
-
-            var penalizacion = new Penalizacion(1, "Motivo", DateTime.Now, DateTime.Now.AddDays(7), 1, 100.00m);
-            _penalizacionRepoMock.Setup(r => r.GetByIdAsync(dto.IDPenalizacion))
-                .ReturnsAsync(OperationResult<Penalizacion>.Success(penalizacion));
-
-            // Act
-            var result = await _validator.ValidateForUpdateAsync(dto);
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal("La fecha de inicio no puede ser mayor que la fecha fin.", result.Message);
-        }
+        
+       
 
         [Fact]
         public async Task ValidateForDisableAsync_ShouldReturnFailure_WhenPenalizacionAlreadyDisabled()

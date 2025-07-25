@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SGB.Application\SGB.Application.csproj" />
+    <ProjectReference Include="..\SGB.Infraestructure\SGB.Infraestructure.csproj" />
     <ProjectReference Include="..\SGB.Persistence\SGB.Persistence.csproj" />
   </ItemGroup>
 

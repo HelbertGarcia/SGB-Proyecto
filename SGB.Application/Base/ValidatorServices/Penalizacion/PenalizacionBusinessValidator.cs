@@ -50,9 +50,6 @@ public class PenalizacionBusinessValidator : IPenalizacionBusinessValidator
         if (!penalizacionResult.IsSuccess || penalizacionResult.Data == null)
             return OperationResult<string>.Failure("Penalización no encontrada.");
 
-        if (dto.FechaInicio.HasValue && dto.FechaFin.HasValue && dto.FechaInicio > dto.FechaFin)
-            return OperationResult<string>.Failure("La fecha de inicio no puede ser mayor que la fecha fin.");
-
         return OperationResult<string>.Success("Validación exitosa.");
     }
 

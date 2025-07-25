@@ -30,6 +30,9 @@ namespace SGB.Persistence.Repositories
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+
+
+
         public override async Task<OperationResult<Prestamo>> AddAsync(Prestamo entity)
         {
             try
@@ -259,35 +262,7 @@ namespace SGB.Persistence.Repositories
 
 
 
-       /* public async Task<OperationResult<List<(int PrestamoId, string Estado)>>> GetEstadosPrestamosPorUsuarioAsync(int usuarioId)
-        {
-            try
-            {
-                var (isValid, message) = ValidationHelpers.ValidateId(usuarioId, nameof(usuarioId));
-                if (!isValid)
-                {
-                    _logger.Error(message);
-                    return OperationResult<List<(int, string)>>.Failure(message);
-                }
-
-                _logger.Info("Consultando estados de préstamos para usuario ID {0}", usuarioId);
-
-                var estados = await Entity
-                    .AsNoTracking()
-                    .Where(p => p.UsuarioId == usuarioId)
-                    .Select(p => new ValueTuple<int, string>(p.Id, p.Estado.ToString()))
-                    .ToListAsync();
-
-                _logger.Info("Estados obtenidos exitosamente para usuario ID {0}. Total préstamos: {1}", usuarioId, estados.Count);
-                return OperationResult<List<(int, string)>>.Success(estados);
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = _configuration["ErrorMessages:Prestamos:GetEstadosPorUsuarioError"] ?? "Error al obtener los estados de préstamos del usuario.";
-                _logger.Error(ex, "Error al obtener estados de préstamos para usuario ID {0}", usuarioId);
-                return OperationResult<List<(int, string)>>.Failure(errorMessage);
-            }
-        }*/
+     
 
 
 

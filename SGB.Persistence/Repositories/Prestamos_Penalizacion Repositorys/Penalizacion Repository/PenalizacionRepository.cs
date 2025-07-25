@@ -253,13 +253,10 @@ namespace SGB.Persistence.Repositories
                 _logger.Info("Consultando penalizaciones activas para usuario ID {0}", usuarioId);
 
                 var penalizaciones = await Entity
-                    .AsNoTracking()
-                    .Where(p =>
-                        p.IDUsuario == usuarioId &&
-                        p.EstaActivo &&
-                        p.FechaInicio <= DateTime.UtcNow &&
-                        p.FechaFin >= DateTime.UtcNow)
-                    .ToListAsync();
+    .AsNoTracking()
+    .Where(p => p.IDUsuario == usuarioId && p.EstaActivo)
+    .ToListAsync();
+
 
                 _logger.Info("Penalizaciones activas obtenidas exitosamente para usuario ID {0}. Total: {1}", usuarioId, penalizaciones.Count);
 

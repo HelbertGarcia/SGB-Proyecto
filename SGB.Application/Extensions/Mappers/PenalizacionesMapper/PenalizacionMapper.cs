@@ -23,14 +23,13 @@ namespace SGB.Application.Extensions.Mappers.PenalizacionesMapper
             if (!string.IsNullOrWhiteSpace(dto.Motivo))
                 entity.CambiarMotivo(dto.Motivo);
 
-            if (dto.FechaInicio.HasValue)
-                entity.FechaInicio = dto.FechaInicio.Value;
-
             if (dto.FechaFin.HasValue)
                 entity.ExtenderPenalizacion(dto.FechaFin.Value);
 
-           
+            if (dto.Monto.HasValue && dto.Monto.Value > 0)
+                entity.CambiarMonto(dto.Monto.Value); // ✅ uso de método del dominio
         }
+
 
         public PenalizacionResponseDto MapToDto(Penalizacion entity)
         {

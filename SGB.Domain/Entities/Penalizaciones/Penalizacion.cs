@@ -80,6 +80,13 @@ namespace SGB.Domain.Entities.Penalizaciones
             Motivo = nuevoMotivo ?? string.Empty;
             ActualizarFechaModificacion();
         }
+        public void CambiarMonto(decimal nuevoMonto)
+        {
+            if (nuevoMonto <= 0)
+                throw new ArgumentException("El monto debe ser mayor a cero.");
+
+            Monto = nuevoMonto;
+        }
 
         public void Deshabilitar() => EstaActivo = false;
 

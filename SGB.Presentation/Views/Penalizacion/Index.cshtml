@@ -1,0 +1,78 @@
+﻿@model IEnumerable<SGB.Presentation.Models.PenalizacionModel>
+
+@{
+    ViewData["Title"] = "Penalizaciones";
+}
+
+<h1>Lista de Penalizaciones</h1>
+
+<p>
+    <a asp-action="Create">Create Penalizacion</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.idPenalizacion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.idPrestamo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.fechaInicio)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.fechaFin)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.monto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.estaActivo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.motivo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.usuarioId)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.idPenalizacion)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.idPrestamo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.fechaInicio)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.fechaFin)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.monto)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.estaActivo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.motivo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.usuarioId)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.idPenalizacion }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.idPenalizacion }) |
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

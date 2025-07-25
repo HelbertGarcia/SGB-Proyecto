@@ -28,30 +28,45 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
 
 
         public async Task<OperationResult<string>> ValidateForAddAsync(AddPrestamoDto dto)
+
         {
             if (dto == null)
                 return OperationResult<string>.Failure("Datos de préstamo inválidos.");
 
-          
-            // Validar préstamos activos del usuario
+            // 1. Validar que el libro exista y esté activo
+            var libroResult = await _libroRepository.BuscarPorIsbnAsync(dto.ISBN);
+            if (!libroResult.IsSuccess || libroResult.Data == null)
+                return OperationResult<string>.Failure("El libro especificado no existe.");
+
+            if (!libroResult.Data.EstaActivo)
+                return OperationResult<string>.Failure("El libro especificado no está activo.");
+
+            // 2. Validar préstamos activos del usuario (RF3.5)
             var prestamosActivosResult = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(dto.UsuarioId);
             if (!prestamosActivosResult.IsSuccess)
                 return OperationResult<string>.Failure(prestamosActivosResult.Message);
 
             var prestamosActivos = prestamosActivosResult.Data;
-           
+            if (prestamosActivos != null && prestamosActivos.Any(p => p.ISBN == dto.ISBN))
+                return OperationResult<string>.Failure("El usuario ya tiene un préstamo activo para este libro.");
 
-            // Validar penalizaciones activas
+            // 3. Validar penalizaciones activas (RF3.5)
             var penalizacionesResult = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(dto.UsuarioId);
             if (!penalizacionesResult.IsSuccess)
                 return OperationResult<string>.Failure(penalizacionesResult.Message);
 
             var penalizaciones = penalizacionesResult.Data;
             if (penalizaciones != null && penalizaciones.Any())
-                return OperationResult<string>.Failure("El usuario tiene penalizaciones activas.");
+                return OperationResult<string>.Failure("El usuario tiene penalizaciones activas y no puede realizar préstamos.");
+
+          
 
             return OperationResult<string>.Success("Validación de negocio exitosa.");
         }
+
+
+
+
 
 
         public async Task<OperationResult<string>> ValidateForUpdateAsync(UpdatePrestamoDto dto)
