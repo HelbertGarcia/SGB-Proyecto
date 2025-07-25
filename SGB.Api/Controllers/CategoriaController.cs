@@ -73,13 +73,39 @@ namespace SGB.Api.Controllers
         [HttpPost("AddCategoria")]
         public async Task<IActionResult> Crear([FromBody] AddCategoriaDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                var validationErrorResponse = new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = "Los datos proporcionados no son válidos.",
+                    Data = ModelState 
+                };
+                return BadRequest(validationErrorResponse);
+            }
 
             var resultado = await _categoriaService.AddAsync(dto);
-            if (!resultado.IsSuccess) return BadRequest(resultado);
+
+            if (!resultado.IsSuccess)
+            {
+                var errorResponse = new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message,
+                    Data = null
+                };
+                return BadRequest(errorResponse);
+            }
+
+            var successResponse = new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Categoría creada exitosamente.",
+                Data = resultado.Data
+            };
 
             var categoriaCreada = (CategoriaDto)resultado.Data;
-            return CreatedAtAction(nameof(GetById), new { id = categoriaCreada.Id }, categoriaCreada);
+            return CreatedAtAction(nameof(GetById), new { id = categoriaCreada.Id }, successResponse);
         }
 
         [HttpPut("UpdateCategoria/{id}")]

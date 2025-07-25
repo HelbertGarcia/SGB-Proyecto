@@ -89,25 +89,106 @@ namespace SGB.Presentation.Controllers
             return View(libro);
         }
 
-        // GET: LibroController/Create
-        public ActionResult Create()
+        // GET: Libro/Create
+        // Este método prepara el formulario. Su principal trabajo es obtener la lista de categorías.
+        public async Task<IActionResult> Create()
         {
-            return View();
-        }
+            var categorias = new List<CategoriaModel>();
 
-        // POST: LibroController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
             try
             {
+                // Se usa 'using (var client = new HttpClient())' como en tu CategoriaController.
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://localhost:7299/api/");
+                    var categoriasResponse = await client.GetAsync("Categoria/GetAllCategorias");
+
+                    if (categoriasResponse.IsSuccessStatusCode)
+                    {
+                        var apiResponse = await categoriasResponse.Content.ReadFromJsonAsync<ApiResponse<List<CategoriaModel>>>();
+                        categorias = apiResponse?.Data ?? new List<CategoriaModel>();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"No se pudieron cargar las categorías. Error: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
-            catch
+
+            // Creamos el ViewModel y lo pasamos a la vista.
+            var viewModel = new LibroCreateViewModel
             {
-                return View();
+                Libro = new LibroModel(), // Un libro nuevo y vacío
+                CategoriasDisponibles = categorias.Select(c => new SelectListItem
+                {
+                    Text = c.nombre,
+                    Value = c.id.ToString()
+                })
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Libro/Create
+        // Este método recibe los datos del formulario y los envía a la API.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(LibroCreateViewModel viewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var addDto = new AddLibroDto
+                    {
+                        Titulo = viewModel.Libro.titulo,
+                        Autor = viewModel.Libro.autor,
+                        ISBN = viewModel.Libro.isbn,
+                        Editorial = viewModel.Libro.editorial,
+                        FechaPublicacion = viewModel.Libro.fechaPublicacion,
+                        IDCategoria = viewModel.Libro.IDCategoria
+                    };
+
+                    using (var client = new HttpClient())
+                    {
+                        client.BaseAddress = new Uri("https://localhost:7299/api/");
+
+                        var response = await client.PostAsJsonAsync("Libro/AddLibro", addDto);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction(nameof(Index));
+                        }
+                        else
+                        {
+                            var errorResponse = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                            ModelState.AddModelError(string.Empty, errorResponse?.Message ?? "Ocurrió un error al crear el libro.");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"Error de excepción: {ex.Message}");
+                }
             }
+
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("https://localhost:7299/api/");
+                var categoriasResponse = await client.GetAsync("Categoria/GetAllCategorias");
+                if (categoriasResponse.IsSuccessStatusCode)
+                {
+                    var apiResponse = await categoriasResponse.Content.ReadFromJsonAsync<ApiResponse<List<CategoriaModel>>>();
+                    viewModel.CategoriasDisponibles = (apiResponse?.Data ?? new List<CategoriaModel>()).Select(c => new SelectListItem
+                    {
+                        Text = c.nombre,
+                        Value = c.id.ToString()
+                    });
+                }
+            }
+
+            return View(viewModel);
         }
 
         // GET: Libro/Edit/5

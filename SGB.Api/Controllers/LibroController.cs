@@ -80,13 +80,39 @@ namespace SGB.Api.Controllers
         [HttpPost("AddLibro")]
         public async Task<IActionResult> Crear([FromBody] AddLibroDto libroDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                var validationErrorResponse = new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = "Los datos proporcionados no son válidos.",
+                    Data = ModelState 
+                };
+                return BadRequest(validationErrorResponse);
+            }
 
             var resultado = await _libroService.AddAsync(libroDto);
-            if (!resultado.IsSuccess) return BadRequest(resultado);
+
+            if (!resultado.IsSuccess)
+            {
+                var errorResponse = new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message,
+                    Data = null
+                };
+                return BadRequest(errorResponse);
+            }
+
+            var successResponse = new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Libro creado exitosamente.",
+                Data = resultado.Data
+            };
 
             var libroCreado = (LibroDto)resultado.Data;
-            return CreatedAtAction(nameof(GetById), new { id = libroCreado.Id }, libroCreado);
+            return CreatedAtAction(nameof(GetById), new { id = libroCreado.Id }, successResponse);
         }
 
         [HttpPut("UpdateLibro/{id}")]

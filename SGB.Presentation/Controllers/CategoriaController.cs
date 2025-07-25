@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using SGB.Application.Wrappers;
+using SGB.Domain.Entities.Categoria;
 using SGB.Presentation.Models.Categoria;
 
 namespace SGB.Presentation.Controllers
@@ -86,25 +87,49 @@ namespace SGB.Presentation.Controllers
             return View(categoria);
         }
 
-        // GET: CategoriaController/Create
-        public ActionResult Create()
+        // GET: Categoria/Create
+        // Este método simplemente muestra el formulario vacío.
+        public IActionResult Create()
         {
             return View();
         }
 
-        // POST: CategoriaController/Create
+        // POST: Categoria/Create
+        // Este método recibe los datos del formulario y los envía a la API.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Create(CategoriaModel categoria)
         {
-            try
+            if (ModelState.IsValid)
             {
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    var addDto = new AddCategoriaDto { Nombre = categoria.nombre };
+
+                    using (var client = new HttpClient())
+                    {
+                        client.BaseAddress = new Uri("https://localhost:7299/api/");
+
+                        var response = await client.PostAsJsonAsync("Categoria/AddCategoria", addDto);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction(nameof(Index));
+                        }
+                        else
+                        {
+                            var errorResponse = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                            ModelState.AddModelError(string.Empty, errorResponse?.Message ?? "Ocurrió un error al crear la categoría.");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"Error de excepción: {ex.Message}");
+                }
             }
-            catch
-            {
-                return View();
-            }
+
+            return View(categoria);
         }
 
         // GET: CategoriaController/Edit/5

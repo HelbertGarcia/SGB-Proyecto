@@ -4,10 +4,9 @@ using System.Collections.Generic;
 
 namespace SGB.Presentation.Models.Libro
 {
-    public class LibroEditViewModel
+    public class LibroCreateViewModel
     {
         public LibroModel Libro { get; set; }
-
 
         [ValidateNever]
         public IEnumerable<SelectListItem> CategoriasDisponibles { get; set; }
