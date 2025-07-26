@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿/*using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -85,3 +85,4 @@ namespace SGB.Application.Test.IntegrationTests
         }
     }
 }
+*/

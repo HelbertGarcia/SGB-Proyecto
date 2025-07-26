@@ -1,86 +1,163 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Contracts.Service.IConfiguracionService;
 using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Application.Wrappers;
-using SGB.Persistence.Context;
 
 namespace SGB.Api.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
-    public class AdminController : Controller
+    [ApiController]
+    public class AdminController : ControllerBase
     {
         private readonly IConfiguracionService _configuracionService;
-        private readonly SGBContext _dbContext;
 
-        public AdminController(
-            IConfiguracionService configuracionService,
-            SGBContext dbContext)
+        public AdminController(IConfiguracionService configuracionService)
         {
             _configuracionService = configuracionService;
-            _dbContext = dbContext;
         }
 
-        // GET: api/admin/Get_Configuraciones
-        [HttpGet("Get_Configuraciones")]
-        public async Task<IActionResult> GetConfiguraciones()
+        [HttpGet("GetAllConfiguraciones")]
+        public async Task<IActionResult> GetAll()
         {
-            var configuraciones = await _dbContext.Configuraciones.ToListAsync();
+            var resultado = await _configuracionService.GetAllAsync();
+            if (!resultado.IsSuccess)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message,
+                    Data = null
+                });
+            }
 
-            var result = new ApiResponse<List<ConfiguracionDto>>
+            return Ok(new ApiResponse<object>
             {
                 IsSuccess = true,
-                Data = configuraciones.Select(c => new ConfiguracionDto
-                {
-                    IDConfiguracion = c.IDConfiguracion,
-                    Nombre = c.Nombre,
-                    Valor = c.Valor,
-                    Descripcion = c.Descripcion,
-                    FechaCreacion = c.FechaCreacion,
-                    EstaActivo = c.EstaActivo
-                }).ToList(),
-                Message = "Listado obtenido correctamente"
-            };
-
-            return Ok(result);
+                Message = "Configuraciones obtenidas correctamente.",
+                Data = resultado.Data
+            });
         }
 
-        // GET: api/admin/Get_Configuraciones_By_Id?id=5
-        [HttpGet("Get_Configuraciones_By_Id")]
-        public async Task<IActionResult> ObtenerPorId(int id)
+        [HttpGet("GetConfiguracionById/{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
             var resultado = await _configuracionService.GetByIdAsync(id);
-            return resultado.IsSuccess ? Ok(resultado) : NotFound(resultado);
+            if (!resultado.IsSuccess || resultado.Data == null)
+            {
+                return NotFound(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message ?? "Configuración no encontrada.",
+                    Data = null
+                });
+            }
+
+            return Ok(new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Configuración obtenida correctamente.",
+                Data = resultado.Data
+            });
         }
 
-        // PUT: api/admin/Actualizar_configuraciones?id=5
-        [HttpPut("Actualizar_configuraciones")]
+        [HttpPost("AddConfiguracion")]
+        public async Task<IActionResult> Crear([FromBody] AddConfiguracionDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = "Los datos proporcionados no son válidos.",
+                    Data = ModelState
+                });
+            }
+
+            var resultado = await _configuracionService.AddAsync(dto);
+            if (!resultado.IsSuccess)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message,
+                    Data = null
+                });
+            }
+
+            var configCreada = (ConfiguracionDto)resultado.Data;
+            return CreatedAtAction(nameof(GetById), new { id = configCreada.IDConfiguracion }, new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Configuración creada exitosamente.",
+                Data = resultado.Data
+            });
+        }
+
+        [HttpPut("UpdateConfiguracion/{id}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateConfiguracionDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = "Los datos proporcionados no son válidos.",
+                    Data = ModelState
+                });
+            }
 
             var resultado = await _configuracionService.UpdateAsync(id, dto);
-            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+            if (!resultado.IsSuccess)
+            {
+                if (resultado.Message.Contains("encontrado"))
+                    return NotFound(new ApiResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = resultado.Message,
+                        Data = null
+                    });
+
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message,
+                    Data = null
+                });
+            }
+
+            return Ok(new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Configuración actualizada correctamente.",
+                Data = resultado.Data
+            });
         }
 
-        // DELETE: api/admin/Delete_Configuraciones?id=5
-        [HttpDelete("Delete_Configuraciones")]
+        [HttpDelete("DisableConfiguracion/{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var resultado = await _configuracionService.DeleteAsync(id);
-            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
-        }
+            if (!resultado.IsSuccess)
+            {
+                if (resultado.Message.Contains("encontrado"))
+                    return NotFound(new ApiResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = resultado.Message,
+                        Data = null
+                    });
 
-        // POST: api/admin/Agregar_Configuraciones
-        [HttpPost("Agregar_Configuraciones")]
-        public async Task<IActionResult> Crear([FromBody] AddConfiguracionDto dto)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = resultado.Message,
+                    Data = null
+                });
+            }
 
-            var resultado = await _configuracionService.AddAsync(dto);
-            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+            return NoContent();
         }
     }
 }

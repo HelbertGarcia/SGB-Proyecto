@@ -31,7 +31,31 @@ namespace SGB.Persistence.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Configuracion>().ToTable("Configuracion");
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Configuracion>(entity =>
+            {
+                entity.ToTable("Configuracion");
+                entity.HasKey(c => c.IDConfiguracion);
+                entity.Property(c => c.IDConfiguracion).HasColumnName("IDConfiguracion");
+
+                entity.Property(c => c.Nombre)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(c => c.Valor)
+                      .IsRequired()
+                      .HasMaxLength(500);
+
+                entity.Property(c => c.Descripcion)
+                      .HasMaxLength(1000);
+
+                entity.Property(c => c.FechaCreacion)
+                      .IsRequired();
+
+                entity.Property(c => c.EstaActivo)
+                      .IsRequired();
+            });
         }
 
     }

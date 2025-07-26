@@ -8,18 +8,30 @@
 
 	<ItemGroup>
 		<Compile Remove="Contracts\Repositorio\**" />
+		<Compile Remove="Contracts\Service\INotificacionesServices\**" />
+		<Compile Remove="Contracts\Service\IPrestamos_y_ PenalizacionServices\**" />
+		<Compile Remove="Contracts\Service\IReporte_EstadisticaServices\**" />
+		<Compile Remove="Contracts\Service\IUsuarioServices\**" />
 		<Compile Remove="Dtos\RolDto\**" />
 		<Compile Remove="Services\NotificacionesServices\**" />
 		<Compile Remove="Services\Prestamos_y_PenalizacionServices\**" />
 		<Compile Remove="Services\Reporte_EstaditicaServices\**" />
 		<Compile Remove="Services\UsuarioServices\**" />
 		<EmbeddedResource Remove="Contracts\Repositorio\**" />
+		<EmbeddedResource Remove="Contracts\Service\INotificacionesServices\**" />
+		<EmbeddedResource Remove="Contracts\Service\IPrestamos_y_ PenalizacionServices\**" />
+		<EmbeddedResource Remove="Contracts\Service\IReporte_EstadisticaServices\**" />
+		<EmbeddedResource Remove="Contracts\Service\IUsuarioServices\**" />
 		<EmbeddedResource Remove="Dtos\RolDto\**" />
 		<EmbeddedResource Remove="Services\NotificacionesServices\**" />
 		<EmbeddedResource Remove="Services\Prestamos_y_PenalizacionServices\**" />
 		<EmbeddedResource Remove="Services\Reporte_EstaditicaServices\**" />
 		<EmbeddedResource Remove="Services\UsuarioServices\**" />
 		<None Remove="Contracts\Repositorio\**" />
+		<None Remove="Contracts\Service\INotificacionesServices\**" />
+		<None Remove="Contracts\Service\IPrestamos_y_ PenalizacionServices\**" />
+		<None Remove="Contracts\Service\IReporte_EstadisticaServices\**" />
+		<None Remove="Contracts\Service\IUsuarioServices\**" />
 		<None Remove="Dtos\RolDto\**" />
 		<None Remove="Services\NotificacionesServices\**" />
 		<None Remove="Services\Prestamos_y_PenalizacionServices\**" />
@@ -28,10 +40,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Contracts\Service\IReporte_EstadisticaServices\" />
-		<Folder Include="Contracts\Service\INotificacionesServices\" />
-		<Folder Include="Contracts\Service\IPrestamos_y_ PenalizacionServices\" />
-		<Folder Include="Contracts\Service\IUsuarioServices\" />
 		<Folder Include="Services\ConfiguracionServices\" />
 	</ItemGroup>
 
@@ -42,6 +50,8 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>

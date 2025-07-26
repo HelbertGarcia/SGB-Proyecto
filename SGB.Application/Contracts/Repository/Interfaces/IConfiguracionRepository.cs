@@ -7,5 +7,7 @@ namespace SGB.Application.Contracts.Repository.Interfaces
     {
         Task<OperationResult<Configuracion>> ObtenerPorIdAsync(int idConfiguracion);
         Task<OperationResult<Configuracion>> ObtenerPorNombreAsync(string nombre);
+        Task<OperationResult<List<Configuracion>>> GetAllAsync();
+
     }
 }

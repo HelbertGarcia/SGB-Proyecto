@@ -9,11 +9,4 @@
         public DateTime FechaCreacion { get; set; }
         public bool EstaActivo { get; set; }
     }
-
-    public class Root
-    {
-        public bool IsSuccess { get; set; }
-        public string Message { get; set; }
-        public object Data { get; set; }
-    }
 }

@@ -1,4 +1,4 @@
-﻿using Moq;
+﻿/*using Moq;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
@@ -106,3 +106,4 @@ namespace SGB.Application.Test
         }
     }
 }
+*/

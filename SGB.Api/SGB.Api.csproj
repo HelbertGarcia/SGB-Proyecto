@@ -16,7 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SGB.Application\SGB.Application.csproj" />
     <ProjectReference Include="..\SGB.IOC\SGB.IOC.csproj" />
+    <ProjectReference Include="..\SGB.Persistence\SGB.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

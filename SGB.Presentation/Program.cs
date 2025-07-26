@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SGB.Persistence.Context;
 
 namespace SGB.Presentation
 {
@@ -11,9 +10,6 @@ namespace SGB.Presentation
 
             // Leer cadena de conexión
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-            // Registrar SGBContext
-            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(connectionString));
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();

@@ -3,7 +3,7 @@ using SGB.Domain.Base;
 
 namespace SGB.Domain.Entities.Configuracion
 {
-    public class Configuracion : Base.BaseEntity, IEstaActivo
+    public class Configuracion : BaseEntityFecha, IEstaActivo
     {
         [Key]
         public int IDConfiguracion { get; set; }
@@ -13,7 +13,9 @@ namespace SGB.Domain.Entities.Configuracion
         public DateTime FechaCreacion { get; set; }
 
         public bool EstaActivo { get; set; }
-        
+
+        private Configuracion() : base() { }
+
         public Configuracion(string nombre, string valor, string descripcion)
         {
             Nombre = nombre;

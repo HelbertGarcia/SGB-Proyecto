@@ -6,6 +6,7 @@ using SGB.Persistence.Repositories;
 using SGB.IOC.Dependencies.ConfiguracionDependency;
 using SGB.Application.Contracts.Repository.Interfaces;
 
+
 namespace SGB.Api
 {
     public class Program
@@ -14,19 +15,10 @@ namespace SGB.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            //  builder.Services.AddDbContext<SGBContext>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SGBDatabase")));
-
-            builder.Services.AddControllers();
-            builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
-            builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
-
-            //Dependencia
-            builder.Services.AddConfiguracionDependency();
-
+            builder.Services.AddDependencies(builder.Configuration);
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -42,7 +34,6 @@ namespace SGB.Api
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

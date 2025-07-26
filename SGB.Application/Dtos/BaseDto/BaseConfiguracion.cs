@@ -4,7 +4,6 @@ namespace SGB.Application.Base
 {
     public abstract class BaseConfiguracion
     {
-        [Required]
         public int IDConfiguracion { get; set; }
         public string Nombre { get; set; }
         [Required]

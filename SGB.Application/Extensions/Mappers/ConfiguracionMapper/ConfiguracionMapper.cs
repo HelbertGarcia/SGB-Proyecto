@@ -9,7 +9,11 @@ namespace SGB.Application.Extensions.Mappers.ConfiguracionMapper
     {
         public Configuracion MapFromDto(AddConfiguracionDto dto)
         {
-            return new Configuracion(dto.Nombre, dto.Valor, dto.Descripcion);
+            return new Configuracion(
+                dto.Nombre,
+                dto.Valor,
+                dto.Descripcion
+            );
         }
 
         public void ApplyUpdateDto(Configuracion entity, UpdateConfiguracionDto dto)

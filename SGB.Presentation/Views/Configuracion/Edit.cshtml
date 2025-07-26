@@ -1,58 +1,50 @@
-﻿@model SGB.Application.Dtos.AdministracionDto.UpdateConfiguracionDto
+﻿@model SGB.Presentation.Models.ConfiguracionModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Configuración";
 }
 
-<h1>Edit</h1>
-
-<h4>Configuración</h4>
+<h1>Editar Configuración</h1>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="col-md-6">
+        <form asp-action="Edit" asp-route-id="@Model.IDConfiguracion">
 
-            <div class="form-group">
-                <label asp-for="IDConfiguracion" class="control-label"></label>
-                <input asp-for="IDConfiguracion" class="form-control" readonly />
-                <span asp-validation-for="IDConfiguracion" class="text-danger"></span>
-            </div>
+            @* Validación general y del modelo *@
+            <div asp-validation-summary="All" class="text-danger mb-2"></div>
 
-            <div class="form-group">
+            @* ID se envía como campo oculto porque es necesario para el PUT *@
+            <input type="hidden" asp-for="IDConfiguracion" />
+
+            <div class="form-group mb-3">
                 <label asp-for="Nombre" class="control-label"></label>
                 <input asp-for="Nombre" class="form-control" />
                 <span asp-validation-for="Nombre" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label asp-for="Valor" class="control-label"></label>
                 <input asp-for="Valor" class="form-control" />
                 <span asp-validation-for="Valor" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label asp-for="Descripcion" class="control-label"></label>
                 <input asp-for="Descripcion" class="form-control" />
                 <span asp-validation-for="Descripcion" class="text-danger"></span>
             </div>
 
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="EstaActivo" />
-                    @Html.DisplayNameFor(model => model.EstaActivo)
-                </label>
+            <div class="form-group form-check mb-4">
+                <input class="form-check-input" asp-for="EstaActivo" />
+                <label class="form-check-label" asp-for="EstaActivo"></label>
             </div>
 
-            <div class="form-group">
-                <input type="submit" value="Guardar" class="btn btn-primary" />
+            <div class="form-group mt-3">
+                <input type="submit" value="Guardar Cambios" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Volver a la lista</a>
 </div>
 
 @section Scripts {

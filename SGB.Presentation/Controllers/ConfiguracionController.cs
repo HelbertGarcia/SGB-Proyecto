@@ -15,35 +15,25 @@ namespace SGB.Presentation.Controllers
         {
             _client = new HttpClient
             {
-                BaseAddress = new Uri("https://localhost:7114/api/")
+                BaseAddress = new Uri("https://localhost:7299/api/")
             };
         }
 
+        // ✅ LISTAR TODAS LAS CONFIGURACIONES
         public async Task<IActionResult> Index()
         {
             var response = await _client.GetAsync("Admin/Get_Configuraciones");
-
             if (!response.IsSuccessStatusCode)
             {
                 ViewBag.ErrorMessage = "Error al obtener la lista.";
                 return View(new List<ConfiguracionModel>());
             }
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ConfiguracionDto>>>();
-
-            var list = result?.Data?.Select(c => new ConfiguracionModel
-            {
-                IDConfiguracion = c.IDConfiguracion,
-                Nombre = c.Nombre,
-                Valor = c.Valor,
-                Descripcion = c.Descripcion,
-                FechaCreacion = c.FechaCreacion,
-                EstaActivo = c.EstaActivo
-            }).ToList() ?? new List<ConfiguracionModel>();
-
-            return View(list);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ConfiguracionModel>>>();
+            return View(result?.Data ?? new List<ConfiguracionModel>());
         }
 
+        // ✅ VER DETALLES
         public async Task<IActionResult> Details(int id)
         {
             var config = await ObtenerConfiguracionPorId(id);
@@ -56,6 +46,7 @@ namespace SGB.Presentation.Controllers
             return View(config);
         }
 
+        // ✅ CREAR CONFIGURACIÓN
         public IActionResult Create() => View();
 
         [HttpPost]
@@ -65,7 +56,6 @@ namespace SGB.Presentation.Controllers
             if (!ModelState.IsValid) return View(dto);
 
             var response = await _client.PostAsJsonAsync("Admin/Agregar_Configuraciones", dto);
-
             if (response.IsSuccessStatusCode)
             {
                 TempData["SuccessMessage"] = "Configuración creada correctamente.";
@@ -76,6 +66,7 @@ namespace SGB.Presentation.Controllers
             return View(dto);
         }
 
+        // ✅ EDITAR CONFIGURACIÓN
         public async Task<IActionResult> Edit(int id)
         {
             var config = await ObtenerConfiguracionPorId(id);
@@ -104,17 +95,17 @@ namespace SGB.Presentation.Controllers
             if (!ModelState.IsValid) return View(dto);
 
             var response = await _client.PutAsJsonAsync($"Admin/Actualizar_configuraciones?id={dto.IDConfiguracion}", dto);
-
             if (response.IsSuccessStatusCode)
             {
                 TempData["SuccessMessage"] = "Configuración actualizada.";
                 return RedirectToAction(nameof(Index));
             }
 
-            ModelState.AddModelError("", "Error al actualizar configuración.");
+            ModelState.AddModelError("", "Error al actualizar.");
             return View(dto);
         }
 
+        // ✅ ELIMINAR CONFIGURACIÓN
         public async Task<IActionResult> Delete(int id)
         {
             var config = await ObtenerConfiguracionPorId(id);
@@ -132,31 +123,26 @@ namespace SGB.Presentation.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var response = await _client.DeleteAsync($"Admin/Delete_Configuraciones?id={id}");
-
-            TempData["SuccessMessage"] = response.IsSuccessStatusCode
-                ? "Configuración eliminada."
-                : "Error al eliminar configuración.";
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["SuccessMessage"] = "Configuración eliminada.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Error al eliminar.";
+            }
 
             return RedirectToAction(nameof(Index));
         }
 
+        // ✅ MÉTODO REUTILIZABLE
         private async Task<ConfiguracionModel?> ObtenerConfiguracionPorId(int id)
         {
             var response = await _client.GetAsync($"Admin/Get_Configuraciones_By_Id?id={id}");
             if (!response.IsSuccessStatusCode) return null;
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<ConfiguracionDto>>();
-            if (result?.IsSuccess != true || result.Data == null) return null;
-
-            return new ConfiguracionModel
-            {
-                IDConfiguracion = result.Data.IDConfiguracion,
-                Nombre = result.Data.Nombre,
-                Valor = result.Data.Valor,
-                Descripcion = result.Data.Descripcion,
-                FechaCreacion = result.Data.FechaCreacion,
-                EstaActivo = result.Data.EstaActivo
-            };
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<ConfiguracionModel>>();
+            return result?.IsSuccess == true ? result.Data : null;
         }
     }
 }
