@@ -29,38 +29,10 @@ namespace SGB.Persistence.Context
         public DbSet<Administrador> Administradores { get; set; }
         public DbSet<Bibliotecario> Bibliotecarios { get; set; }
 
-             protected override void OnModelCreating(ModelBuilder modelBuilder)
-              {
-                  base.OnModelCreating(modelBuilder);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Configuracion>().ToTable("Configuracion");
+        }
 
-                  modelBuilder.Entity<Libro>(entity =>
-                  {
-                      entity.HasKey(l => l.Id);
-                      entity.Property(l => l.Id).HasColumnName("IDLibro");
-
-                      entity.Property(l => l.ISBN).HasColumnType("nvarchar(13)").IsRequired();
-                      entity.HasIndex(l => l.ISBN).IsUnique();
-                  });
-
-                /*  modelBuilder.Entity<Prestamo>(entity =>
-                  {
-                      entity.ToTable("Prestamos");
-                      entity.HasKey(p => p.Id);
-                      entity.Property(p => p.Id).HasColumnName("IDPrestamo");
-                      entity.Property(p => p.EjemplarId).HasColumnName("ISBN").HasColumnType("nvarchar(13)").IsRequired();
-
-                      entity.Property(p => p.UsuarioId).HasColumnName("IDUsuario");
-                      entity.Property(p => p.Estado).HasConversion<string>().HasMaxLength(50);
-
-                      entity.HasOne<Libro>()
-                            .WithMany()
-                            .HasForeignKey(p => p.EjemplarId)
-                            .HasPrincipalKey(l => l.ISBN);
-
-                      entity.HasOne<Usuario>()
-                            .WithMany()
-                            .HasForeignKey(p => p.UsuarioId);
-                  }); */
-              }
     }
 }

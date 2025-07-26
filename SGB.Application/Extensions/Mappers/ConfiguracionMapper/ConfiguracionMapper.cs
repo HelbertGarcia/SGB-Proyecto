@@ -3,7 +3,6 @@ using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Domain.Entities.Configuracion;
 
-
 namespace SGB.Application.Extensions.Mappers.ConfiguracionMapper
 {
     public class ConfiguracionMapper : IConfiguracionMapper
@@ -24,8 +23,7 @@ namespace SGB.Application.Extensions.Mappers.ConfiguracionMapper
             if (!string.IsNullOrWhiteSpace(dto.Descripcion))
                 entity.Descripcion = dto.Descripcion;
 
-            if (dto.EstaActivo.HasValue)
-                entity.EstaActivo = dto.EstaActivo.Value;
+            entity.EstaActivo = dto.EstaActivo;
         }
 
         public ConfiguracionDto MapToDto(Configuracion entity)

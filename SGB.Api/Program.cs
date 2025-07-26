@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using SGB.Persistence.Context;
 using SGB.Application.Contracts.Service.IConfiguracionService;
@@ -16,14 +15,16 @@ namespace SGB.Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
- 
+            //  builder.Services.AddDbContext<SGBContext>(options =>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SGBDatabase")));
+
             builder.Services.AddControllers();
             builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
             builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 
             //Dependencia
             builder.Services.AddConfiguracionDependency();
-            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SGBDatabase")));
+
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -37,9 +38,6 @@ namespace SGB.Api
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
-
-            app.Services.CreateScope().ServiceProvider.GetRequiredService<SGBContext>().Database.EnsureCreated();
 
             app.UseHttpsRedirection();
 

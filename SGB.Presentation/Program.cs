@@ -9,9 +9,14 @@ namespace SGB.Presentation
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Leer cadena de conexión
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            // Registrar SGBContext
+            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(connectionString));
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("SGBDatabase")));
 
             var app = builder.Build();
 

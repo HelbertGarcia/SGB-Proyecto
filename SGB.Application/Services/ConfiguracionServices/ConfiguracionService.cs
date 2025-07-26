@@ -62,7 +62,7 @@ namespace SGB.Application.Services.ConfiguracionServices
                 entidad.Nombre = dto.Nombre;
                 entidad.Valor = dto.Valor;
                 entidad.Descripcion = dto.Descripcion;
-                entidad.EstaActivo = dto.EstaActivo ?? true;
+                entidad.EstaActivo = dto.EstaActivo; // ✅ Corrección aplicada aquí
 
                 await _repository.UpdateAsync(entidad);
 

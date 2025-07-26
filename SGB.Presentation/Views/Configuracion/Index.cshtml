@@ -1,43 +1,48 @@
-﻿@model IEnumerable<SGB.Application.Dtos.AdministracionDto.ConfiguracionDto>
+﻿@model List<SGB.Presentation.Models.ConfiguracionModel>
 
 @{
-    ViewData["Title"] = "Lista de Configuraciones";
+    ViewBag.Title = "Lista de Configuraciones";
 }
 
-<h1>Lista de Configuraciones</h1>
+<h2>Lista de Configuraciones</h2>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<a asp-action="Create" class="btn btn-primary">Create New</a>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.IDConfiguracion)</th>
-            <th>@Html.DisplayNameFor(model => model.Nombre)</th>
-            <th>@Html.DisplayNameFor(model => model.Valor)</th>
-            <th>@Html.DisplayNameFor(model => model.Descripcion)</th>
-            <th>@Html.DisplayNameFor(model => model.FechaCreacion)</th>
-            <th>@Html.DisplayNameFor(model => model.EstaActivo)</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered table-striped mt-3">
+        <thead>
             <tr>
-                <td>@Html.DisplayFor(modelItem => item.IDConfiguracion)</td>
-                <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
-                <td>@Html.DisplayFor(modelItem => item.Valor)</td>
-                <td>@Html.DisplayFor(modelItem => item.Descripcion)</td>
-                <td>@Html.DisplayFor(modelItem => item.FechaCreacion)</td>
-                <td>@Html.DisplayFor(modelItem => item.EstaActivo)</td>
-                <td>
-                    @Html.ActionLink("Edit", "Edit", new { id = item.IDConfiguracion }) |
-                    @Html.ActionLink("Details", "Details", new { id = item.IDConfiguracion }) |
-                    @Html.ActionLink("Delete", "Delete", new { id = item.IDConfiguracion })
-                </td>
+                <th>IDConfiguracion</th>
+                <th>Nombre</th>
+                <th>Valor</th>
+                <th>Descripcion</th>
+                <th>FechaCreacion</th>
+                <th>EstaActivo</th>
+                <th>Acciones</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.IDConfiguracion</td>
+                    <td>@item.Nombre</td>
+                    <td>@item.Valor</td>
+                    <td>@item.Descripcion</td>
+                    <td>@item.FechaCreacion.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@(item.EstaActivo ? "Sí" : "No")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.IDConfiguracion" class="btn btn-info btn-sm">Ver</a>
+                        <a asp-action="Edit" asp-route-id="@item.IDConfiguracion" class="btn btn-warning btn-sm">Editar</a>
+                        <a asp-action="Delete" asp-route-id="@item.IDConfiguracion" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-warning mt-3">No hay configuraciones registradas.</div>
+}
