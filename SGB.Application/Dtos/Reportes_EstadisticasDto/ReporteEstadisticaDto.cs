@@ -12,6 +12,7 @@ namespace SGB.Application.Dtos.Reportes_EstadisticasDto
         public string TipoReporte { get; set; } = string.Empty; 
         public DateTime FechaGeneracion { get; set; }
         public string GeneradoPor { get; set; } = string.Empty; 
-        public string FormatoExportado { get; set; } = string.Empty; 
+        public string FormatoExportado { get; set; } = string.Empty;
+        public int CantidadPrestamos { get; set; }
     }
 }

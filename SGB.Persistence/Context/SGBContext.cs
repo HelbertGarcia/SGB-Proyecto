@@ -25,8 +25,8 @@ namespace SGB.Persistence.Context
         public DbSet<Rol> Roles { get; set; }
         public DbSet<Configuracion> Configuraciones { get; set; }
 
-        public DbSet<Persona> Personas { get; set; }
-        public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<Domain.Base.Usuario> Personas { get; set; }
+        public DbSet<Domain.Entities.Usuario.Usuario> Usuarios { get; set; }
         public DbSet<Administrador> Administradores { get; set; }
         public DbSet<Bibliotecario> Bibliotecarios { get; set; }
 

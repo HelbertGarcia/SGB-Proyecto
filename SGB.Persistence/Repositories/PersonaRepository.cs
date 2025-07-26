@@ -15,7 +15,7 @@ using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
 
 namespace SGB.Persistence.Repositories
 {
-    public class PersonaRepository : BaseRepository<Persona>, IPersonaRepository
+    public class PersonaRepository : BaseRepository<Domain.Base.Usuario>, IPersonaRepository
     {
         private readonly ILogger<PersonaRepository> _logger;
         private readonly IConfiguration _configuration;
@@ -31,11 +31,11 @@ namespace SGB.Persistence.Repositories
 
         #region "Implementación de IPersonaRepository"
 
-        public async Task<OperationResult<Persona>> ObtenerPorEmailAsync(string email)
+        public async Task<OperationResult<Domain.Base.Usuario>> ObtenerPorEmailAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return OperationResult<Persona>.Failure("El correo electrónico no puede estar vacío.");
+                return OperationResult<Domain.Base.Usuario>.Failure("El correo electrónico no puede estar vacío.");
             }
 
             try
@@ -43,14 +43,14 @@ namespace SGB.Persistence.Repositories
                 var persona = await Entity.AsNoTracking()
                                           .FirstOrDefaultAsync(p => p.Email == email);
 
-                // Devuelve la entidad encontrada (o null) dentro de un resultado exitoso.
-                return OperationResult<Persona>.Success(persona);
+              
+                return OperationResult<Domain.Base.Usuario>.Success(persona);
             }
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:Usuarios:GetByEmail"] ?? "Error al buscar usuario por email.";
                 _logger.LogError(ex, "{ErrorMessage}: {Email}", errorMessage, email);
-                return OperationResult<Persona>.Failure(errorMessage);
+                return OperationResult<Domain.Base.Usuario>.Failure(errorMessage);
             }
         }
 
@@ -72,17 +72,17 @@ namespace SGB.Persistence.Repositories
             }
         }
 
-        public async Task<OperationResult<IEnumerable<Persona>>> BuscarPorRolAsync(int idRol)
+        public async Task<OperationResult<IEnumerable<Domain.Base.Usuario>>> BuscarPorRolAsync(int idRol)
         {
             if (idRol <= 0)
             {
-                return OperationResult<IEnumerable<Persona>>.Failure("ID de rol inválido.");
+                return OperationResult<IEnumerable<Domain.Base.Usuario>>.Failure("ID de rol inválido.");
             }
            
             return await base.FindByConditionAsync(u => u.IdRol == idRol && u.EstaActivo);
         }
 
-        public async Task<OperationResult<IEnumerable<Persona>>> ObtenerTodosActivosAsync()
+        public async Task<OperationResult<IEnumerable<Domain.Base.Usuario>>> ObtenerTodosActivosAsync()
         {
             
             return await base.FindByConditionAsync(u => u.EstaActivo);
@@ -136,12 +136,22 @@ namespace SGB.Persistence.Repositories
             throw new NotImplementedException();
         }
 
-        Task<OperationResult<Persona>> IPersonaRepository.AddAsync(UsuarioDto usuarioEntity)
+        Task<OperationResult<Domain.Base.Usuario>> IPersonaRepository.AddAsync(UsuarioDto usuarioEntity)
         {
             throw new NotImplementedException();
         }
 
         public Task<OperationResult<IEnumerable<UsuarioDto>>> ObtenerTodosConDetallesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Domain.Base.Usuario> ObtenerParaActualizacionAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task BuscarPorCorreoAsync(object correo)
         {
             throw new NotImplementedException();
         }

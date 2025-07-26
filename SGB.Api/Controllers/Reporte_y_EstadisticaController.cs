@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Contracts.Service.IReporte_EstadisticaServices;
+using SGB.Application.Services.Reporte_EstaditicaServices;
 using System.Threading.Tasks;
 
 namespace SGB.Api.Controllers

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SGB.Application.Dtos.LibrosDto.LibroDto;
 using SGB.Application.Dtos.Reportes_EstadisticasDto;
 using SGB.Domain.Base;
 

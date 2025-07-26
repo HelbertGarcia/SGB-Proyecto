@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using SGB.Application.Dtos.UsuarioDto;
+using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
+using SGB.Domain.Base;
+using SGB.Domain.Entities.Usuario;
 
-namespace SGB.Application.validators.businessvalidators
+namespace SGB.Application.Validators.BusinessValidators
 {
-    internal class IUsuarioBusinessValidator
+    public interface IUsuarioBusinessValidator
     {
+        Task<OperationResult<Domain.Base.Usuario>> ValidateForAddAsync(UpdateUsuarioDto dto);
+        Task<OperationResult<Domain.Base.Usuario>> ValidateForUpdateAsync(int id, UpdateUsuarioDto dto);
+        Task<OperationResult<bool>> ValidateForDeleteAsync(int id);
     }
 }

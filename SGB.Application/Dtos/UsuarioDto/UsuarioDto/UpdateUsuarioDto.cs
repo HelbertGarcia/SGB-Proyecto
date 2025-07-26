@@ -34,5 +34,6 @@ namespace SGB.Application.Dtos.UsuarioDto.UsuarioDto
         public string PasswordHash { get; set; }
 
         public bool EstaActivo { get; set; }
+        
     }
 }

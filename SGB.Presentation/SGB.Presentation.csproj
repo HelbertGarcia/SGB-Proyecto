@@ -6,4 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SGB.Api\SGB.Api.csproj" />
+    <ProjectReference Include="..\SGB.Application\SGB.Application.csproj" />
+  </ItemGroup>
+
 </Project>

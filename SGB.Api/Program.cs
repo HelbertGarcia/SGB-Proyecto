@@ -1,8 +1,6 @@
-
-using Microsoft.EntityFrameworkCore;
-using SGB.Persistence.Context;
-using SGB.Persistence.Interfaces;
-using SGB.Persistence.Repositories;
+using SGB.Application.Contracts.Service.IUsuarioServices;
+using SGB.Application.Services.UsuarioServices;
+using SGB.IOC.Dependencies.Usuario;
 
 namespace SGB.Api
 {
@@ -15,10 +13,8 @@ namespace SGB.Api
             // Add services to the container.
             //builder.Services.AddDbContext<SGBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("")));
 
-            //builder.Services.AddScoped<IPersonaRepository, PersonaRepository>();
-            //builder.Services.AddTransient<IPersonaRepository, PersonaRepository>();
 
-
+            //builder.Services.AddScoped<IUsuarioServices, UsuarioService>();
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

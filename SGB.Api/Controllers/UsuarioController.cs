@@ -1,83 +1,85 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Contracts.Service.IUsuarioServices;
 using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
-using System.Threading.Tasks;
+using SGB.Application.Services.UsuarioServices;
+using SGB.Application.Wrappers;
+
 
 namespace SGB.Api.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class UsuarioController : ControllerBase
     {
-        private readonly IUsuarioServices _usuarioServices;
+        private readonly IUsuarioServices _UsuarioServices;
 
-        public UsuarioController(IUsuarioServices usuarioServices)
+        public UsuarioController(IUsuarioServices UsuarioServices)
         {
-            _usuarioServices = usuarioServices;
+            _UsuarioServices = UsuarioServices;
         }
 
-        [HttpGet(Name = "ObtenerTodosLosUsuarios")]
+        [HttpGet("GetAllAsync")]
         public async Task<IActionResult> GetAll()
         {
-            var resultado = await _usuarioServices.GetAllAsync();
+            var resultado = await _UsuarioServices.GetAllAsync();
             if (!resultado.IsSuccess) return BadRequest(resultado);
             return Ok(resultado.Data);
         }
 
-        [HttpGet("{id}", Name = "ObtenerUsuarioPorId")]
+        [HttpGet("(GetById)/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var resultado = await _usuarioServices.GetByIdAsync(id);
-            if (!resultado.IsSuccess || resultado.Data == null) return NotFound(resultado);
+            var resultado = await _UsuarioServices.GetByIdAsync(id);
+            if (!resultado.IsSuccess || resultado.Data == null)
+                return NotFound(resultado);
             return Ok(resultado.Data);
         }
 
-        [HttpGet("buscar/{termino}", Name = "BuscarUsuarioPorTermino")]
-        public async Task<IActionResult> BuscarPorTermino(string termino)
+        [HttpGet("buscar/{termino}")]
+        public async Task<IActionResult> BuscarUsuariosAsync(string termino)
         {
-            var resultado = await _usuarioServices.BuscarUsuariosAsync(termino);
+            var resultado = await _UsuarioServices.BuscarUsuariosAsync(termino);
             if (!resultado.IsSuccess) return BadRequest(resultado);
             return Ok(resultado.Data);
         }
 
-        [HttpPost(Name = "CrearUsuario")]
+        [HttpPost]
         public async Task<IActionResult> Crear([FromBody] SaveUsuarioDto usuarioDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var resultado = await _usuarioServices.AddUsuarioAsync(usuarioDto);
-            if (!resultado.isSuccess) return BadRequest(resultado);
+            var resultado = await _UsuarioServices.AddAsync(usuarioDto);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
 
-            var usuarioCreado = (UsuarioDto)resultado.Data!;
+            var usuarioCreado = resultado.Data!;
             return CreatedAtAction(nameof(GetById), new { id = usuarioCreado.IDUsuario }, usuarioCreado);
         }
 
-        [HttpPut("{id}", Name = "ActualizarUsuario")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateUsuarioDto usuarioDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var resultado = await _usuarioServices.UpdateAsync(id, usuarioDto);
+            var resultado = await _UsuarioServices.UpdateAsync(id, usuarioDto);
             if (!resultado.IsSuccess)
             {
                 if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
             }
-
             return Ok(resultado.Data);
         }
 
-        [HttpDelete("{id}", Name = "EliminarUsuario")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
-            var resultado = await _usuarioServices.DeleteAsync(id);
+            var resultado = await _UsuarioServices.DeleteAsync(id);
             if (!resultado.IsSuccess)
             {
                 if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
                 return BadRequest(resultado);
             }
-
             return NoContent();
         }
     }
 }
+

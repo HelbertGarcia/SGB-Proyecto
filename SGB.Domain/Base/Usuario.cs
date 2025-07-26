@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Base
 {
-    public abstract class Persona : BaseEntityFecha, IEstaActivo
+    public abstract class Usuario : BaseEntityFecha, IEstaActivo
     {
         public string Nombre { get; private set; }
         public string Apellido { get; private set; }
-        public string Email { get; private set; }
+        public string Email { get;  set; }
         public string PasswordHash { get; private set; }
-        public int IdRol { get; private set; }
+        public int IdRol { get;  set; }
         public bool EstaActivo { get ; set ; }
 
-        private Persona() : base() { }
+        private Usuario() : base() { }
 
-        public Persona(string nombre, string apellido, string email, string passwordHash, int idRol) : base()
+        public Usuario(string nombre, string apellido, string email, string passwordHash, int idRol) : base()
         {
             ValidarYAsignarNombre(nombre);
             ValidarYAsignarApellido(apellido);

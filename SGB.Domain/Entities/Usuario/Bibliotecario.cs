@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SGB.Domain.Entities.Usuario
 {
-    public class Bibliotecario : Persona
+    public class Bibliotecario : Base.Usuario
     {
        
         public Bibliotecario(string nombre, string apellido, string email, string passwordHash, int idRol)

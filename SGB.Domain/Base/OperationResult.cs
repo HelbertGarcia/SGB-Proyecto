@@ -34,7 +34,5 @@ namespace SGB.Domain.Base
         {
             return new OperationResult<T>(false, message);
         }
-
-       
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SGB.Application.Base;
 using SGB.Application.Contracts.Repository.Interfaces;
 using SGB.Application.Contracts.Service.IUsuarioServices;
 using SGB.Application.Dtos.UsuarioDto.UsuarioDto;
@@ -18,6 +19,8 @@ namespace SGB.Application.Services.UsuarioServices
         private readonly IPersonaRepository _personaRepository;
         private readonly ILogger<UsuarioService> _logger;
         private readonly IConfiguration _configuration;
+        private IUsuarioServices @object;
+        private ILoggerFactory loggerFactory;
 
         public UsuarioService(
            
@@ -30,6 +33,12 @@ namespace SGB.Application.Services.UsuarioServices
             _configuration = configuration;
         }
 
+        public UsuarioService(IUsuarioServices @object, ILoggerFactory loggerFactory, IConfiguration configuration)
+        {
+            this.@object = @object;
+            this.loggerFactory = loggerFactory;
+            _configuration = configuration;
+        }
 
         public async Task<OperationResult<UsuarioDto>> AddAsync(SaveUsuarioDto dto)
         {
@@ -101,7 +110,7 @@ namespace SGB.Application.Services.UsuarioServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar el usuario con ID: {ID}", id);
+                
                 return OperationResult<UsuarioDto>.Failure(_configuration["ErrorMessages:Global:UnexpectedError"]);
             }
         }
@@ -177,24 +186,27 @@ namespace SGB.Application.Services.UsuarioServices
             }
         }
 
-        public Task<object?> GetAllUsuario()
+        public Task<OperationResult<IEnumerable<UsuarioDto>>>GetAllUsuario()
         {
             throw new NotImplementedException();
         }
 
-      
-
-        public Task<OperationResult<IEnumerable<UsuarioDto>>> SearchAsync(string termino)
+        public Task<OperationResult<SaveUsuarioDto>> AddAsync(UsuarioDto dto)
         {
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync(UsuarioDto usuario)
+        Task<OperationResult<SaveUsuarioDto>> IBaseService<UsuarioDto, UpdateUsuarioDto, SaveUsuarioDto>.UpdateAsync(int id, UpdateUsuarioDto dto)
         {
             throw new NotImplementedException();
         }
 
-        Task<object?> IUsuarioServices.AddUsuarioAsync(SaveUsuarioDto usuarioDto)
+        Task<OperationResult<IEnumerable<SaveUsuarioDto>>> IBaseService<UsuarioDto, UpdateUsuarioDto, SaveUsuarioDto>.GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<OperationResult<SaveUsuarioDto>> IBaseService<UsuarioDto, UpdateUsuarioDto, SaveUsuarioDto>.GetByIdAsync(int id)
         {
             throw new NotImplementedException();
         }

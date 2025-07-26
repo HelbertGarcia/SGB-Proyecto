@@ -18,5 +18,10 @@ namespace SGB.Application.Dtos.UsuarioDto.UsuarioDto
         public string Estado => EstaActivo ? "Activo" : "Inactivo"; 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaActualizacion { get; set; }
+
+        public static explicit operator UsuarioDto(bool v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
