@@ -1,48 +1,44 @@
-﻿@model SGB.Presentation.Models.ConfiguracionModel
+﻿@model SGB.Presentation.Models.ConfiguracionEditModel
 
 @{
     ViewData["Title"] = "Editar Configuración";
 }
 
 <h1>Editar Configuración</h1>
+
 <hr />
 <div class="row">
     <div class="col-md-6">
-        <form asp-action="Edit" asp-route-id="@Model.IDConfiguracion">
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            @* Validación general y del modelo *@
-            <div asp-validation-summary="All" class="text-danger mb-2"></div>
-
-            @* ID se envía como campo oculto porque es necesario para el PUT *@
             <input type="hidden" asp-for="IDConfiguracion" />
 
-            <div class="form-group mb-3">
+            <div class="form-group">
                 <label asp-for="Nombre" class="control-label"></label>
                 <input asp-for="Nombre" class="form-control" />
                 <span asp-validation-for="Nombre" class="text-danger"></span>
             </div>
 
-            <div class="form-group mb-3">
+            <div class="form-group">
                 <label asp-for="Valor" class="control-label"></label>
                 <input asp-for="Valor" class="form-control" />
                 <span asp-validation-for="Valor" class="text-danger"></span>
             </div>
 
-            <div class="form-group mb-3">
+            <div class="form-group">
                 <label asp-for="Descripcion" class="control-label"></label>
-                <input asp-for="Descripcion" class="form-control" />
+                <textarea asp-for="Descripcion" class="form-control"></textarea>
                 <span asp-validation-for="Descripcion" class="text-danger"></span>
             </div>
 
-            <div class="form-group form-check mb-4">
+            <div class="form-group form-check">
                 <input class="form-check-input" asp-for="EstaActivo" />
                 <label class="form-check-label" asp-for="EstaActivo"></label>
             </div>
 
-            <div class="form-group mt-3">
-                <input type="submit" value="Guardar Cambios" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-            </div>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
 </div>

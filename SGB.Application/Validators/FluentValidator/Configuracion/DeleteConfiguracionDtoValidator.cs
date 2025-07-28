@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using SGB.Application.Dtos.AdministracionDto;
+using SGB.Application.Dtos.ConfiguracionDto;
 
 namespace SGB.Application.Validators.FluentValidator.Configuracion
 {
-    public class DeleteConfiguracionDtoValidator : AbstractValidator<DeleteConfiguracionDto>
+    public class DeleteConfiguracionDtoValidator : AbstractValidator<DisableConfiguracionDto>
     {
         public DeleteConfiguracionDtoValidator()
         {

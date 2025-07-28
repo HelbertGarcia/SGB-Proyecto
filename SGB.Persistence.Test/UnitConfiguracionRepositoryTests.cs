@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Moq;
-using SGB.Domain.Entities.Configuracion;
+﻿using Moq;
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
+using SGB.Domain.Entities.Configuracion;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Persistence.Test
@@ -17,10 +17,7 @@ namespace SGB.Persistence.Test
 
         public UnitConfiguracionRepositoryTests()
         {
-            _dbOptions = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options;
-
+            _dbOptions = new DbContextOptionsBuilder<SGBContext>().UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()).Options;
             _configMock = new Mock<IConfiguration>();
             _loggerMock = new Mock<ILogger<ConfiguracionRepository>>();
         }
@@ -28,29 +25,17 @@ namespace SGB.Persistence.Test
         private ConfiguracionRepository CreateRepository(SGBContext context)
         {
             var loggerFactoryMock = new Mock<ILoggerFactory>();
-            loggerFactoryMock.Setup(l => l.CreateLogger(It.IsAny<string>()))
-                             .Returns(_loggerMock.Object);
-
+            loggerFactoryMock.Setup(l => l.CreateLogger(It.IsAny<string>())).Returns(_loggerMock.Object);
             var appLoggerMock = new Mock<IAppLogger<ConfiguracionRepository>>().Object;
-
             return new ConfiguracionRepository(context, loggerFactoryMock.Object, _configMock.Object, appLoggerMock);
         }
 
         [Fact]
         public async Task DeleteAsync_ShouldReturnFailure_WhenConfiguracionNotFound()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: "Delete_Fail_DB")
-                .Options;
-
-            using var context = new SGBContext(options);
+            using var context = new SGBContext(_dbOptions);
             var repo = CreateRepository(context);
-
-            // Act
-            var result = await repo.DeleteAsync(99);
-
-            // Assert
+            var result = await repo.DeleteAsync(999);
             Assert.False(result.IsSuccess);
             Assert.Equal("Configuración no encontrada.", result.Message);
         }
@@ -58,39 +43,21 @@ namespace SGB.Persistence.Test
         [Fact]
         public async Task DeleteAsync_ShouldReturnSuccess_WhenConfiguracionExists()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: "Delete_Success_DB")
-                .Options;
-
-            using var context = new SGBContext(options);
+            using var context = new SGBContext(_dbOptions);
             var config = new Configuracion("Test", "123", "desc");
             context.Configuraciones.Add(config);
             await context.SaveChangesAsync();
             var repo = CreateRepository(context);
-
-            // Act
             var result = await repo.DeleteAsync(config.IDConfiguracion);
-
-            // Assert
             Assert.True(result.IsSuccess);
         }
 
         [Fact]
         public async Task ObtenerPorNombreAsync_ShouldReturnFailure_WhenNombreIsEmpty()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: "GetByEmptyName_DB")
-                .Options;
-
-            using var context = new SGBContext(options);
+            using var context = new SGBContext(_dbOptions);
             var repo = CreateRepository(context);
-
-            // Act
             var result = await repo.ObtenerPorNombreAsync("");
-
-            // Assert
             Assert.False(result.IsSuccess);
             Assert.Equal("El nombre de la configuración no puede estar vacío.", result.Message);
         }
@@ -98,65 +65,40 @@ namespace SGB.Persistence.Test
         [Fact]
         public async Task ObtenerPorNombreAsync_ShouldReturnSuccess_WhenConfiguracionExists()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: "GetByName_DB")
-                .Options;
-
-            using var context = new SGBContext(options);
+            using var context = new SGBContext(_dbOptions);
             var config = new Configuracion("NombreTest", "valor", "desc");
             context.Configuraciones.Add(config);
             await context.SaveChangesAsync();
             var repo = CreateRepository(context);
-
-            // Act
             var result = await repo.ObtenerPorNombreAsync("NombreTest");
-
-            // Assert
             Assert.True(result.IsSuccess);
-            Assert.NotNull(result.Data);
             Assert.Equal("NombreTest", result.Data.Nombre);
         }
 
         [Fact]
-        public async Task ObtenerPorIdAsync_ShouldReturnFailure_WhenNotFound()
+        public async Task ObtenerPorNombreAsync_DeberiaRetornarConfiguracionCorrecta()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: "GetByIdNotFound_DB")
-                .Options;
-
-            using var context = new SGBContext(options);
+            using var context = new SGBContext(_dbOptions);
+            var nombreEsperado = "Politicas";
+            context.Configuraciones.Add(new Configuracion(nombreEsperado, "Valor de prueba", "Descripción de prueba"));
+            await context.SaveChangesAsync();
             var repo = CreateRepository(context);
-
-            // Act
-            var result = await repo.ObtenerPorIdAsync(999); // ID inexistente
-
-            // Assert
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Configuración no encontrada.", result.Message);
+            var resultado = await repo.ObtenerPorNombreAsync(nombreEsperado);
+            Assert.True(resultado.IsSuccess);
+            Assert.Equal(nombreEsperado, resultado.Data.Nombre);
         }
 
         [Fact]
-        public async Task ObtenerPorIdAsync_ShouldReturnSuccess_WhenFound()
+        public async Task ObtenerPorNombreAsync_ShouldReturnSuccess_WhenNombreHasExtraSpaces()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: "GetById_DB")
-                .Options;
-
-            using var context = new SGBContext(options);
-            var config = new Configuracion("IdTest", "val", "desc");
-            context.Configuraciones.Add(config);
+            using var context = new SGBContext(_dbOptions);
+            var nombre = " Política Seguridad ";
+            context.Configuraciones.Add(new Configuracion(nombre, "valor", "desc"));
             await context.SaveChangesAsync();
             var repo = CreateRepository(context);
-
-            // Act
-            var result = await repo.ObtenerPorIdAsync(config.IDConfiguracion);
-
-            // Assert
+            var result = await repo.ObtenerPorNombreAsync(nombre);
             Assert.True(result.IsSuccess);
-            Assert.Equal("IdTest", result.Data.Nombre);
+            Assert.Equal(nombre, result.Data.Nombre);
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using SGB.Application.Dtos.AdministracionDto;
+using SGB.Application.Dtos.ConfiguracionDto;
 
 namespace SGB.Application.Validators.FluentValidator.Configuracion
 {

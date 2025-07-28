@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using SGB.Domain.Base;
+﻿using SGB.Domain.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace SGB.Domain.Entities.Configuracion
 {
@@ -7,11 +7,13 @@ namespace SGB.Domain.Entities.Configuracion
     {
         [Key]
         public int IDConfiguracion { get; set; }
+        [Required, MaxLength(100)]
         public string Nombre { get; set; }
+        [Required]
         public string Valor { get; set; }
+        [MaxLength(255)]
         public string Descripcion { get;  set; }
-        public DateTime FechaCreacion { get; set; }
-
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
         public bool EstaActivo { get; set; }
 
         private Configuracion() : base() { }
@@ -32,6 +34,5 @@ namespace SGB.Domain.Entities.Configuracion
         {
             EstaActivo = true;
         }
-
     }
 }

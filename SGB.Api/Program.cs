@@ -1,11 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using SGB.Persistence.Context;
-using SGB.Application.Contracts.Service.IConfiguracionService;
-using SGB.Application.Services.ConfiguracionServices;
-using SGB.Persistence.Repositories;
+using SGB.Infraestructure.Loggers;
 using SGB.IOC.Dependencies.ConfiguracionDependency;
-using SGB.Application.Contracts.Repository.Interfaces;
-
+using SGB.Persistence.Context;
+using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Api
 {
@@ -15,16 +12,19 @@ namespace SGB.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddDbContext<SGBContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("SGBDatabase")));
+
+            builder.Services.AddScoped(typeof(IAppLogger<>), typeof(AppLogger<>));
+
             builder.Services.AddDependencies(builder.Configuration);
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

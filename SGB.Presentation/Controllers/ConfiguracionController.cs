@@ -1,6 +1,4 @@
-﻿using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc;
-using SGB.Application.Dtos.AdministracionDto;
+﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Application.Wrappers;
 using SGB.Presentation.Models;
@@ -19,24 +17,63 @@ namespace SGB.Presentation.Controllers
             };
         }
 
-        // ✅ LISTAR TODAS LAS CONFIGURACIONES
         public async Task<IActionResult> Index()
         {
-            var response = await _client.GetAsync("Admin/Get_Configuraciones");
-            if (!response.IsSuccessStatusCode)
+            var listaConfiguraciones = new List<ConfiguracionModel>();
+
+            try
             {
-                ViewBag.ErrorMessage = "Error al obtener la lista.";
-                return View(new List<ConfiguracionModel>());
+                var response = await _client.GetAsync("Admin/GetAllConfiguraciones");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<ConfiguracionModel>>>();
+
+                    if (apiResponse?.IsSuccess == true && apiResponse.Data != null)
+                    {
+                        listaConfiguraciones = apiResponse.Data;
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = apiResponse?.Message ?? "Error desconocido desde la API.";
+                    }
+                }
+                else
+                {
+                    ViewBag.ErrorMessage = $"Error al conectar con la API. Código: {response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"Ocurrió una excepción: {ex.Message}";
             }
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ConfiguracionModel>>>();
-            return View(result?.Data ?? new List<ConfiguracionModel>());
+            return View(listaConfiguraciones);
         }
 
-        // ✅ VER DETALLES
         public async Task<IActionResult> Details(int id)
         {
-            var config = await ObtenerConfiguracionPorId(id);
+            ConfiguracionModel config = null;
+
+            try
+            {
+                var response = await _client.GetAsync($"Admin/GetConfiguracionById?id={id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<ConfiguracionModel>>();
+                    if (apiResponse?.IsSuccess == true && apiResponse.Data != null)
+                    {
+                        config = apiResponse.Data;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Excepción al obtener detalles: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+
             if (config == null)
             {
                 TempData["ErrorMessage"] = "Configuración no encontrada.";
@@ -46,103 +83,108 @@ namespace SGB.Presentation.Controllers
             return View(config);
         }
 
-        // ✅ CREAR CONFIGURACIÓN
         public IActionResult Create() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AddConfiguracionDto dto)
         {
-            if (!ModelState.IsValid) return View(dto);
+            if (!ModelState.IsValid)
+                return View(dto);
 
-            var response = await _client.PostAsJsonAsync("Admin/Agregar_Configuraciones", dto);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                TempData["SuccessMessage"] = "Configuración creada correctamente.";
-                return RedirectToAction(nameof(Index));
+                var response = await _client.PostAsJsonAsync("Admin/AddConfiguracion", dto);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["SuccessMessage"] = "Configuración creada correctamente.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var error = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                ModelState.AddModelError(string.Empty, error?.Message ?? "Error al crear la configuración.");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Excepción: {ex.Message}");
             }
 
-            ModelState.AddModelError("", "Error al crear configuración.");
             return View(dto);
         }
 
-        // ✅ EDITAR CONFIGURACIÓN
         public async Task<IActionResult> Edit(int id)
         {
-            var config = await ObtenerConfiguracionPorId(id);
-            if (config == null)
+            try
             {
-                TempData["ErrorMessage"] = "Configuración no encontrada.";
-                return RedirectToAction(nameof(Index));
+                var response = await _client.GetAsync($"Admin/GetConfiguracionById?id={id}");
+                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<ConfiguracionDto>>();
+
+                if (response.IsSuccessStatusCode && apiResponse?.IsSuccess == true && apiResponse.Data != null)
+                {
+                    var editModel = new ConfiguracionEditModel
+                    {
+                        IDConfiguracion = apiResponse.Data.IDConfiguracion,
+                        Nombre = apiResponse.Data.Nombre,
+                        Valor = apiResponse.Data.Valor,
+                        Descripcion = apiResponse.Data.Descripcion,
+                        EstaActivo = apiResponse.Data.EstaActivo
+                    };
+
+                    return View(editModel);
+                }
+
+                TempData["ErrorMessage"] = apiResponse?.Message ?? "Configuración no encontrada.";
             }
-
-            var dto = new UpdateConfiguracionDto
+            catch (Exception ex)
             {
-                IDConfiguracion = config.IDConfiguracion,
-                Nombre = config.Nombre,
-                Valor = config.Valor,
-                Descripcion = config.Descripcion,
-                EstaActivo = config.EstaActivo
-            };
-
-            return View(dto);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(UpdateConfiguracionDto dto)
-        {
-            if (!ModelState.IsValid) return View(dto);
-
-            var response = await _client.PutAsJsonAsync($"Admin/Actualizar_configuraciones?id={dto.IDConfiguracion}", dto);
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["SuccessMessage"] = "Configuración actualizada.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            ModelState.AddModelError("", "Error al actualizar.");
-            return View(dto);
-        }
-
-        // ✅ ELIMINAR CONFIGURACIÓN
-        public async Task<IActionResult> Delete(int id)
-        {
-            var config = await ObtenerConfiguracionPorId(id);
-            if (config == null)
-            {
-                TempData["ErrorMessage"] = "Configuración no encontrada.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            return View(config);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var response = await _client.DeleteAsync($"Admin/Delete_Configuraciones?id={id}");
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["SuccessMessage"] = "Configuración eliminada.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Error al eliminar.";
+                TempData["ErrorMessage"] = $"Error inesperado: {ex.Message}";
             }
 
             return RedirectToAction(nameof(Index));
         }
 
-        // ✅ MÉTODO REUTILIZABLE
-        private async Task<ConfiguracionModel?> ObtenerConfiguracionPorId(int id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, ConfiguracionEditModel model)
         {
-            var response = await _client.GetAsync($"Admin/Get_Configuraciones_By_Id?id={id}");
-            if (!response.IsSuccessStatusCode) return null;
+            if (id != model.IDConfiguracion)
+            {
+                TempData["ErrorMessage"] = "El ID proporcionado no coincide.";
+                return RedirectToAction(nameof(Index));
+            }
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<ConfiguracionModel>>();
-            return result?.IsSuccess == true ? result.Data : null;
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                var updateDto = new UpdateConfiguracionDto
+                {
+                    IDConfiguracion = model.IDConfiguracion,
+                    Nombre = model.Nombre,
+                    Valor = model.Valor,
+                    Descripcion = model.Descripcion,
+                    EstaActivo = model.EstaActivo
+                };
+
+                var response = await _client.PutAsJsonAsync($"Admin/UpdateConfiguracion?id={id}", updateDto);
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+
+                if (response.IsSuccessStatusCode && result?.IsSuccess == true)
+                {
+                    TempData["SuccessMessage"] = "Configuración actualizada correctamente.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                ModelState.AddModelError(string.Empty, result?.Message ?? "No se pudo actualizar.");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Excepción al actualizar: {ex.Message}");
+            }
+
+            return View(model);
         }
     }
 }

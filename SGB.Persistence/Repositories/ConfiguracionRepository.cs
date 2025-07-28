@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Domain.Base;
-using SGB.Domain.Entities.Configuracion;
+﻿using SGB.Domain.Base;
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
+using SGB.Domain.Entities.Configuracion;
+using SGB.Application.Contracts.Repository.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Persistence.Repositories
@@ -14,117 +14,128 @@ namespace SGB.Persistence.Repositories
     {
         private readonly IAppLogger<ConfiguracionRepository> _logger;
         private readonly IConfiguration _configuration;
-        private readonly SGBContext _context;
 
-        public ConfiguracionRepository(
-            SGBContext context,
-            ILoggerFactory loggerFactory,
-            IConfiguration configuration,
-            IAppLogger<ConfiguracionRepository> logger)
-            : base(context, loggerFactory, configuration)
+        public ConfiguracionRepository(SGBContext context,ILoggerFactory loggerFactory, IConfiguration configuration,IAppLogger<ConfiguracionRepository> logger) 
+        : base(context, loggerFactory, configuration) 
         {
-            _context = context;
-            _configuration = configuration;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configuration = configuration;
         }
 
-        #region "Override DeleteAsync"
+        public async Task<OperationResult<IEnumerable<Configuracion>>> GetAllAsync()
+        {
+            try
+            {
+                var configs = await Entity
+                    .AsNoTracking()
+                    .Where(c => c.EstaActivo) 
+                    .ToListAsync();
+                return OperationResult<IEnumerable<Configuracion>>.Success(configs);
+            }
+            catch (Exception ex)
+            {
+                var msg = _configuration["ErrorMessages:Configuracion:GetAll"];
+                _logger.Error(ex, "{0}", msg);
+                return OperationResult<IEnumerable<Configuracion>>.Failure(msg ?? "Error al obtener configuraciones.");
+            }
+        }
+
+        public override async Task<OperationResult<Configuracion>> AddAsync(Configuracion entity)
+        {
+            try
+            {
+                if (entity.Nombre == "config_base")
+                {
+                    var msg = "No se permite agregar configuración protegida.";
+                    _logger.Error(msg + " - Clave: {Clave}", entity.Nombre);
+                    return OperationResult<Configuracion>.Failure(msg);
+                }
+                return await base.AddAsync(entity);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:Configuracion:Add"];
+                _logger.Error(ex, "{ErrorMessage} - Clave: {Clave}", errorMessage, entity.Nombre);
+                return OperationResult<Configuracion>.Failure(errorMessage ?? "Error al agregar configuración.");
+            }
+        }
+
+        public override async Task<OperationResult<Configuracion>> UpdateAsync(Configuracion entity)
+        {
+            try
+            {
+                if (entity.Nombre == "config_base")
+                {
+                    var msg = "Esta configuración es protegida y no puede modificarse.";
+                    _logger.Error(msg + " - Clave: {Clave}", entity.Nombre);
+                    return OperationResult<Configuracion>.Failure(msg);
+                }
+                return await base.UpdateAsync(entity);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:Configuracion:Update"];
+                _logger.Error(ex, "{ErrorMessage} - Clave: {Clave}", errorMessage, entity.Nombre);
+                return OperationResult<Configuracion>.Failure(errorMessage ?? "Error al actualizar configuración.");
+            }
+        }
+
 
         public override async Task<OperationResult<bool>> DeleteAsync(int id)
         {
             try
             {
-                var configuracion = await _context.Configuraciones.FindAsync(id);
-
-                if (configuracion == null)
-                    return OperationResult<bool>.Failure("Configuración no encontrada.");
-
-                configuracion.Deshabilitar();
-
-                var updateResult = await base.UpdateAsync(configuracion);
+                var configParaEliminar = await Entity.FindAsync(id);
+                if (configParaEliminar == null)
+                {
+                    var msg = _configuration["ErrorMessages:Global:ResourceNotFound"] ?? "Configuración no encontrada.";
+                    _logger.Error("DeleteAsync falló: {0} - ID: {1}", msg, id);
+                    return OperationResult<bool>.Failure(msg);
+                }
+                if (configParaEliminar.Nombre == "config_sistema_base")
+                {
+                    var msg = "Esta configuración es protegida y no puede eliminarse.";
+                    _logger.Error(msg + " - ID: {0}", id);
+                    return OperationResult<bool>.Failure(msg);
+                }
+                configParaEliminar.Deshabilitar(); 
+                var updateResult = await base.UpdateAsync(configParaEliminar);
                 return OperationResult<bool>.Success(updateResult.IsSuccess, updateResult.Message);
             }
             catch (Exception ex)
             {
-                var errorMessage = _configuration["ErrorMessages:Configuracion:DeleteError"] ??
-                                   "Ocurrió un error al desactivar la configuración.";
-
-                _logger.Error(ex, $"{errorMessage} para el ID: {id}");
-                return OperationResult<bool>.Failure(errorMessage);
+                var errorMessage = _configuration["ErrorMessages:BaseRepository:DeleteError"];
+                _logger.Error(ex, "{0} - ID: {1}", errorMessage ?? "Error al eliminar configuración", id);
+                return OperationResult<bool>.Failure(errorMessage ?? "Ocurrió un error al eliminar la configuración.");
             }
         }
-
-        public async Task<OperationResult<List<Configuracion>>> GetAllAsync()
-        {
-            try
-            {
-                var lista = await _context.Configuraciones
-                    .AsNoTracking()
-                    .Where(c => c.EstaActivo)
-                    .ToListAsync();
-
-                return OperationResult<List<Configuracion>>.Success(lista);
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:Configuracion:GetAllError"] ??
-                                   "Ocurrió un error al obtener la lista de configuraciones.";
-                _logger.Error(ex, errorMessage);
-                return OperationResult<List<Configuracion>>.Failure(errorMessage);
-            }
-        }
-
-
-        #endregion
-
-        #region "Implementación personalizada IConfiguracionRepository"
 
         public async Task<OperationResult<Configuracion>> ObtenerPorNombreAsync(string nombre)
         {
             if (string.IsNullOrWhiteSpace(nombre))
+            {
+                _logger.Error("El nombre de configuración está vacío.");
                 return OperationResult<Configuracion>.Failure("El nombre de la configuración no puede estar vacío.");
-
+            }
             try
             {
-                var configuracion = await _context.Configuraciones
+                var configuracion = await Entity
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(c => c.Nombre == nombre);
-
-                return OperationResult<Configuracion>.Success(configuracion);
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = _configuration["ErrorMessages:Configuracion:GetByNameError"] ??
-                                   "Ocurrió un error al buscar la configuración por nombre.";
-
-                _logger.Error(ex, $"{errorMessage} para el nombre: {nombre}");
-                return OperationResult<Configuracion>.Failure(errorMessage);
-            }
-        }
-
-        public async Task<OperationResult<Configuracion>> ObtenerPorIdAsync(int idConfiguracion)
-        {
-            try
-            {
-                var configuracion = await _context.Configuraciones
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(c => c.IDConfiguracion == idConfiguracion);
-
+                    .FirstOrDefaultAsync(c => c.Nombre == nombre && c.EstaActivo);
                 if (configuracion == null)
-                    return OperationResult<Configuracion>.Failure("Configuración no encontrada.");
-
+                {
+                    var msg = $"No se encontró configuración activa con el nombre '{nombre}'.";
+                    _logger.Error(msg);
+                    return OperationResult<Configuracion>.Failure(msg);
+                }
                 return OperationResult<Configuracion>.Success(configuracion);
             }
             catch (Exception ex)
             {
-                var errorMessage = _configuration["ErrorMessages:Configuracion:GetByIdError"] ??
-                                   "Ocurrió un error al obtener la configuración por ID.";
-
-                _logger.Error(ex, $"{errorMessage} para el ID: {idConfiguracion}");
-                return OperationResult<Configuracion>.Failure(errorMessage);
+                var errorMessage = _configuration["ErrorMessages:Configuracion:GetByName"];
+                _logger.Error(ex, "{0} para el nombre: {1}", errorMessage, nombre);
+                return OperationResult<Configuracion>.Failure(errorMessage ?? "Error al obtener configuración por nombre.");
             }
         }
-
-        #endregion
     }
 }

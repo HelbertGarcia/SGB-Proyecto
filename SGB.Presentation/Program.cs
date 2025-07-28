@@ -9,7 +9,7 @@ namespace SGB.Presentation
             var builder = WebApplication.CreateBuilder(args);
 
             // Leer cadena de conexión
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var connectionString = builder.Configuration.GetConnectionString("SGBDatabase");
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();

@@ -1,13 +1,13 @@
-﻿/*using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Moq;
-using SGB.Application.Dtos.AdministracionDto;
-using SGB.Application.Dtos.ConfiguracionDto;
-using SGB.Application.Services.ConfiguracionServices;
+﻿using Moq;
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
+using SGB.Application.Dtos.ConfiguracionDto;
+using SGB.Application.Services.ConfiguracionServices;
+using SGB.Application.Extensions.Mappers.ConfiguracionMapper;
+using SGB.Application.Validators.BusinessValidators.Configuracion;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using static SGB.Application.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Application.Test.IntegrationTests
@@ -17,25 +17,27 @@ namespace SGB.Application.Test.IntegrationTests
         private ConfiguracionService CreateService(out SGBContext context)
         {
             var options = new DbContextOptionsBuilder<SGBContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
             context = new SGBContext(options);
 
-            var configMock = new ConfigurationBuilder().Build();
+            var configuration = new ConfigurationBuilder().Build();
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
 
-            var mockLoggerRepo = new Mock<IAppLogger<ConfiguracionRepository>>().Object;
-            var mockLoggerService = new Mock<IAppLogger<ConfiguracionService>>().Object;
+            var loggerRepo = new Mock<IAppLogger<ConfiguracionRepository>>().Object;
+            var loggerService = new Mock<IAppLogger<ConfiguracionService>>().Object;
 
-            var repo = new ConfiguracionRepository(context, loggerFactory, configMock, mockLoggerRepo);
-            return new ConfiguracionService(repo, mockLoggerService);
+            var repo = new ConfiguracionRepository(context, loggerFactory, configuration, loggerRepo);
+            var mapper = new ConfiguracionMapper();
+            var validator = new ConfiguracionValidator(repo);
+
+            return new ConfiguracionService(repo, mapper, validator, configuration, loggerService);
         }
 
-            [Fact]
-        public async Task FullConfiguracionFlow_ShouldWorkCorrectly()
+        [Fact]
+        public async Task FlujoCompletoConfiguracion_DeberiaFuncionarBien()
         {
-            // Arrange: instanciar servicio y DTO inicial
             var service = CreateService(out var context);
             var addDto = new AddConfiguracionDto
             {
@@ -43,25 +45,18 @@ namespace SGB.Application.Test.IntegrationTests
                 Valor = "Valor Inicial",
                 Descripcion = "Prueba de integración"
             };
-
-            // Act - Crear configuración
             var createResult = await service.AddAsync(addDto);
 
-            // Assert - Validar creación
             Assert.True(createResult.IsSuccess);
             var createdId = createResult.Data.IDConfiguracion;
-            Assert.Equal("IntegraciónTest", createResult.Data.Nombre); 
+            Assert.Equal("IntegraciónTest", createResult.Data.Nombre);
 
-            // Act - Obtener por ID
             var getResult = await service.GetByIdAsync(createdId);
-
-            // Assert - Validar lectura
             Assert.True(getResult.IsSuccess);
-            Assert.Equal("DemoId", getResult.Data.Nombre);
-            Assert.Equal("ValorId", getResult.Data.Valor);
-            Assert.Equal("Dato simulado por ID", getResult.Data.Descripcion);
+            Assert.Equal("IntegraciónTest", getResult.Data.Nombre);
+            Assert.Equal("Valor Inicial", getResult.Data.Valor);
+            Assert.Equal("Prueba de integración", getResult.Data.Descripcion);
 
-            // Act - Actualizar configuración
             var updateDto = new UpdateConfiguracionDto
             {
                 IDConfiguracion = createdId,
@@ -70,19 +65,83 @@ namespace SGB.Application.Test.IntegrationTests
                 EstaActivo = true
             };
             var updateResult = await service.UpdateAsync(createdId, updateDto);
-
-            // Assert - Validar actualización
             Assert.True(updateResult.IsSuccess);
-            Assert.Equal("Actualizado", updateResult.Data.Nombre);
+            Assert.Equal("IntegraciónTest", updateResult.Data.Nombre);
             Assert.Equal("Valor Actualizado", updateResult.Data.Valor);
             Assert.Equal("Descripción actualizada", updateResult.Data.Descripcion);
-
-            // Act - Eliminar configuración
             var deleteResult = await service.DeleteAsync(createdId);
-
-            // Assert - Validar eliminación
             Assert.True(deleteResult.IsSuccess);
+        }
+
+        [Fact]
+        public async Task FlujoCompletoConfiguracion_DeberiaValidarMapperYReglas()
+        {
+            var options = new DbContextOptionsBuilder<SGBContext>()
+                .UseInMemoryDatabase($"ConfiguracionTest_{Guid.NewGuid()}")
+                .Options;
+
+            var context = new SGBContext(options);
+            var configuration = new ConfigurationBuilder().Build();
+            var loggerFactory = LoggerFactory.Create(builder => builder.AddDebug());
+
+            var loggerRepo = new Mock<IAppLogger<ConfiguracionRepository>>().Object;
+            var loggerService = new Mock<IAppLogger<ConfiguracionService>>().Object;
+
+            var repo = new ConfiguracionRepository(context, loggerFactory, configuration, loggerRepo);
+            var mapper = new ConfiguracionMapper();
+            var validator = new ConfiguracionValidator(repo);
+
+            var service = new ConfiguracionService(repo, mapper, validator, configuration, loggerService);
+
+            var addDto = new AddConfiguracionDto
+            {
+                Nombre = "CorreoEnvio",
+                Valor = "noreply@sgb.local",
+                Descripcion = "Configuración de email saliente"
+            };
+
+            var createResult = await service.AddAsync(addDto);
+            Assert.True(createResult.IsSuccess);
+            var idCreado = createResult.Data.IDConfiguracion;
+
+            var resultDuplicado = await service.AddAsync(addDto);
+            Assert.False(resultDuplicado.IsSuccess);
+            Assert.Equal("Ya existe una configuración con ese nombre.", resultDuplicado.Message);
+
+            var getResult = await service.GetByIdAsync(idCreado);
+            Assert.True(getResult.IsSuccess);
+            Assert.Equal("CorreoEnvio", getResult.Data.Nombre);
+
+            var otra = new AddConfiguracionDto
+            {
+                Nombre = "LímiteMensual",
+                Valor = "300",
+                Descripcion = "Valor máximo mensual"
+            };
+            var otraResult = await service.AddAsync(otra);
+
+            var updateFail = await service.UpdateAsync(otraResult.Data.IDConfiguracion, new UpdateConfiguracionDto
+            {
+                IDConfiguracion = otraResult.Data.IDConfiguracion,
+                Nombre = "CorreoEnvio",
+                Valor = "400",
+                Descripcion = "Actualización con nombre duplicado",
+                EstaActivo = true
+            });
+
+            Assert.False(updateFail.IsSuccess);
+            Assert.Contains("Ya existe otra configuración", updateFail.Message);
+            var protegida = new AddConfiguracionDto
+            {
+                Nombre = "config_sistema_base",
+                Valor = "segura",
+                Descripcion = "Protegida contra eliminación"
+            };
+
+            var protegidaResult = await service.AddAsync(protegida);
+            var deleteResult = await service.DeleteAsync(protegidaResult.Data.IDConfiguracion);
+            Assert.False(deleteResult.IsSuccess);
+            Assert.Equal("Esta configuración es protegida y no puede eliminarse.", deleteResult.Message);
         }
     }
 }
-*/

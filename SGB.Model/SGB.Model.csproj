@@ -7,12 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\models Libros\" />
-    <Folder Include="Models\models admin Sistema\" />
-    <Folder Include="Models\models Usuario\" />
-    <Folder Include="Models\Models Reporte Estadistica\" />
-    <Folder Include="Models\models Notificaciones\" />
-    <Folder Include="Models\ConfiguracionModels\" />
+    <Compile Remove="Models\ConfiguracionModels\**" />
+    <Compile Remove="Models\models admin Sistema\**" />
+    <Compile Remove="Models\models Libros\**" />
+    <Compile Remove="Models\models Notificaciones\**" />
+    <Compile Remove="Models\Models Reporte Estadistica\**" />
+    <Compile Remove="Models\models Usuario\**" />
+    <EmbeddedResource Remove="Models\ConfiguracionModels\**" />
+    <EmbeddedResource Remove="Models\models admin Sistema\**" />
+    <EmbeddedResource Remove="Models\models Libros\**" />
+    <EmbeddedResource Remove="Models\models Notificaciones\**" />
+    <EmbeddedResource Remove="Models\Models Reporte Estadistica\**" />
+    <EmbeddedResource Remove="Models\models Usuario\**" />
+    <None Remove="Models\ConfiguracionModels\**" />
+    <None Remove="Models\models admin Sistema\**" />
+    <None Remove="Models\models Libros\**" />
+    <None Remove="Models\models Notificaciones\**" />
+    <None Remove="Models\Models Reporte Estadistica\**" />
+    <None Remove="Models\models Usuario\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +34,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

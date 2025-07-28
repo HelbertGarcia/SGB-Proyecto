@@ -1,5 +1,4 @@
 ﻿using SGB.Application.Contracts.Mappers;
-using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Domain.Entities.Configuracion;
 
@@ -9,25 +8,22 @@ namespace SGB.Application.Extensions.Mappers.ConfiguracionMapper
     {
         public Configuracion MapFromDto(AddConfiguracionDto dto)
         {
-            return new Configuracion(
-                dto.Nombre,
-                dto.Valor,
-                dto.Descripcion
-            );
+            return new Configuracion(dto.Nombre, dto.Valor, dto.Descripcion);
         }
 
         public void ApplyUpdateDto(Configuracion entity, UpdateConfiguracionDto dto)
         {
-            if (!string.IsNullOrWhiteSpace(dto.Nombre))
+            if (!string.IsNullOrWhiteSpace(dto.Nombre) && entity.Nombre != dto.Nombre)
                 entity.Nombre = dto.Nombre;
 
-            if (!string.IsNullOrWhiteSpace(dto.Valor))
+            if (!string.IsNullOrWhiteSpace(dto.Valor) && entity.Valor != dto.Valor)
                 entity.Valor = dto.Valor;
 
-            if (!string.IsNullOrWhiteSpace(dto.Descripcion))
+            if (!string.IsNullOrWhiteSpace(dto.Descripcion) && entity.Descripcion != dto.Descripcion)
                 entity.Descripcion = dto.Descripcion;
 
-            entity.EstaActivo = dto.EstaActivo;
+            if (entity.EstaActivo != dto.EstaActivo)
+                entity.EstaActivo = dto.EstaActivo;
         }
 
         public ConfiguracionDto MapToDto(Configuracion entity)
@@ -38,7 +34,6 @@ namespace SGB.Application.Extensions.Mappers.ConfiguracionMapper
                 Nombre = entity.Nombre,
                 Valor = entity.Valor,
                 Descripcion = entity.Descripcion,
-                FechaCreacion = entity.FechaCreacion,
                 EstaActivo = entity.EstaActivo
             };
         }

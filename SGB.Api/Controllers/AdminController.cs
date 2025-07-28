@@ -1,7 +1,5 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Contracts.Service.IConfiguracionService;
-using SGB.Application.Dtos.AdministracionDto;
 using SGB.Application.Dtos.ConfiguracionDto;
 using SGB.Application.Wrappers;
 
@@ -17,147 +15,170 @@ namespace SGB.Api.Controllers
         {
             _configuracionService = configuracionService;
         }
-
-        [HttpGet("GetAllConfiguraciones")]
-        public async Task<IActionResult> GetAll()
-        {
-            var resultado = await _configuracionService.GetAllAsync();
-            if (!resultado.IsSuccess)
+       
+            [HttpGet("GetAllConfiguraciones")]
+            public async Task<IActionResult> GetAll()
             {
-                return BadRequest(new ApiResponse<object>
+                var resultado = await _configuracionService.GetAllAsync();
+                if (!resultado.IsSuccess)
                 {
-                    IsSuccess = false,
-                    Message = resultado.Message,
-                    Data = null
-                });
-            }
-
-            return Ok(new ApiResponse<object>
-            {
-                IsSuccess = true,
-                Message = "Configuraciones obtenidas correctamente.",
-                Data = resultado.Data
-            });
-        }
-
-        [HttpGet("GetConfiguracionById/{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var resultado = await _configuracionService.GetByIdAsync(id);
-            if (!resultado.IsSuccess || resultado.Data == null)
-            {
-                return NotFound(new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = resultado.Message ?? "Configuración no encontrada.",
-                    Data = null
-                });
-            }
-
-            return Ok(new ApiResponse<object>
-            {
-                IsSuccess = true,
-                Message = "Configuración obtenida correctamente.",
-                Data = resultado.Data
-            });
-        }
-
-        [HttpPost("AddConfiguracion")]
-        public async Task<IActionResult> Crear([FromBody] AddConfiguracionDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = "Los datos proporcionados no son válidos.",
-                    Data = ModelState
-                });
-            }
-
-            var resultado = await _configuracionService.AddAsync(dto);
-            if (!resultado.IsSuccess)
-            {
-                return BadRequest(new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = resultado.Message,
-                    Data = null
-                });
-            }
-
-            var configCreada = (ConfiguracionDto)resultado.Data;
-            return CreatedAtAction(nameof(GetById), new { id = configCreada.IDConfiguracion }, new ApiResponse<object>
-            {
-                IsSuccess = true,
-                Message = "Configuración creada exitosamente.",
-                Data = resultado.Data
-            });
-        }
-
-        [HttpPut("UpdateConfiguracion/{id}")]
-        public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateConfiguracionDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = "Los datos proporcionados no son válidos.",
-                    Data = ModelState
-                });
-            }
-
-            var resultado = await _configuracionService.UpdateAsync(id, dto);
-            if (!resultado.IsSuccess)
-            {
-                if (resultado.Message.Contains("encontrado"))
-                    return NotFound(new ApiResponse<object>
+                    return BadRequest(new ApiResponse<object>
                     {
                         IsSuccess = false,
                         Message = resultado.Message,
                         Data = null
                     });
-
-                return BadRequest(new ApiResponse<object>
+                }
+                return Ok(new ApiResponse<object>
                 {
-                    IsSuccess = false,
-                    Message = resultado.Message,
-                    Data = null
+                    IsSuccess = true,
+                    Message = "Configuraciones obtenidas correctamente.",
+                    Data = resultado.Data
                 });
             }
 
-            return Ok(new ApiResponse<object>
+            [HttpGet("GetConfiguracionById")]
+            public async Task<IActionResult> GetById(int id)
             {
-                IsSuccess = true,
-                Message = "Configuración actualizada correctamente.",
-                Data = resultado.Data
-            });
-        }
+                var resultado = await _configuracionService.GetByIdAsync(id);
 
-        [HttpDelete("DisableConfiguracion/{id}")]
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            var resultado = await _configuracionService.DeleteAsync(id);
-            if (!resultado.IsSuccess)
-            {
-                if (resultado.Message.Contains("encontrado"))
+                if (!resultado.IsSuccess || resultado.Data == null)
+                {
                     return NotFound(new ApiResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = resultado.Message ?? "Configuración no encontrada.",
+                        Data = null
+                    });
+                }
+
+                return Ok(new ApiResponse<ConfiguracionDto>
+                {
+                    IsSuccess = true,
+                    Message = "Configuración obtenida correctamente.",
+                    Data = resultado.Data
+                });
+            }
+
+            [HttpGet("GetConfiguracionByName")]
+            public async Task<IActionResult> GetByName(string nombre)
+            {
+                var resultado = await _configuracionService.ObtenerPorNombreAsync(nombre);
+                if (!resultado.IsSuccess || resultado.Data == null)
+                {
+                    return NotFound(new ApiResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = "Configuración no encontrada por nombre.",
+                        Data = null
+                    });
+                }
+                return Ok(new ApiResponse<ConfiguracionDto>
+                {
+                    IsSuccess = true,
+                    Message = "Configuración obtenida correctamente.",
+                    Data = resultado.Data
+                });
+            }
+
+            [HttpPost("AddConfiguracion")]
+            public async Task<IActionResult> Crear([FromBody] AddConfiguracionDto dto)
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = "Los datos proporcionados no son válidos.",
+                        Data = ModelState
+                    });
+                }
+                var resultado = await _configuracionService.AddAsync(dto);
+                if (!resultado.IsSuccess)
+                {
+                    return BadRequest(new ApiResponse<object>
                     {
                         IsSuccess = false,
                         Message = resultado.Message,
                         Data = null
                     });
-
-                return BadRequest(new ApiResponse<object>
+                }
+                var configCreada = (ConfiguracionDto)resultado.Data;
+                return CreatedAtAction(nameof(GetById), new { id = configCreada.IDConfiguracion }, new ApiResponse<object>
                 {
-                    IsSuccess = false,
-                    Message = resultado.Message,
-                    Data = null
+                    IsSuccess = true,
+                    Message = "Configuración creada exitosamente.",
+                    Data = configCreada
                 });
             }
 
-            return NoContent();
+            [HttpPut("UpdateConfiguracion")]
+            public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateConfiguracionDto dto)
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = "Los datos proporcionados no son válidos.",
+                        Data = ModelState
+                    });
+                }
+                var resultado = await _configuracionService.UpdateAsync(id, dto);
+                if (!resultado.IsSuccess)
+                {
+                    if ((resultado.Message ?? "").Contains("encontrado"))
+                    {
+                        return NotFound(new ApiResponse<object>
+                        {
+                            IsSuccess = false,
+                            Message = resultado.Message,
+                            Data = null
+                        });
+                    }
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = resultado.Message,
+                        Data = null
+                    });
+                }
+                return Ok(new ApiResponse<object>
+                {
+                    IsSuccess = true,
+                    Message = "Configuración actualizada correctamente.",
+                    Data = resultado.Data
+                });
+            }
+
+            [HttpDelete("DisableConfiguracion")]
+            public async Task<IActionResult> Eliminar(int id)
+            {
+                var resultado = await _configuracionService.DeleteAsync(id);
+
+                if (!resultado.IsSuccess)
+                {
+                    if ((resultado.Message ?? "").Contains("encontrado"))
+                    {
+                        return NotFound(new ApiResponse<object>
+                        {
+                            IsSuccess = false,
+                            Message = resultado.Message,
+                            Data = null
+                        });
+                    }
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        IsSuccess = false,
+                        Message = resultado.Message,
+                        Data = null
+                    });
+                }
+                return NoContent();
+            }
         }
+
+
+
+
     }
-}

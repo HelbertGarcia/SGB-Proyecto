@@ -5,9 +5,6 @@ namespace SGB.Application.Contracts.Repository.Interfaces
 {
     public interface IConfiguracionRepository : IBaseRepository<Configuracion>
     {
-        Task<OperationResult<Configuracion>> ObtenerPorIdAsync(int idConfiguracion);
         Task<OperationResult<Configuracion>> ObtenerPorNombreAsync(string nombre);
-        Task<OperationResult<List<Configuracion>>> GetAllAsync();
-
     }
 }
