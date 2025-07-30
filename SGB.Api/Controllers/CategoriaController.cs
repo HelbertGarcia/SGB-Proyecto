@@ -2,7 +2,6 @@
 using SGB.Application.Contracts.Service.ILibroServices;
 using SGB.Application.Wrappers;
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
-using System.Threading.Tasks;
 
 namespace SGB.Api.Controllers
 {
@@ -67,7 +66,6 @@ namespace SGB.Api.Controllers
             };
 
             return Ok(successResponse);
-
         }
 
         [HttpPost("AddCategoria")]
@@ -79,7 +77,7 @@ namespace SGB.Api.Controllers
                 {
                     IsSuccess = false,
                     Message = "Los datos proporcionados no son válidos.",
-                    Data = ModelState 
+                    Data = ModelState
                 };
                 return BadRequest(validationErrorResponse);
             }
@@ -114,24 +112,42 @@ namespace SGB.Api.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var resultado = await _categoriaService.UpdateAsync(id, dto);
+
             if (!resultado.IsSuccess)
             {
-                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
-                return BadRequest(resultado);
+                var errorResponse = new ApiResponse<object> { IsSuccess = false, Message = resultado.Message };
+                if (resultado.Message.Contains("encontrado")) return NotFound(errorResponse);
+                return BadRequest(errorResponse);
             }
-            return Ok(resultado.Data);
+
+            var successResponse = new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Categoría actualizada correctamente.",
+                Data = resultado.Data
+            };
+            return Ok(successResponse);
         }
 
         [HttpDelete("DisableCategoria/{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
             var resultado = await _categoriaService.DeleteAsync(id);
+
             if (!resultado.IsSuccess)
             {
-                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
-                return BadRequest(resultado);
+                var errorResponse = new ApiResponse<object> { IsSuccess = false, Message = resultado.Message };
+                if (resultado.Message.Contains("encontrado")) return NotFound(errorResponse);
+                return BadRequest(errorResponse);
             }
-            return NoContent();
+
+            var successResponse = new ApiResponse<bool>
+            {
+                IsSuccess = true,
+                Message = "Categoría eliminada (desactivada) correctamente.",
+                Data = resultado.Data
+            };
+            return Ok(successResponse);
         }
     }
 }

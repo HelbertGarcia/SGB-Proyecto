@@ -8,7 +8,6 @@ namespace SGB.Presentation.Models.Libro
     {
         public LibroModel Libro { get; set; }
 
-
         [ValidateNever]
         public IEnumerable<SelectListItem> CategoriasDisponibles { get; set; }
     }

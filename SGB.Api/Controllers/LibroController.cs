@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Contracts.Service.ILibroServices;
-using SGB.Application.Dtos.LibrosDto.CategoriaDto;
-using SGB.Application.Dtos.LibrosDto.LibroDto;
-using SGB.Application.Services.LibrosServices;
 using SGB.Application.Wrappers;
-using System.Threading.Tasks;
+using SGB.Application.Dtos.LibrosDto.LibroDto;
 
 namespace SGB.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Libro")]
     [ApiController]
     public class LibroController : ControllerBase
     {
@@ -23,23 +20,18 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var resultado = await _libroService.GetAllAsync();
-            if (!resultado.IsSuccess) {
-                var errorResponse = new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = resultado.Message,
-                    Data = null
-                };
-                return BadRequest(resultado);
+
+            if (!resultado.IsSuccess)
+            {
+                return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = resultado.Message });
             }
 
             var successResponse = new ApiResponse<object>
             {
                 IsSuccess = true,
-                Message = "Categorías obtenidas correctamente.",
+                Message = "Libros obtenidos correctamente.",
                 Data = resultado.Data
             };
-
             return Ok(successResponse);
         }
 
@@ -54,7 +46,6 @@ namespace SGB.Api.Controllers
                 {
                     IsSuccess = false,
                     Message = resultado.Message ?? "Libro no encontrado.",
-                    Data = null
                 };
                 return NotFound(errorResponse);
             }
@@ -65,7 +56,6 @@ namespace SGB.Api.Controllers
                 Message = "Libro obtenido correctamente.",
                 Data = resultado.Data
             };
-
             return Ok(successResponse);
         }
 
@@ -73,8 +63,17 @@ namespace SGB.Api.Controllers
         public async Task<IActionResult> BuscarPorIsbn(string isbn)
         {
             var resultado = await _libroService.BuscarPorIsbnAsync(isbn);
-            if (!resultado.IsSuccess) return BadRequest(resultado);
-            return Ok(resultado.Data);
+
+            if (!resultado.IsSuccess)
+            {
+                return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = resultado.Message });
+            }
+            if (resultado.Data == null)
+            {
+                return NotFound(new ApiResponse<object> { IsSuccess = false, Message = "Libro no encontrado con ese ISBN." });
+            }
+
+            return Ok(new ApiResponse<object> { IsSuccess = true, Data = resultado.Data });
         }
 
         [HttpPost("AddLibro")]
@@ -86,7 +85,7 @@ namespace SGB.Api.Controllers
                 {
                     IsSuccess = false,
                     Message = "Los datos proporcionados no son válidos.",
-                    Data = ModelState 
+                    Data = ModelState
                 };
                 return BadRequest(validationErrorResponse);
             }
@@ -95,13 +94,7 @@ namespace SGB.Api.Controllers
 
             if (!resultado.IsSuccess)
             {
-                var errorResponse = new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = resultado.Message,
-                    Data = null
-                };
-                return BadRequest(errorResponse);
+                return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = resultado.Message });
             }
 
             var successResponse = new ApiResponse<object>
@@ -118,33 +111,14 @@ namespace SGB.Api.Controllers
         [HttpPut("UpdateLibro/{id}")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateLibroDto libroDto)
         {
-            if (!ModelState.IsValid)
-            {
-                var validationErrorResponse = new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = "Los datos proporcionados no son válidos.",
-                    Data = ModelState
-                };
-                return BadRequest(validationErrorResponse);
-            }
+            if (!ModelState.IsValid) return BadRequest(new ApiResponse<object> { IsSuccess = false, Message = "Datos inválidos.", Data = ModelState });
 
             var resultado = await _libroService.UpdateAsync(id, libroDto);
 
             if (!resultado.IsSuccess)
             {
-                var errorResponse = new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = resultado.Message,
-                    Data = null
-                };
-
-                if (resultado.Message.Contains("encontrado"))
-                {
-                    return NotFound(errorResponse);
-                }
-
+                var errorResponse = new ApiResponse<object> { IsSuccess = false, Message = resultado.Message };
+                if (resultado.Message.Contains("encontrado")) return NotFound(errorResponse);
                 return BadRequest(errorResponse);
             }
 
@@ -154,7 +128,6 @@ namespace SGB.Api.Controllers
                 Message = "Libro actualizado correctamente.",
                 Data = resultado.Data
             };
-
             return Ok(successResponse);
         }
 
@@ -164,10 +137,12 @@ namespace SGB.Api.Controllers
             var resultado = await _libroService.DeleteAsync(id);
             if (!resultado.IsSuccess)
             {
-                if (resultado.Message.Contains("encontrado")) return NotFound(resultado);
-                return BadRequest(resultado);
+                var errorResponse = new ApiResponse<object> { IsSuccess = false, Message = resultado.Message };
+                if (resultado.Message.Contains("encontrado")) return NotFound(errorResponse);
+                return BadRequest(errorResponse);
             }
-            return NoContent();
+
+            return Ok(new ApiResponse<bool> { IsSuccess = true, Message = "Libro desactivado correctamente.", Data = true });
         }
     }
 }
