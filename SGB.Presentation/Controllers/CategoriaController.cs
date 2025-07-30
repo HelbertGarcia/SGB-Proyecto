@@ -1,218 +1,118 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
-using SGB.Application.Wrappers;
-using SGB.Domain.Entities.Categoria;
 using SGB.Presentation.Models.Categoria;
+using SGB.Presentation.Services;
+using System.Threading.Tasks;
 
 namespace SGB.Presentation.Controllers
 {
     public class CategoriaController : Controller
     {
-        // GET: CategoriaController
+        private readonly ICategoriaHttpService _categoriaHttpService;
+
+        public CategoriaController(ICategoriaHttpService categoriaHttpService)
+        {
+            _categoriaHttpService = categoriaHttpService;
+        }
+
+        // GET: Categoria
         public async Task<IActionResult> Index()
         {
-            var listaDeCategorias = new List<CategoriaModel>();
-
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri("https://localhost:7299/api/");
-
-                    var response = await client.GetAsync("Categoria/GetAllCategorias");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<CategoriaModel>>>();
-
-                        if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Data != null)
-                        {
-                            listaDeCategorias = apiResponse.Data;
-                        }
-                        else
-                        {
-                            ViewBag.ErrorMessage = apiResponse?.Message ?? "Error desconocido desde la API.";
-                        }
-                    }
-                    else
-                    {
-                        ViewBag.ErrorMessage = "No se pudo conectar con la API. Código: " + response.StatusCode;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ViewBag.ErrorMessage = $"Ocurrió una excepción al procesar la solicitud: {ex.Message}";
-            }
-
+            var listaDeCategorias = await _categoriaHttpService.ObtenerTodas();
             return View(listaDeCategorias);
         }
 
-        // GET: CategoriaController/Details/5
+        // GET: Categoria/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            CategoriaModel categoria = null;
-
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri("https://localhost:7299/api/");
-
-                    var response = await client.GetAsync($"Categoria/GetCategoriaById/{id}");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<CategoriaModel>>();
-                        if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Data != null)
-                        {
-                            categoria = apiResponse.Data;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Ocurrió una excepción: {ex.Message}";
-                return RedirectToAction(nameof(Index));
-            }
-
+            var categoria = await _categoriaHttpService.ObtenerPorId(id);
             if (categoria == null)
             {
                 TempData["ErrorMessage"] = "La categoría solicitada no fue encontrada.";
                 return RedirectToAction(nameof(Index));
             }
-
             return View(categoria);
         }
 
         // GET: Categoria/Create
-        // Este método simplemente muestra el formulario vacío.
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Categoria/Create
-        // Este método recibe los datos del formulario y los envía a la API.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CategoriaModel categoria)
         {
             if (ModelState.IsValid)
             {
-                try
+                var addDto = new AddCategoriaDto { Nombre = categoria.nombre };
+                var apiResponse = await _categoriaHttpService.Crear(addDto);
+                if (apiResponse.IsSuccess)
                 {
-                    var addDto = new AddCategoriaDto { Nombre = categoria.nombre };
-
-                    using (var client = new HttpClient())
-                    {
-                        client.BaseAddress = new Uri("https://localhost:7299/api/");
-
-                        var response = await client.PostAsJsonAsync("Categoria/AddCategoria", addDto);
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction(nameof(Index));
-                        }
-                        else
-                        {
-                            var errorResponse = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
-                            ModelState.AddModelError(string.Empty, errorResponse?.Message ?? "Ocurrió un error al crear la categoría.");
-                        }
-                    }
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, $"Error de excepción: {ex.Message}");
-                }
+                ModelState.AddModelError(string.Empty, apiResponse.Message ?? "Ocurrió un error al crear la categoría.");
             }
-
             return View(categoria);
         }
 
-        // GET: CategoriaController/Edit/5
+        // GET: Categoria/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            CategoriaModel categoria = null;
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri("https://localhost:7299/api/");
-
-                    var response = await client.GetAsync($"Categoria/GetCategoriaById/{id}");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<CategoriaModel>>();
-                        if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Data != null)
-                        {
-                            categoria = apiResponse.Data;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Error al cargar la categoría: {ex.Message}";
-                return RedirectToAction(nameof(Index));
-            }
-
+            var categoria = await _categoriaHttpService.ObtenerPorId(id);
             if (categoria == null)
             {
                 TempData["ErrorMessage"] = "La categoría que intentas editar no fue encontrada.";
                 return RedirectToAction(nameof(Index));
             }
-
             return View(categoria);
         }
 
-        // POST: CategoriaController/Edit/5
+        // POST: Categoria/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CategoriaModel categoria)
         {
-            if (id != categoria.id)
-            {
-                return NotFound();
-            }
+            if (id != categoria.id) return NotFound();
 
             if (ModelState.IsValid)
             {
-                try
+                var updateDto = new UpdateCategoriaDto { Nombre = categoria.nombre };
+                var apiResponse = await _categoriaHttpService.Actualizar(id, updateDto);
+                if (apiResponse.IsSuccess)
                 {
-                    var updateDto = new UpdateCategoriaDto { Nombre = categoria.nombre };
-
-                    using (var client = new HttpClient())
-                    {
-                        client.BaseAddress = new Uri("https://localhost:7299/api/");
-
-                        var response = await client.PutAsJsonAsync($"Categoria/UpdateCategoria/{id}", updateDto);
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction(nameof(Index));
-                        }
-                        else
-                        {
-                            ModelState.AddModelError(string.Empty, "Ocurrió un error al actualizar la categoría.");
-                        }
-                    }
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, $"Error de excepción: {ex.Message}");
-                }
+                ModelState.AddModelError(string.Empty, apiResponse.Message ?? "Ocurrió un error al actualizar la categoría.");
             }
             return View(categoria);
         }
 
-        // GET: CategoriaController/Delete/5
-        public ActionResult Delete(int id)
+        // GET: Categoria/Delete/5
+        public async Task<IActionResult> Delete(int id)
         {
-            return View();
+            var categoria = await _categoriaHttpService.ObtenerPorId(id);
+            if (categoria == null)
+            {
+                TempData["ErrorMessage"] = "La categoría que intentas eliminar no fue encontrada.";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(categoria);
+        }
+
+        // POST: Categoria/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var apiResponse = await _categoriaHttpService.Eliminar(id);
+            if (!apiResponse.IsSuccess)
+            {
+                TempData["ErrorMessage"] = apiResponse.Message ?? "Ocurrió un error al eliminar la categoría.";
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

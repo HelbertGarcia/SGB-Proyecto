@@ -1,3 +1,6 @@
+using SGB.Presentation.Services;
+using SGB.Presentation.Services.Base;
+
 namespace SGB.Presentation
 {
     public class Program
@@ -8,6 +11,14 @@ namespace SGB.Presentation
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddHttpClient("ApiSGB", client =>
+            {
+                client.BaseAddress = new Uri(builder.Configuration["ApiConfig:BaseUrl"]);
+            });
+
+            builder.Services.AddScoped<IHttpService, HttpService>();
+            builder.Services.AddScoped<ICategoriaHttpService, CategoriaHttpService>();
+            builder.Services.AddScoped<ILibroHttpService, LibroHttpService>();
 
             var app = builder.Build();
 
