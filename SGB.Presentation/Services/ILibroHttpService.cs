@@ -10,6 +10,6 @@ namespace SGB.Presentation.Services
         Task<LibroModel> ObtenerPorId(int id);
         Task<ApiResponse<LibroDto>> Crear(AddLibroDto dto);
         Task<ApiResponse<object>> Actualizar(int id, UpdateLibroDto dto);
-        Task<bool> Eliminar(int id);
+        Task<ApiResponse<bool>> Eliminar(int id);
     }
 }

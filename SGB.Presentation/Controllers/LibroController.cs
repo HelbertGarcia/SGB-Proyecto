@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SGB.Application.Dtos.LibrosDto.LibroDto;
 using SGB.Presentation.Models.Libro;
 using SGB.Presentation.Services;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace SGB.Presentation.Controllers
 {
@@ -142,6 +140,18 @@ namespace SGB.Presentation.Controllers
             return View(libro);
         }
 
-        
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var apiResponse = await _libroHttpService.Eliminar(id);
+
+            if (!apiResponse.IsSuccess)
+            {
+                TempData["ErrorMessage"] = apiResponse.Message ?? "Ocurrió un error al eliminar.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

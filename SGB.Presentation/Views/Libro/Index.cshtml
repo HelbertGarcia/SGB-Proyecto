@@ -73,8 +73,9 @@
                 @Html.DisplayFor(modelItem => item.fechaRegistro)
             </td>
             <td>
-                @Html.ActionLink("Edit", "Edit", new { id=item.id}) |
-                @Html.ActionLink("Details", "Details", new { id=item.id }) |
+                    <a asp-action="Edit" asp-route-id="@item.id" class="btn btn-sm btn-warning">Editar</a> |
+                    <a asp-action="Details" asp-route-id="@item.id" class="btn btn-sm btn-info">Detalles</a> |
+                    <a asp-action="Delete" asp-route-id="@item.id" class="btn btn-sm btn-danger">Eliminar</a>
             </td>
         </tr>
 }

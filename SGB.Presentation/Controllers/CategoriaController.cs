@@ -2,7 +2,6 @@
 using SGB.Application.Dtos.LibrosDto.CategoriaDto;
 using SGB.Presentation.Models.Categoria;
 using SGB.Presentation.Services;
-using System.Threading.Tasks;
 
 namespace SGB.Presentation.Controllers
 {

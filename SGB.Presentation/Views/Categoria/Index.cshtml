@@ -1,46 +1,47 @@
 ﻿@model IEnumerable<SGB.Presentation.Models.Categoria.CategoriaModel>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Gestión de Categorías";
 }
 
-<h1>Index</h1>
+<h1>Gestión de Categorías</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Crear Nueva Categoría</a>
 </p>
-<table class="table">
+
+@* Bloque para mostrar mensajes de error que vengan del controlador *@
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<table class="table table-striped">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.id)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.nombre)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.estaActivo)
-            </th>
-            <th></th>
+            @* Es más claro y directo poner los nombres de las columnas explícitamente *@
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th></th> @* Columna para las acciones *@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.nombre)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.estaActivo)
-            </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new { id=item.id }) |
-                @Html.ActionLink("Details", "Details", new { id=item.id}) |
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                @* Se usan las propiedades en PascalCase para seguir la convención de C# *@
+                <td>@Html.DisplayFor(modelItem => item.id)</td>
+                <td>@Html.DisplayFor(modelItem => item.nombre)</td>
+                <td>@Html.DisplayFor(modelItem => item.estaActivo)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.id" class="btn btn-sm btn-warning">Editar</a> |
+                    <a asp-action="Details" asp-route-id="@item.id" class="btn btn-sm btn-info">Detalles</a> |
+
+                    @* --- ENLACE AÑADIDO AQUÍ --- *@
+                    <a asp-action="Delete" asp-route-id="@item.id" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

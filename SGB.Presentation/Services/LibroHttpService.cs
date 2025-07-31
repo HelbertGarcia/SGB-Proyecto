@@ -56,12 +56,17 @@ namespace SGB.Presentation.Services
             return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
         }
 
-        public async Task<bool> Eliminar(int id)
+        public async Task<ApiResponse<bool>> Eliminar(int id)
         {
             using var client = CreateClient();
-            // Recuerda que tu API para eliminar libro se llama 'DisableLibro'
             var response = await client.DeleteAsync($"Libro/DisableLibro/{id}");
-            return response.IsSuccessStatusCode;
+
+            if (response.IsSuccessStatusCode)
+            {
+                return new ApiResponse<bool> { IsSuccess = true };
+            }
+
+            return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
         }
     }
 }
