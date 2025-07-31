@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Contracts.Repository.Interfaces
+namespace SGB.Api.Contracts.Repository.Interfaces
 {
     public interface INotificacionRepository : IBaseRepository<Notificacion>
     {

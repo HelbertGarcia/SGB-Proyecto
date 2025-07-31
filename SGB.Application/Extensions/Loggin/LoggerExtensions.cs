@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Extensions.Loggin
+namespace SGB.Api.Extensions.Loggin
 {
     public static class LoggerExtensions
     {

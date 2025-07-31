@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.NotificacionesDto
+namespace SGB.Api.Dtos.NotificacionesDto
 {
     public record GetNotificacionDto(
         int Id,

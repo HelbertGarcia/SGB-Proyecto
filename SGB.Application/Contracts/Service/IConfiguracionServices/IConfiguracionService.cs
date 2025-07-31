@@ -1,13 +1,12 @@
 ﻿using SGB.Domain.Base;
-using SGB.Application.Base;
-using SGB.Application.Dtos.ConfiguracionDto;
+using SGB.Api.Base;
+using SGB.Api.Dtos.ConfiguracionDto;
 
-namespace SGB.Application.Contracts.Service.IConfiguracionService
+namespace SGB.Api.Contracts.Service.IConfiguracionService
 {
     public interface IConfiguracionService : IBaseService<AddConfiguracionDto, UpdateConfiguracionDto, ConfiguracionDto>
     {
         Task<OperationResult<ConfiguracionDto>> ObtenerPorNombreAsync(string nombre);
     }
-
 }
 

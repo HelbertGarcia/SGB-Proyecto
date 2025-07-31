@@ -1,15 +1,15 @@
 ﻿using Moq;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
-using SGB.Application.Dtos.ConfiguracionDto;
-using SGB.Application.Contracts.Mappers;
-using SGB.Application.Services.ConfiguracionServices;
-using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Application.Validators.BusinessValidators.Configuracion;
+using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Api.Contracts.Mappers;
+using SGB.Api.Services.ConfiguracionServices;
+using SGB.Api.Contracts.Repository.Interfaces;
+using SGB.Api.Validators.BusinessValidators.Configuracion;
 using Microsoft.Extensions.Configuration;
-using static SGB.Application.Extensions.Loggin.LoggerExtensions;
+using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
-namespace SGB.Application.Test
+namespace SGB.Api.Test
 {
     public class UnitConfiguracionServiceTest
     {

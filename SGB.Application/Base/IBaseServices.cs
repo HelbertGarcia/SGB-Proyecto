@@ -1,6 +1,6 @@
 ﻿using SGB.Domain.Base;
 
-namespace SGB.Application.Base
+namespace SGB.Api.Base
 {
     public interface IBaseService<TAddDto, TUpdateDto, TDto>
     {

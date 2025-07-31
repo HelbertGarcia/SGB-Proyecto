@@ -2,11 +2,11 @@
 using SGB.Persistence.Base;
 using SGB.Persistence.Context;
 using SGB.Domain.Entities.Configuracion;
-using SGB.Application.Contracts.Repository.Interfaces;
+using SGB.Api.Contracts.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using static SGB.Application.Extensions.Loggin.LoggerExtensions;
+using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Persistence.Repositories
 {

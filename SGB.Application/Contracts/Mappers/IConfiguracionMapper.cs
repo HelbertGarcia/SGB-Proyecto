@@ -1,12 +1,12 @@
-﻿using SGB.Application.Dtos.ConfiguracionDto;
+﻿using SGB.Api.Dtos.ConfiguracionDto;
 using SGB.Domain.Entities.Configuracion;
 
-namespace SGB.Application.Contracts.Mappers
+namespace SGB.Api.Contracts.Mappers
 {
     public interface IConfiguracionMapper
     {
+        ConfiguracionDto MapToDto(Configuracion entity);
         Configuracion MapFromDto(AddConfiguracionDto dto);
         void ApplyUpdateDto(Configuracion entity, UpdateConfiguracionDto dto);
-        ConfiguracionDto MapToDto(Configuracion entity);
     }
 }

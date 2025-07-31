@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using SGB.Application.Dtos.ConfiguracionDto;
+using SGB.Api.Dtos.ConfiguracionDto;
 
-namespace SGB.Application.Validators.FluentValidator.Configuracion
+namespace SGB.Api.Validators.FluentValidator.Configuracion
 {
     public class UpdateConfiguracionDtoValidator : AbstractValidator<UpdateConfiguracionDto>
     {

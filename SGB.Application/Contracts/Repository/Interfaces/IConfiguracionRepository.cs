@@ -1,7 +1,7 @@
 ﻿using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
 
-namespace SGB.Application.Contracts.Repository.Interfaces
+namespace SGB.Api.Contracts.Repository.Interfaces
 {
     public interface IConfiguracionRepository : IBaseRepository<Configuracion>
     {

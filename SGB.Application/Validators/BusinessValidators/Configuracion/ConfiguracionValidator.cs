@@ -1,8 +1,8 @@
 ﻿using SGB.Domain.Base;
-using SGB.Application.Dtos.ConfiguracionDto;
-using SGB.Application.Contracts.Repository.Interfaces;
+using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Api.Contracts.Repository.Interfaces;
 
-namespace SGB.Application.Validators.BusinessValidators.Configuracion
+namespace SGB.Api.Validators.BusinessValidators.Configuracion
 {
     public class ConfiguracionValidator : IConfiguracionValidator
     {

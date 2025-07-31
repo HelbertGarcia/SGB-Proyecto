@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Application.Dtos.LibrosDto.LibroDto;
+using SGB.Api.Contracts.Repository.Interfaces;
+using SGB.Api.Dtos.LibrosDto.LibroDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Libro;
 using SGB.Persistence.Base;

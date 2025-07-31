@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SGB.Application.Contracts.Repository.Interfaces;
+using SGB.Api.Contracts.Repository.Interfaces;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Rol;
 using SGB.Persistence.Base;

@@ -1,16 +1,16 @@
 ﻿using Moq;
 using SGB.Persistence.Context;
 using SGB.Persistence.Repositories;
-using SGB.Application.Dtos.ConfiguracionDto;
-using SGB.Application.Services.ConfiguracionServices;
-using SGB.Application.Extensions.Mappers.ConfiguracionMapper;
-using SGB.Application.Validators.BusinessValidators.Configuracion;
+using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Api.Services.ConfiguracionServices;
+using SGB.Api.Extensions.Mappers.ConfiguracionMapper;
+using SGB.Api.Validators.BusinessValidators.Configuracion;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using static SGB.Application.Extensions.Loggin.LoggerExtensions;
+using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
-namespace SGB.Application.Test.IntegrationTests
+namespace SGB.Api.Test.IntegrationTests
 {
     public class IntegrationConfiguracionServiceTest
     {

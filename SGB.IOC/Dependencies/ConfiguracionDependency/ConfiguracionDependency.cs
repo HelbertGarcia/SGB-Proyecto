@@ -1,16 +1,16 @@
 ﻿using FluentValidation;
+using SGB.Api.Contracts.Mappers;
 using SGB.Infraestructure.Loggers;
 using SGB.Persistence.Repositories;
-using SGB.Application.Contracts.Mappers;
-using SGB.Application.Services.ConfiguracionServices;
-using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Application.Extensions.Mappers.ConfiguracionMapper;
-using SGB.Application.Validators.FluentValidator.Configuracion;
-using SGB.Application.Contracts.Service.IConfiguracionService;
-using SGB.Application.Validators.BusinessValidators.Configuracion;
+using SGB.Api.Services.ConfiguracionServices;
+using SGB.Api.Contracts.Repository.Interfaces;
+using SGB.Api.Extensions.Mappers.ConfiguracionMapper;
+using SGB.Api.Validators.FluentValidator.Configuracion;
+using SGB.Api.Contracts.Service.IConfiguracionService;
+using SGB.Api.Validators.BusinessValidators.Configuracion;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using static SGB.Application.Extensions.Loggin.LoggerExtensions;
+using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.IOC.Dependencies.ConfiguracionDependency
 {

@@ -1,11 +1,11 @@
 ﻿using Moq;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
-using SGB.Application.Dtos.ConfiguracionDto;
-using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Application.Validators.BusinessValidators.Configuracion;
+using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Api.Contracts.Repository.Interfaces;
+using SGB.Api.Validators.BusinessValidators.Configuracion;
 
-namespace SGB.Application.Test.ValidatorTests
+namespace SGB.Api.Test.ValidatorTests
 {
     public class ConfiguracionValidatorTest
     {

@@ -7,16 +7,19 @@ namespace SGB.Domain.Entities.Configuracion
     {
         [Key]
         public int IDConfiguracion { get; set; }
+
         [Required, MaxLength(100)]
         public string Nombre { get; set; }
+
         [Required]
         public string Valor { get; set; }
+
         [MaxLength(255)]
         public string Descripcion { get;  set; }
-        public DateTime FechaCreacion { get; set; } = DateTime.Now;
-        public bool EstaActivo { get; set; }
 
-        private Configuracion() : base() { }
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
+
+        public bool EstaActivo { get; set; }
 
         public Configuracion(string nombre, string valor, string descripcion)
         {

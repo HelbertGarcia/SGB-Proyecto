@@ -1,8 +1,8 @@
-﻿using SGB.Application.Contracts.Mappers;
-using SGB.Application.Dtos.ConfiguracionDto;
+﻿using SGB.Api.Contracts.Mappers;
+using SGB.Api.Dtos.ConfiguracionDto;
 using SGB.Domain.Entities.Configuracion;
 
-namespace SGB.Application.Extensions.Mappers.ConfiguracionMapper
+namespace SGB.Api.Extensions.Mappers.ConfiguracionMapper
 {
     public class ConfiguracionMapper : IConfiguracionMapper
     {

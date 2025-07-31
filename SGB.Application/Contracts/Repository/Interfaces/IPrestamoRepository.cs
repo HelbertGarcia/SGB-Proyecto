@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SGB.Domain.Base;
 
-namespace SGB.Application.Contracts.Repository.Interfaces
+namespace SGB.Api.Contracts.Repository.Interfaces
 {
     public interface IPrestamoRepository : IBaseRepository<Prestamo>
     {

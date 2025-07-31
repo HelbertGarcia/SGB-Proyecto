@@ -1,7 +1,7 @@
-﻿using SGB.Application.Base;
+﻿using SGB.Api.Base;
 using System.ComponentModel.DataAnnotations;
 
-namespace SGB.Application.Dtos.ConfiguracionDto
+namespace SGB.Api.Dtos.ConfiguracionDto
 {
     public class UpdateConfiguracionDto : BaseConfiguracion
     {

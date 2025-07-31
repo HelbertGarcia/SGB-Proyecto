@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.LibrosDto.CategoriaDto
+namespace SGB.Api.Dtos.LibrosDto.CategoriaDto
 {
     public record GetCategoriaDto
     {

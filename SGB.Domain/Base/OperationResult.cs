@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SGB.Domain.Base
+﻿namespace SGB.Domain.Base
 {
     public class OperationResult<T>
     {
@@ -18,12 +12,10 @@ namespace SGB.Domain.Base
             Message = message;
             Data = data;
         }
-
         public static OperationResult<T> Success(T data, string message = "")
         {
             return new OperationResult<T>(true, message, data);
         }
-
         public static OperationResult<T> Failure(string message)
         {
             return new OperationResult<T>(false, message);

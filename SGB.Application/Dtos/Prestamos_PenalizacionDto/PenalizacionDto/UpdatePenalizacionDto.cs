@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
+namespace SGB.Api.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
     public record UpdatePenalizacionDto
     {

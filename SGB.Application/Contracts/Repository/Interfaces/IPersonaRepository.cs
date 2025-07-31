@@ -1,7 +1,7 @@
 ﻿using SGB.Domain.Base;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Contracts.Repository.Interfaces
+namespace SGB.Api.Contracts.Repository.Interfaces
 {
     public interface IPersonaRepository : IBaseRepository<Persona>
     {

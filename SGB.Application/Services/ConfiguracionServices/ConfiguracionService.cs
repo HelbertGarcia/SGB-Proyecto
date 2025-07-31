@@ -1,14 +1,14 @@
 ﻿using SGB.Domain.Base;
 using SGB.Domain.Entities.Configuracion;
-using SGB.Application.Dtos.ConfiguracionDto;
-using SGB.Application.Contracts.Mappers;
-using SGB.Application.Contracts.Repository.Interfaces;
-using SGB.Application.Contracts.Service.IConfiguracionService;
-using SGB.Application.Validators.BusinessValidators.Configuracion;
+using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Api.Contracts.Mappers;
+using SGB.Api.Contracts.Repository.Interfaces;
+using SGB.Api.Contracts.Service.IConfiguracionService;
+using SGB.Api.Validators.BusinessValidators.Configuracion;
 using Microsoft.Extensions.Configuration;
-using static SGB.Application.Extensions.Loggin.LoggerExtensions;
+using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
-namespace SGB.Application.Services.ConfiguracionServices
+namespace SGB.Api.Services.ConfiguracionServices
 {
     public class ConfiguracionService : IConfiguracionService
     {

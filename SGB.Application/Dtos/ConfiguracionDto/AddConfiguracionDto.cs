@@ -1,6 +1,6 @@
-﻿using SGB.Application.Base;
+﻿using SGB.Api.Base;
 
-namespace SGB.Application.Dtos.ConfiguracionDto
+namespace SGB.Api.Dtos.ConfiguracionDto
 {
     public class AddConfiguracionDto : BaseConfiguracion
     {

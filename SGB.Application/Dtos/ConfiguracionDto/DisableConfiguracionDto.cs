@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SGB.Application.Dtos.ConfiguracionDto
+namespace SGB.Api.Dtos.ConfiguracionDto
 {
     public class DisableConfiguracionDto
     {

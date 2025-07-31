@@ -5,7 +5,7 @@ using SGB.Domain.Entities.Configuracion;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using static SGB.Application.Extensions.Loggin.LoggerExtensions;
+using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Persistence.Test
 {

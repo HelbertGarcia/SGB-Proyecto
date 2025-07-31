@@ -2,7 +2,7 @@
 using SGB.Domain.Base;
 
 
-namespace SGB.Application.Contracts.Repository
+namespace SGB.Api.Contracts.Repository
 {
     public interface IBaseRepository<T> where T : class
     {

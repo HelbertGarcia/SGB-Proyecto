@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGB.Application.Dtos.Reportes_EstadisticasDto
+namespace SGB.Api.Dtos.Reportes_EstadisticasDto
 {
     internal class SaveReporteEstadisticaDto
     {

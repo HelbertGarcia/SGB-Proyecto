@@ -1,15 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using SGB.Application.Extensions;
-using SGB.Domain.Base;
+﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using static SGB.Application.Extensions.Loggin.LoggerExtensions;
+using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Infraestructure.Loggers
 {
@@ -65,19 +56,16 @@ namespace SGB.Infraestructure.Loggers
 
             try
             {
-                // Convertir argumentos complejos a JSON de forma segura
                 var serializedArgs = args.Select(SafeSerialize).ToArray();
                 return string.Format(message, serializedArgs);
             }
             catch (FormatException)
-            {
-                // Si falla el formateo, devolver el mensaje original con los args serializados
+            {             
                 var argsString = string.Join(", ", args.Select(SafeSerialize));
                 return $"{message} [Args: {argsString}]";
             }
             catch (Exception ex)
             {
-                // En caso de error inesperado, log básico
                 _logger.LogWarning(ex, "Error formatting log message: {OriginalMessage}", message);
                 return $"{message} [Formatting failed]";
             }
@@ -93,31 +81,26 @@ namespace SGB.Infraestructure.Loggers
 
             try
             {
-                // Para tipos primitivos y string, usar ToString()
                 if (obj is string || obj.GetType().IsPrimitive || obj is decimal || obj is DateTime)
                     return obj.ToString();
-
-                // Para objetos complejos, usar JSON
                 var options = new JsonSerializerOptions
                 {
                     WriteIndented = false,
-                    MaxDepth = 3 // Evitar referencias circulares profundas
+                    MaxDepth = 3 
                 };
 
                 return JsonSerializer.Serialize(obj, options);
             }
             catch (JsonException)
             {
-                // Si falla la serialización JSON, usar ToString()
+
                 return obj.ToString() ?? obj.GetType().Name;
             }
             catch (Exception)
             {
-                // Último recurso
+
                 return $"[{obj.GetType().Name}]";
             }
-
-
         }
     }
 }

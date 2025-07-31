@@ -1,4 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+using SGB.Presentation.Handlers;
+using SGB.Presentation.Service;
+using SGB.Presentation.Services.Base;
 
 namespace SGB.Presentation
 {
@@ -8,23 +10,30 @@ namespace SGB.Presentation
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Leer cadena de conexión
             var connectionString = builder.Configuration.GetConnectionString("SGBDatabase");
 
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddScoped<IHttpService, HttpService>();
+
+            builder.Services.AddScoped<IConfiguracionAppHandler, ConfiguracionAppHandler>();
+
+            builder.Services.AddHttpClient<IConfiguracionHttpService, ConfiguracionHttpService>(client =>
+            {
+                client.BaseAddress = new Uri(builder.Configuration["ApiConfig:Url"]);
+            });
+
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseExceptionHandler("/Home/Error");           
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
             app.UseRouting();
@@ -32,8 +41,8 @@ namespace SGB.Presentation
             app.UseAuthorization();
 
             app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
 
             app.Run();
         }

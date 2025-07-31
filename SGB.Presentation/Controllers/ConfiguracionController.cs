@@ -1,86 +1,33 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SGB.Application.Dtos.ConfiguracionDto;
-using SGB.Application.Wrappers;
-using SGB.Presentation.Models;
+﻿using SGB.Presentation.Models;
+using Microsoft.AspNetCore.Mvc;
+using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Presentation.Handlers;
 
 namespace SGB.Presentation.Controllers
 {
     public class ConfiguracionController : Controller
     {
-        private readonly HttpClient _client;
+        private readonly IConfiguracionAppHandler _handler;
 
-        public ConfiguracionController()
+        public ConfiguracionController(IConfiguracionAppHandler handler)
         {
-            _client = new HttpClient
-            {
-                BaseAddress = new Uri("https://localhost:7299/api/")
-            };
+            _handler = handler;
         }
 
         public async Task<IActionResult> Index()
         {
-            var listaConfiguraciones = new List<ConfiguracionModel>();
-
-            try
-            {
-                var response = await _client.GetAsync("Admin/GetAllConfiguraciones");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<ConfiguracionModel>>>();
-
-                    if (apiResponse?.IsSuccess == true && apiResponse.Data != null)
-                    {
-                        listaConfiguraciones = apiResponse.Data;
-                    }
-                    else
-                    {
-                        ViewBag.ErrorMessage = apiResponse?.Message ?? "Error desconocido desde la API.";
-                    }
-                }
-                else
-                {
-                    ViewBag.ErrorMessage = $"Error al conectar con la API. Código: {response.StatusCode}";
-                }
-            }
-            catch (Exception ex)
-            {
-                ViewBag.ErrorMessage = $"Ocurrió una excepción: {ex.Message}";
-            }
-
-            return View(listaConfiguraciones);
+            var lista = await _handler.GetAllAsync();
+            if (!lista.Any())
+                ViewBag.ErrorMessage = "No se encontraron configuraciones.";
+            return View(lista);
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            ConfiguracionModel config = null;
-
-            try
-            {
-                var response = await _client.GetAsync($"Admin/GetConfiguracionById?id={id}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<ConfiguracionModel>>();
-                    if (apiResponse?.IsSuccess == true && apiResponse.Data != null)
-                    {
-                        config = apiResponse.Data;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Excepción al obtener detalles: {ex.Message}";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (config == null)
-            {
-                TempData["ErrorMessage"] = "Configuración no encontrada.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            return View(config);
+            var configuracion = await _handler.GetByIdAsync(id);
+            if (configuracion == null)
+                return NotFound();
+           return View(configuracion);
         }
 
         public IActionResult Create() => View();
@@ -91,58 +38,33 @@ namespace SGB.Presentation.Controllers
         {
             if (!ModelState.IsValid)
                 return View(dto);
-
-            try
+            var response = await _handler.CreateAsync(dto);
+            if (response.IsSuccess)
             {
-                var response = await _client.PostAsJsonAsync("Admin/AddConfiguracion", dto);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    TempData["SuccessMessage"] = "Configuración creada correctamente.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                var error = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
-                ModelState.AddModelError(string.Empty, error?.Message ?? "Error al crear la configuración.");
+                TempData["SuccessMessage"] = "Configuración creada correctamente.";
+                return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, $"Excepción: {ex.Message}");
-            }
-
+            ModelState.AddModelError(string.Empty, response.Message ?? "Error desconocido.");
             return View(dto);
         }
 
+
         public async Task<IActionResult> Edit(int id)
         {
-            try
+            var configuracion = await _handler.GetByIdAsync(id);
+            if (configuracion == null)
+                return NotFound();
+            var model = new ConfiguracionEditModel
             {
-                var response = await _client.GetAsync($"Admin/GetConfiguracionById?id={id}");
-                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<ConfiguracionDto>>();
-
-                if (response.IsSuccessStatusCode && apiResponse?.IsSuccess == true && apiResponse.Data != null)
-                {
-                    var editModel = new ConfiguracionEditModel
-                    {
-                        IDConfiguracion = apiResponse.Data.IDConfiguracion,
-                        Nombre = apiResponse.Data.Nombre,
-                        Valor = apiResponse.Data.Valor,
-                        Descripcion = apiResponse.Data.Descripcion,
-                        EstaActivo = apiResponse.Data.EstaActivo
-                    };
-
-                    return View(editModel);
-                }
-
-                TempData["ErrorMessage"] = apiResponse?.Message ?? "Configuración no encontrada.";
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Error inesperado: {ex.Message}";
-            }
-
-            return RedirectToAction(nameof(Index));
+                IDConfiguracion = configuracion.IDConfiguracion,
+                Nombre = configuracion.Nombre,
+                Valor = configuracion.Valor,
+                Descripcion = configuracion.Descripcion,
+                EstaActivo = configuracion.EstaActivo
+            };
+            return View(model);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -153,37 +75,23 @@ namespace SGB.Presentation.Controllers
                 TempData["ErrorMessage"] = "El ID proporcionado no coincide.";
                 return RedirectToAction(nameof(Index));
             }
-
             if (!ModelState.IsValid)
                 return View(model);
-
-            try
+            var dto = new UpdateConfiguracionDto
             {
-                var updateDto = new UpdateConfiguracionDto
-                {
-                    IDConfiguracion = model.IDConfiguracion,
-                    Nombre = model.Nombre,
-                    Valor = model.Valor,
-                    Descripcion = model.Descripcion,
-                    EstaActivo = model.EstaActivo
-                };
-
-                var response = await _client.PutAsJsonAsync($"Admin/UpdateConfiguracion?id={id}", updateDto);
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
-
-                if (response.IsSuccessStatusCode && result?.IsSuccess == true)
-                {
-                    TempData["SuccessMessage"] = "Configuración actualizada correctamente.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                ModelState.AddModelError(string.Empty, result?.Message ?? "No se pudo actualizar.");
-            }
-            catch (Exception ex)
+                IDConfiguracion = model.IDConfiguracion,
+                Nombre = model.Nombre,
+                Valor = model.Valor,
+                Descripcion = model.Descripcion,
+                EstaActivo = model.EstaActivo
+            };
+            var response = await _handler.UpdateAsync(dto);
+            if (response.IsSuccess)
             {
-                ModelState.AddModelError(string.Empty, $"Excepción al actualizar: {ex.Message}");
+                TempData["SuccessMessage"] = "Configuración actualizada correctamente.";
+                return RedirectToAction(nameof(Index));
             }
-
+            ModelState.AddModelError(string.Empty, response.Message ?? "Error al actualizar la configuración.");
             return View(model);
         }
     }
