@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using SGB.Application.Dtos.LibrosDto.LibroDto;
 using SGB.Presentation.Models.Libro;
 using SGB.Presentation.Services;
@@ -9,12 +8,10 @@ namespace SGB.Presentation.Controllers
     public class LibroController : Controller
     {
         private readonly ILibroHttpService _libroHttpService;
-        private readonly ICategoriaHttpService _categoriaHttpService;
 
-        public LibroController(ILibroHttpService libroHttpService, ICategoriaHttpService categoriaHttpService)
+        public LibroController(ILibroHttpService libroHttpService)
         {
             _libroHttpService = libroHttpService;
-            _categoriaHttpService = categoriaHttpService;
         }
 
         // GET: Libro
@@ -39,12 +36,7 @@ namespace SGB.Presentation.Controllers
         // GET: Libro/Create
         public async Task<IActionResult> Create()
         {
-            var categorias = await _categoriaHttpService.ObtenerTodas();
-            var viewModel = new LibroCreateViewModel
-            {
-                Libro = new LibroModel(),
-                CategoriasDisponibles = new SelectList(categorias, "id", "nombre")
-            };
+            var viewModel = await _libroHttpService.PrepararCreateViewModel();
             return View(viewModel);
         }
 
@@ -73,27 +65,20 @@ namespace SGB.Presentation.Controllers
                 ModelState.AddModelError(string.Empty, apiResponse.Message ?? "Ocurrió un error al crear el libro.");
             }
 
-            var categorias = await _categoriaHttpService.ObtenerTodas();
-            viewModel.CategoriasDisponibles = new SelectList(categorias, "id", "nombre");
-            return View(viewModel);
+            var refreshedViewModel = await _libroHttpService.PrepararCreateViewModel();
+            refreshedViewModel.Libro = viewModel.Libro;
+            return View(refreshedViewModel);
         }
 
         // GET: Libro/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var libro = await _libroHttpService.ObtenerPorId(id);
-            if (libro == null)
+            var viewModel = await _libroHttpService.PrepararEditViewModel(id);
+            if (viewModel == null)
             {
                 TempData["ErrorMessage"] = "El libro que intentas editar no fue encontrado.";
                 return RedirectToAction(nameof(Index));
             }
-
-            var categorias = await _categoriaHttpService.ObtenerTodas();
-            var viewModel = new LibroEditViewModel
-            {
-                Libro = libro,
-                CategoriasDisponibles = new SelectList(categorias, "id", "nombre", libro.IDCategoria)
-            };
             return View(viewModel);
         }
 
@@ -123,9 +108,9 @@ namespace SGB.Presentation.Controllers
                 ModelState.AddModelError(string.Empty, apiResponse.Message ?? "Ocurrió un error al actualizar el libro.");
             }
 
-            var categorias = await _categoriaHttpService.ObtenerTodas();
-            viewModel.CategoriasDisponibles = new SelectList(categorias, "id", "nombre", viewModel.Libro.IDCategoria);
-            return View(viewModel);
+            var refreshedViewModel = await _libroHttpService.PrepararEditViewModel(id);
+            refreshedViewModel.Libro = viewModel.Libro;
+            return View(refreshedViewModel);
         }
 
         // GET: Libro/Delete/5
@@ -140,18 +125,17 @@ namespace SGB.Presentation.Controllers
             return View(libro);
         }
 
+        // POST: Libro/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var apiResponse = await _libroHttpService.Eliminar(id);
-
             if (!apiResponse.IsSuccess)
             {
-                TempData["ErrorMessage"] = apiResponse.Message ?? "Ocurrió un error al eliminar.";
+                TempData["ErrorMessage"] = apiResponse.Message ?? "Ocurrió un error al eliminar el libro.";
             }
             return RedirectToAction(nameof(Index));
         }
-
     }
 }

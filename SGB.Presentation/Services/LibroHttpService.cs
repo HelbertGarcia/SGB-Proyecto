@@ -1,72 +1,78 @@
-﻿using SGB.Application.Dtos.LibrosDto.LibroDto;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using SGB.Application.Dtos.LibrosDto.LibroDto;
 using SGB.Application.Wrappers;
 using SGB.Presentation.Models.Libro;
+using SGB.Presentation.Services.Base;
 
 namespace SGB.Presentation.Services
 {
-    public class LibroHttpService: ILibroHttpService
+    public class LibroHttpService : ILibroHttpService
     {
-        private readonly string _baseUrl = "https://localhost:7299/api/";
+        private readonly IHttpService _httpService;
+        private readonly ICategoriaHttpService _categoriaHttpService;
 
-        private HttpClient CreateClient()
+        public LibroHttpService(IHttpService httpService, ICategoriaHttpService categoriaHttpService)
         {
-            var client = new HttpClient { BaseAddress = new Uri(_baseUrl) };
-            return client;
+            _httpService = httpService;
+            _categoriaHttpService = categoriaHttpService;
         }
 
         public async Task<List<LibroModel>> ObtenerTodos()
         {
-            using var client = CreateClient();
-            var response = await client.GetAsync("Libro/GetAllLibros");
-            if (response.IsSuccessStatusCode)
-            {
-                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<LibroModel>>>();
-                if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Data != null)
-                {
-                    return apiResponse.Data;
-                }
-            }
-            return new List<LibroModel>();
+            var response = await _httpService.GetAsync<List<LibroModel>>("api/Libro/GetAllLibros");
+            return (response != null && response.IsSuccess) ? response.Data : new List<LibroModel>();
         }
 
         public async Task<LibroModel> ObtenerPorId(int id)
         {
-            using var client = CreateClient();
-            var response = await client.GetAsync($"Libro/GetLibroById/{id}");
-            if (response.IsSuccessStatusCode)
-            {
-                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<LibroModel>>();
-                return apiResponse?.Data;
-            }
-            return null;
+            var response = await _httpService.GetAsync<LibroModel>($"api/Libro/GetLibroById/{id}");
+            return (response != null && response.IsSuccess) ? response.Data : null;
         }
 
         public async Task<ApiResponse<LibroDto>> Crear(AddLibroDto dto)
         {
-            using var client = CreateClient();
-            var response = await client.PostAsJsonAsync("Libro/AddLibro", dto);
-            // Devuelve la respuesta completa de la API para que el controlador pueda manejar el éxito o el error.
-            return await response.Content.ReadFromJsonAsync<ApiResponse<LibroDto>>();
+            return await _httpService.PostAsJsonAsync<AddLibroDto, LibroDto>("api/Libro/AddLibro", dto);
         }
 
         public async Task<ApiResponse<object>> Actualizar(int id, UpdateLibroDto dto)
         {
-            using var client = CreateClient();
-            var response = await client.PutAsJsonAsync($"Libro/UpdateLibro/{id}", dto);
-            return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+            return await _httpService.PutAsJsonAsync<UpdateLibroDto, object>($"api/Libro/UpdateLibro/{id}", dto);
         }
 
         public async Task<ApiResponse<bool>> Eliminar(int id)
         {
-            using var client = CreateClient();
-            var response = await client.DeleteAsync($"Libro/DisableLibro/{id}");
+            return await _httpService.DeleteAsync($"api/Libro/DisableLibro/{id}");
+        }
 
-            if (response.IsSuccessStatusCode)
+        public async Task<LibroCreateViewModel> PrepararCreateViewModel()
+        {
+            var categorias = await _categoriaHttpService.ObtenerTodas();
+            var viewModel = new LibroCreateViewModel
             {
-                return new ApiResponse<bool> { IsSuccess = true };
+                Libro = new LibroModel(),
+                CategoriasDisponibles = new SelectList(categorias, "id", "nombre")
+            };
+            return viewModel;
+        }
+
+        public async Task<LibroEditViewModel> PrepararEditViewModel(int id)
+        {
+            var libro = await ObtenerPorId(id);
+            if (libro == null) return null;
+
+            var categorias = await _categoriaHttpService.ObtenerTodas();
+            var categoriaActual = categorias.FirstOrDefault(c => c.nombre == libro.nombreCategoria);
+            if (categoriaActual != null)
+            {
+                libro.IDCategoria = categoriaActual.id;
             }
 
-            return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+            var viewModel = new LibroEditViewModel
+            {
+                Libro = libro,
+                CategoriasDisponibles = new SelectList(categorias, "id", "nombre", libro.IDCategoria)
+            };
+            return viewModel;
         }
     }
 }

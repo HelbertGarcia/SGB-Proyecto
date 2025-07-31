@@ -5,80 +5,40 @@ using SGB.Presentation.Services.Base;
 
 namespace SGB.Presentation.Services
 {
-    public class CategoriaHttpService: ICategoriaHttpService
+    public class CategoriaHttpService : ICategoriaHttpService
     {
-        private readonly string _baseUrl = "https://localhost:7299/api/";
+        private readonly IHttpService _httpService;
 
-        private HttpClient CreateClient()
+        public CategoriaHttpService(IHttpService httpService)
         {
-            var client = new HttpClient { BaseAddress = new Uri(_baseUrl) };
-            return client;
+            _httpService = httpService;
         }
 
         public async Task<List<CategoriaModel>> ObtenerTodas()
         {
-            using var client = CreateClient();
-
-            var response = await client.GetAsync("Categoria/GetAllCategorias");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<List<CategoriaModel>>>();
-                if (apiResponse != null && apiResponse.IsSuccess && apiResponse.Data != null)
-                {
-                    return apiResponse.Data;
-                }
-            }
-            return new List<CategoriaModel>();
+            var response = await _httpService.GetAsync<List<CategoriaModel>>("api/Categoria/GetAllCategorias");
+            return (response != null && response.IsSuccess) ? response.Data : new List<CategoriaModel>();
         }
 
         public async Task<CategoriaModel> ObtenerPorId(int id)
         {
-            using var client = CreateClient();
-
-            var response = await client.GetAsync($"Categoria/GetCategoriaById/{id}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<CategoriaModel>>();
-                return apiResponse?.Data;
-            }
-            return null;
+            var response = await _httpService.GetAsync<CategoriaModel>($"api/Categoria/GetCategoriaById/{id}");
+            return (response != null && response.IsSuccess) ? response.Data : null;
         }
 
         public async Task<ApiResponse<CategoriaDto>> Crear(AddCategoriaDto dto)
         {
-            using var client = CreateClient();
-
-            var response = await client.PostAsJsonAsync("Categoria/AddCategoria", dto);
-
-            return await response.Content.ReadFromJsonAsync<ApiResponse<CategoriaDto>>();
+            return await _httpService.PostAsJsonAsync<AddCategoriaDto, CategoriaDto>("api/Categoria/AddCategoria", dto);
         }
 
         public async Task<ApiResponse<object>> Actualizar(int id, UpdateCategoriaDto dto)
         {
-            using var client = CreateClient();
-
-            var response = await client.PutAsJsonAsync($"Categoria/UpdateCategoria/{id}", dto);
-
-            return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+            return await _httpService.PutAsJsonAsync<UpdateCategoriaDto, object>($"api/Categoria/UpdateCategoria/{id}", dto);
         }
 
         public async Task<ApiResponse<bool>> Eliminar(int id)
         {
-            using var client = CreateClient();
-
-            var response = await client.DeleteAsync($"Categoria/DisableCategoria/{id}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
-                {
-                    return new ApiResponse<bool> { IsSuccess = true };
-                }
-                return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
-            }
-            return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+            return await _httpService.DeleteAsync($"api/Categoria/DisableCategoria/{id}");
         }
     }
 }

@@ -11,5 +11,7 @@ namespace SGB.Presentation.Services
         Task<ApiResponse<LibroDto>> Crear(AddLibroDto dto);
         Task<ApiResponse<object>> Actualizar(int id, UpdateLibroDto dto);
         Task<ApiResponse<bool>> Eliminar(int id);
+        Task<LibroCreateViewModel> PrepararCreateViewModel();
+        Task<LibroEditViewModel> PrepararEditViewModel(int id);
     }
 }

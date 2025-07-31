@@ -11,6 +11,7 @@ namespace SGB.Presentation
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
             builder.Services.AddHttpClient("ApiSGB", client =>
             {
                 client.BaseAddress = new Uri(builder.Configuration["ApiConfig:BaseUrl"]);
