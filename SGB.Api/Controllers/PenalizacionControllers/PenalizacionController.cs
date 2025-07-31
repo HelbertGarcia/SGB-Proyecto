@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
-using SGB.Domain.Base;
+using SGB.Application.Wrappers;
 using SGB.Application.Contracts.Interfaces;
 
 namespace SGB.Api.Controllers.PenalizacionControllers
@@ -24,65 +22,136 @@ namespace SGB.Api.Controllers.PenalizacionControllers
         public async Task<IActionResult> GetAllPenalizaciones()
         {
             var result = await _penalizacionService.GetAllAsync();
+
             if (!result.IsSuccess)
-                return BadRequest(result);
-            return Ok(result.Data);
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = result.Message ?? "Error al obtener penalizaciones"
+                });
+
+            return Ok(new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Penalizaciones obtenidas correctamente",
+                Data = result.Data
+            });
         }
 
         [HttpGet("GetPenalizacionById")]
         public async Task<IActionResult> GetPenalizacionById(int idPenalizacion)
         {
             var result = await _penalizacionService.GetByIdAsync(idPenalizacion);
+
             if (!result.IsSuccess)
-                return BadRequest(result);
-            return Ok(result.Data);
+                return NotFound(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = result.Message ?? "Penalización no encontrada"
+                });
+
+            return Ok(new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Penalización obtenida correctamente",
+                Data = result.Data
+            });
         }
 
         [HttpPost("AddPenalizacion")]
         public async Task<IActionResult> AddPenalizacion([FromBody] AddPenalizacionDto addPenalizacionDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = "Datos inválidos",
+                    Data = ModelState
+                });
 
             var result = await _penalizacionService.AddAsync(addPenalizacionDto);
-            if (!result.IsSuccess)
-                return BadRequest(result);
 
-            var nuevaPenalizacionDto = result.Data as PenalizacionResponseDto;
+            if (!result.IsSuccess)
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = result.Message
+                });
+
+            var nuevaPenalizacionDto = result.Data;
+
             return CreatedAtAction(nameof(GetPenalizacionById),
-                                   new { idPenalizacion = nuevaPenalizacionDto?.IDPenalizacion },
-                                   nuevaPenalizacionDto);
+                new { idPenalizacion = nuevaPenalizacionDto.IDPenalizacion },
+                new ApiResponse<object>
+                {
+                    IsSuccess = true,
+                    Message = "Penalización creada correctamente",
+                    Data = nuevaPenalizacionDto
+                });
         }
 
         [HttpPut("UpdatePenalizacion")]
         public async Task<IActionResult> UpdatePenalizacion(int idPenalizacion, [FromBody] UpdatePenalizacionDto updatePenalizacionDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = "Datos inválidos",
+                    Data = ModelState
+                });
 
             if (idPenalizacion != updatePenalizacionDto.IDPenalizacion)
-                return BadRequest(new { Message = "El ID de la ruta no coincide con el del cuerpo de la solicitud." });
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = "El ID de la ruta no coincide con el del cuerpo de la solicitud"
+                });
 
             var result = await _penalizacionService.UpdateAsync(updatePenalizacionDto);
-            if (!result.IsSuccess)
-                return BadRequest(result);
 
-            return Ok(result.Data);
+            if (!result.IsSuccess)
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = result.Message
+                });
+
+            return Ok(new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Penalización actualizada correctamente",
+                Data = result.Data
+            });
         }
 
-        [HttpDelete("DisablePenalizacion")]
-        public async Task<IActionResult> DisablePenalizacion(int idPenalizacion)
+         [HttpDelete("DisablePenalizacion")]
+        public async Task<IActionResult> DisablePenalizacion([FromBody] DisablePenalizacionDto disableDto)
         {
-            if (idPenalizacion <= 0)
-                return BadRequest(new { Message = "ID inválido." });
+            if (!ModelState.IsValid)
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = "Datos inválidos",
+                    Data = ModelState
+                });
 
-            var dto = new DisablePenalizacionDto { IDPenalizacion = idPenalizacion };
-            var result = await _penalizacionService.DeleteAsync(dto);
+            var result = await _penalizacionService.DeleteAsync(disableDto);
 
             if (!result.IsSuccess)
-                return BadRequest(result);
+                return BadRequest(new ApiResponse<object>
+                {
+                    IsSuccess = false,
+                    Message = result.Message
+                });
 
-            return Ok(result);
+            return Ok(new ApiResponse<object>
+            {
+                IsSuccess = true,
+                Message = "Penalización desactivada correctamente"
+            });
         }
+
     }
 }
+

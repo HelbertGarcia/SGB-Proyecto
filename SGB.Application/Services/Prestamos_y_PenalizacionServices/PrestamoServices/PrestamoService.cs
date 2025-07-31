@@ -185,7 +185,7 @@ public sealed class PrestamoService : IPrestamosServices
                 }
             }
 
-            return OperationResult<string>.Success(mensaje);
+            return OperationResult<string>.Success(null, mensaje);
         }
         catch (Exception ex)
         {

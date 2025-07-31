@@ -13,17 +13,20 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
     {
         private readonly IPrestamoRepository _prestamoRepository;
         private readonly IPenalizacionRepository _penalizacionRepository;
-        private readonly ILibroRepository _libroRepository; // Inyéctalo
+        private readonly ILibroRepository _libroRepository; 
+     //   private readonly IPersonaRepository _personaRepository;
 
 
         public PrestamoBusinessValidator(
             IPrestamoRepository prestamoRepository,
             IPenalizacionRepository penalizacionRepository,
             ILibroRepository libroRepository)
+          //  IPersonaRepository personaRepository)
         {
             _prestamoRepository = prestamoRepository;
             _penalizacionRepository = penalizacionRepository;
             _libroRepository = libroRepository;
+          //  _personaRepository = personaRepository;
         }
 
 
@@ -33,7 +36,14 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
             if (dto == null)
                 return OperationResult<string>.Failure("Datos de préstamo inválidos.");
 
-            // 1. Validar que el libro exista y esté activo
+          /*  // Validar que el usuario exista y esté activo
+            var existeUsuarioResult = await _personaRepository.ExisteUsuarioPorIdAsync(dto.UsuarioId);
+            if (!existeUsuarioResult.IsSuccess)
+                return OperationResult<string>.Failure(existeUsuarioResult.Message);
+            if (!existeUsuarioResult.Data)
+                return OperationResult<string>.Failure("El usuario especificado no existe o está inactivo.");*/
+
+            // . Validar que el libro exista y esté activo
             var libroResult = await _libroRepository.BuscarPorIsbnAsync(dto.ISBN);
             if (!libroResult.IsSuccess || libroResult.Data == null)
                 return OperationResult<string>.Failure("El libro especificado no existe.");
@@ -41,7 +51,7 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
             if (!libroResult.Data.EstaActivo)
                 return OperationResult<string>.Failure("El libro especificado no está activo.");
 
-            // 2. Validar préstamos activos del usuario (RF3.5)
+            // . Validar préstamos activos del usuario (RF3.5)
             var prestamosActivosResult = await _prestamoRepository.GetPrestamosActivosPorUsuarioAsync(dto.UsuarioId);
             if (!prestamosActivosResult.IsSuccess)
                 return OperationResult<string>.Failure(prestamosActivosResult.Message);
@@ -50,7 +60,7 @@ namespace SGB.Application.Base.ValidatorServices.Prestamos
             if (prestamosActivos != null && prestamosActivos.Any(p => p.ISBN == dto.ISBN))
                 return OperationResult<string>.Failure("El usuario ya tiene un préstamo activo para este libro.");
 
-            // 3. Validar penalizaciones activas (RF3.5)
+            // . Validar penalizaciones activas (RF3.5)
             var penalizacionesResult = await _penalizacionRepository.GetPenalizacionesActivasPorUsuarioAsync(dto.UsuarioId);
             if (!penalizacionesResult.IsSuccess)
                 return OperationResult<string>.Failure(penalizacionesResult.Message);

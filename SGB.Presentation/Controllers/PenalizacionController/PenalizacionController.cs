@@ -1,116 +1,58 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using SGB.Presentation.Models;
 using SGB.Presentation.Models.PenalizacionModels;
-using System.Text.Json;
-using System.Text;
+using SGB.Presentation.Services;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-
-namespace SGB.Presentation.Controllers.PenalizacionController
+namespace SGB.Presentation.Controllers
 {
     public class PenalizacionController : Controller
     {
+        private readonly IPenalizacionHttpService _penalizacionHttpService;
+        private readonly ILogger<PenalizacionController> _logger;
 
-        private readonly string _baseApiUrl = "https://localhost:7299/api/";
+        public PenalizacionController(IPenalizacionHttpService penalizacionHttpService, ILogger<PenalizacionController> logger)
+        {
+            _penalizacionHttpService = penalizacionHttpService;
+            _logger = logger;
+        }
 
-
-
-        // GET: PenalizacionController
-        
+        // GET: Penalizacion
         public async Task<IActionResult> Index()
         {
-            List<PenalizacionModel> penalizaciones;
+            var response = await _penalizacionHttpService.GetPenalizacionesAsync();
 
-            try
+            if (!response.IsSuccess)
             {
-                using (var client = new HttpClient())
-                {
-
-                    client.BaseAddress = new Uri(_baseApiUrl);
-                    var response = await client.GetAsync("Penalizacion/GetPenalizaciones");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        penalizaciones = System.Text.Json.JsonSerializer.Deserialize<List<PenalizacionModel>>(responseString);
-
-                    }
-                    else
-                    {
-                        penalizaciones = new List<PenalizacionModel>();
-                    }
-
-
-                }
-                
-            }
-            catch(Exception ex)
-            {
-                penalizaciones = new List<PenalizacionModel>();
+                _logger.LogWarning("Error al obtener las penalizaciones: {Message}", response.Message);
+                TempData["ErrorMessage"] = response.Message ?? "No se pudieron cargar las penalizaciones.";
+                return View(new List<PenalizacionModel>());
             }
 
-            return View(penalizaciones);
+            return View(response.Data);
         }
 
-
-
-
-
-
-
-
-
-        // GET: PenalizacionController/Details/5
+        // GET: Penalizacion/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            PenalizacionModel penalizacion = null;
+            var response = await _penalizacionHttpService.GetPenalizacionByIdAsync(id);
 
-            try
+            if (!response.IsSuccess || response.Data == null)
             {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(_baseApiUrl);
-                    var response = await client.GetAsync($"Penalizacion/GetPenalizacionById?idPenalizacion={id}");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        penalizacion = System.Text.Json.JsonSerializer.Deserialize<PenalizacionModel>(responseString);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error obteniendo detalles de la penalización: {ex.Message}");
+                TempData["ErrorMessage"] = response.Message ?? "Penalización no encontrada.";
+                return RedirectToAction(nameof(Index));
             }
 
-            if (penalizacion == null)
-                return NotFound();
-
-            return View(penalizacion);
+            return View(response.Data);
         }
 
+        // GET: Penalizacion/Create
+        public IActionResult Create() => View();
 
-
-
-
-
-
-        // GET: PenalizacionController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-
-
-
-
-
-
-
-
-        // POST: PenalizacionController/Create
+        // POST: Penalizacion/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PenalizacionCreateModel model)
@@ -118,86 +60,45 @@ namespace SGB.Presentation.Controllers.PenalizacionController
             if (!ModelState.IsValid)
                 return View(model);
 
-            try
+            var response = await _penalizacionHttpService.CreatePenalizacionAsync(model);
+
+            if (response.IsSuccess)
             {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri(_baseApiUrl);
-
-                var dto = new
-                {
-                    UsuarioId = model.UsuarioId,
-                    IDPrestamo = model.IDPrestamo,
-                    FechaInicio = model.FechaInicio,
-                    FechaFin = model.FechaFin,
-                    Monto = model.Monto,
-                    Motivo = model.Motivo
-                };
-
-                var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync("Penalizacion/AddPenalizacion", jsonContent);
-
-                if (response.IsSuccessStatusCode)
-                    return RedirectToAction(nameof(Index));
-
-                ModelState.AddModelError("", "Error al crear la penalización.");
+                TempData["SuccessMessage"] = "Penalización creada exitosamente.";
+                return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                ModelState.AddModelError("", "Error inesperado al crear la penalización.");
-            }
+
+            ModelState.AddModelError(string.Empty, response.Message ?? "Error al crear la penalización.");
+            _logger.LogWarning("Error al crear la penalización: {Message}", response.Message);
 
             return View(model);
         }
 
-
-
-
-
-
-
-
-        // GET: PenalizacionController/Edit/5
+        // GET: Penalizacion/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            PenalizacionModel penalizacion = null;
+            var response = await _penalizacionHttpService.GetPenalizacionByIdAsync(id);
 
-            try
+            if (!response.IsSuccess || response.Data == null)
             {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri(_baseApiUrl);
-                var response = await client.GetAsync($"Penalizacion/GetPenalizacionById?idPenalizacion={id}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    penalizacion = JsonSerializer.Deserialize<PenalizacionModel>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                }
+                TempData["ErrorMessage"] = response.Message ?? "Penalización no encontrada para edición.";
+                return RedirectToAction(nameof(Index));
             }
-            catch { }
 
-            if (penalizacion == null) return NotFound();
+            var penalizacion = response.Data;
 
             var editModel = new PenalizacionEditModel
             {
-
                 IDPenalizacion = penalizacion.idPenalizacion,
                 FechaFin = penalizacion.fechaFin,
                 Motivo = penalizacion.motivo,
-               Monto = penalizacion.monto,
+                Monto = penalizacion.monto
             };
 
             return View(editModel);
         }
 
-
-
-
-
-
-
-
-
-        // POST: PenalizacionController/Edit/5
+        // POST: Penalizacion/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(PenalizacionEditModel model)
@@ -205,63 +106,41 @@ namespace SGB.Presentation.Controllers.PenalizacionController
             if (!ModelState.IsValid)
                 return View(model);
 
-            try
+            var response = await _penalizacionHttpService.UpdatePenalizacionAsync(model);
+
+            if (response.IsSuccess)
             {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri(_baseApiUrl);
-
-                var dto = new
-                {
-                    IDPenalizacion = model.IDPenalizacion, 
-                    FechaFin = model.FechaFin,
-                    Motivo = model.Motivo,
-                    Monto = model.Monto
-                };
-
-                var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-                var response = await client.PutAsync($"Penalizacion/UpdatePenalizacion?idPenalizacion={model.IDPenalizacion}", jsonContent);
-
-                if (response.IsSuccessStatusCode)
-                    return RedirectToAction(nameof(Index));
-
-                ModelState.AddModelError("", "Error al actualizar la penalización.");
+                TempData["SuccessMessage"] = "Penalización actualizada correctamente.";
+                return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                ModelState.AddModelError("", "Error inesperado al actualizar la penalización.");
-            }
+
+            ModelState.AddModelError(string.Empty, response.Message ?? "Error al actualizar la penalización.");
+            _logger.LogWarning("Error al actualizar penalización ID {ID}: {Message}", model.IDPenalizacion, response.Message);
 
             return View(model);
         }
 
-
-
-
-
-
-
-        //nolo necesitaremos
-
+        // Opcional: si implementas deshabilitar penalización
         /*
-        // GET: PenalizacionController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: PenalizacionController/Delete/5
+        // POST: Penalizacion/Disable/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<IActionResult> Disable(int id)
         {
-            try
+            var response = await _penalizacionHttpService.DisablePenalizacionAsync(id);
+
+            if (response.IsSuccess)
             {
-                return RedirectToAction(nameof(Index));
+                TempData["SuccessMessage"] = "Penalización desactivada correctamente.";
             }
-            catch
+            else
             {
-                return View();
+                TempData["ErrorMessage"] = response.Message ?? "Error al desactivar la penalización.";
+                _logger.LogWarning("Error al desactivar penalización ID {ID}: {Message}", id, response.Message);
             }
-        }*/
+
+            return RedirectToAction(nameof(Index));
+        }
+        */
     }
 }

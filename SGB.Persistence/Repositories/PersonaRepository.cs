@@ -123,5 +123,24 @@ namespace SGB.Persistence.Repositories
             }
         }
         #endregion
+        /*
+        public async Task<OperationResult<bool>> ExisteUsuarioPorIdAsync(int usuarioId)
+        {
+            if (usuarioId <= 0)
+                return OperationResult<bool>.Failure("ID de usuario inválido.");
+
+            try
+            {
+                var existe = await Entity.AnyAsync(u => u.Id == usuarioId && u.EstaActivo);
+                return OperationResult<bool>.Success(existe);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = _configuration["ErrorMessages:Usuarios:ExisteUsuario"] ?? "Error al verificar existencia de usuario.";
+                _logger.LogError(ex, "{ErrorMessage} para el ID: {UsuarioID}", errorMessage, usuarioId);
+                return OperationResult<bool>.Failure(errorMessage);
+            }
+        }
+        */
     }
 }

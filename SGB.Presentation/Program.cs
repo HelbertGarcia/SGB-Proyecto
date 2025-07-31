@@ -1,3 +1,6 @@
+using SGB.Presentation.Services.Base;
+using SGB.Presentation.Services;
+
 namespace SGB.Presentation
 {
     public class Program
@@ -6,8 +9,21 @@ namespace SGB.Presentation
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddHttpClient("ApiSGB", client =>
+            {
+                var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
+                client.BaseAddress = new Uri(baseUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+            builder.Services.AddScoped<IHttpService, HttpService>();
+            builder.Services.AddScoped<IPrestamoHttpService, PrestamoHttpService>();
+            builder.Services.AddScoped<IPenalizacionHttpService, PenalizacionHttpService>();
+
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddLogging();
 
             var app = builder.Build();
 

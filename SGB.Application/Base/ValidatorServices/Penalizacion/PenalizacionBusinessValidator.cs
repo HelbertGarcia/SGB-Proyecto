@@ -19,6 +19,7 @@ public class PenalizacionBusinessValidator : IPenalizacionBusinessValidator
     // Valida la creación de una penalización
     public async Task<OperationResult<string>> ValidateForAddAsync(AddPenalizacionDto dto)
     {
+
         if (dto == null)
             return OperationResult<string>.Failure("Datos inválidos para penalización.");
 

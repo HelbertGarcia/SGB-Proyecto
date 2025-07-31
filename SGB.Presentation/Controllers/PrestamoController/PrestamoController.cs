@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SGB.Presentation.Models;
 using SGB.Presentation.Models.PrestamoModels;
+using SGB.Presentation.Services;
 using System.Text;
 using System.Text.Json;
 
@@ -9,99 +10,51 @@ namespace SGB.Presentation.Controllers
 {
     public class PrestamoController : Controller
     {
-        private readonly string _baseApiUrl = "https://localhost:7299/api/";
-        // Consistente HTTPS
+
+        private readonly IPrestamoHttpService _prestamoHttpService;
+        private readonly ILogger<PrestamoController> _logger;
+
+        public PrestamoController(IPrestamoHttpService prestamoService, ILogger<PrestamoController> logger)
+        {
+            _prestamoHttpService = prestamoService;
+            _logger = logger;
+        }
 
         // GET: PrestamoController
 
+        // GET: Prestamo
         public async Task<IActionResult> Index()
         {
-            List<PrestamoModel> prestamos;
+            var response = await _prestamoHttpService.GetPrestamosAsync();
 
-            try
+            if (!response.IsSuccess)
             {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(_baseApiUrl);
-                    var response = await client.GetAsync("Prestamo/GetPrestamos");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        prestamos = System.Text.Json.JsonSerializer.Deserialize<List<PrestamoModel>>(responseString);
-                    }
-                    else
-                    {
-                        prestamos = new List<PrestamoModel>();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                prestamos = new List<PrestamoModel>();
+                _logger.LogWarning("Error al obtener los préstamos: {Message}", response.Message);
+                TempData["ErrorMessage"] = response.Message ?? "No se pudieron cargar los préstamos.";
+                return View(new List<PrestamoModel>());
             }
 
-            return View(prestamos);
+            return View(response.Data);
         }
 
-
-
-
-
-
-        // GET: PrestamoController/Details/5
-        // Acción para detalles de un préstamo por ID
+        // GET: Prestamo/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            PrestamoModel prestamo = null;
+            var response = await _prestamoHttpService.GetPrestamoByIdAsync(id);
 
-            try
+            if (!response.IsSuccess || response.Data == null)
             {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(_baseApiUrl);
-                    var response = await client.GetAsync($"Prestamo/GetPrestamosById?id={id}");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        prestamo = System.Text.Json.JsonSerializer.Deserialize<PrestamoModel>(responseString);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                TempData["ErrorMessage"] = response.Message ?? "Préstamo no encontrado.";
+                return RedirectToAction(nameof(Index));
             }
 
-            if (prestamo == null)
-                return NotFound();
-
-            return View(prestamo);
+            return View(response.Data);
         }
 
+        // GET: Prestamo/Create
+        public IActionResult Create() => View();
 
-
-
-
-
-
-
-        // GET: PrestamoController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-
-
-
-
-
-
-
-
-        // POST: PrestamoController/Create
+        // POST: Prestamo/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PrestamoCreateModel model)
@@ -109,88 +62,42 @@ namespace SGB.Presentation.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            try
+            var response = await _prestamoHttpService.CreatePrestamoAsync(model);
+
+            if (response.IsSuccess)
             {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri(_baseApiUrl);
-
-                var dto = new
-                {
-                    UsuarioId = model.UsuarioId,
-                    ISBN = model.ISBN,
-                    FechaInicio = model.FechaInicio,
-                    FechaFin = model.FechaFin
-                };
-
-                var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync("Prestamo/AddPrestamo", jsonContent);
-
-                if (response.IsSuccessStatusCode)
-                    return RedirectToAction(nameof(Index));
-
-                var errorContent = await response.Content.ReadAsStringAsync();
-                ModelState.AddModelError("", $"Error al crear el préstamo: {errorContent}");
+                TempData["SuccessMessage"] = "Préstamo creado exitosamente.";
+                return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Error inesperado al crear el préstamo: {ex.Message}");
-            }
+
+            ModelState.AddModelError(string.Empty, response.Message ?? "Error al crear el préstamo.");
+            _logger.LogWarning("Error al crear el préstamo: {Message}", response.Message);
 
             return View(model);
         }
 
-
-
-
-
-
-
-
-
-        // GET: PrestamoController/Edit/5
+        // GET: Prestamo/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            PrestamoModel prestamo = null;
-            try
+            var response = await _prestamoHttpService.GetPrestamoByIdAsync(id);
+
+            if (!response.IsSuccess || response.Data == null)
             {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri(_baseApiUrl);
-                var response = await client.GetAsync($"Prestamo/GetPrestamosById?id={id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    prestamo = JsonSerializer.Deserialize<PrestamoModel>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                }
+                TempData["ErrorMessage"] = response.Message ?? "Préstamo no encontrado para edición.";
+                return RedirectToAction(nameof(Index));
             }
-            catch { }
 
-            if (prestamo == null) return NotFound();
-
-            // Mapear PrestamoModel a PrestamoEditModel para la vista
             var editModel = new PrestamoEditModel
             {
-                IDPrestamo = prestamo.id,
-                FechaInicio = prestamo.fechaInicio,
-                FechaFin = prestamo.fechaFin
+                IDPrestamo = response.Data.id,
+                FechaInicio = response.Data.fechaInicio,
+                FechaFin = response.Data.fechaFin
             };
 
             return View(editModel);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // POST: PrestamoController/Edit/5
+        // POST: Prestamo/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(PrestamoEditModel model)
@@ -198,81 +105,44 @@ namespace SGB.Presentation.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            try
+            var response = await _prestamoHttpService.UpdatePrestamoAsync(model);
+
+            if (response.IsSuccess)
             {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri(_baseApiUrl);
-
-                var dto = new
-                {
-                    IDPrestamo = model.IDPrestamo,
-                    FechaInicio = model.FechaInicio,
-                    FechaFin = model.FechaFin
-                };
-
-                var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-                var response = await client.PutAsync($"Prestamo/UpdatePrestamo?id={model.IDPrestamo}", jsonContent);
-
-                if (response.IsSuccessStatusCode)
-                    return RedirectToAction(nameof(Index));
-
-                var errorContent = await response.Content.ReadAsStringAsync();
-                ModelState.AddModelError("", $"Error al actualizar el préstamo: {errorContent}");
+                TempData["SuccessMessage"] = "Préstamo actualizado correctamente.";
+                return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"Error inesperado al actualizar el préstamo: {ex.Message}");
-            }
+
+            ModelState.AddModelError(string.Empty, response.Message ?? "Error al actualizar el préstamo.");
+            _logger.LogWarning("Error al actualizar préstamo ID {ID}: {Message}", model.IDPrestamo, response.Message);
 
             return View(model);
         }
 
-
-
-
-
-
-
-        // GET: PrestamoController/Devolver/5
+        // GET: Prestamo/Devolver/5
         public async Task<IActionResult> Devolver(int id)
         {
             if (id <= 0)
                 return BadRequest("ID inválido");
 
-            PrestamoModel prestamo = null;
+            var response = await _prestamoHttpService.GetPrestamoByIdAsync(id);
 
-            try
+            if (!response.IsSuccess || response.Data == null)
             {
-                using var client = new HttpClient { BaseAddress = new Uri(_baseApiUrl) };
-                var response = await client.GetAsync($"Prestamo/GetPrestamosById?id={id}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseString = await response.Content.ReadAsStringAsync();
-                    prestamo = JsonSerializer.Deserialize<PrestamoModel>(
-                        responseString,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                }
+                TempData["ErrorMessage"] = response.Message ?? "Préstamo no encontrado para devolución.";
+                return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error al obtener préstamo: {ex.Message}";
-            }
-
-            if (prestamo == null)
-                return NotFound("No se encontró el préstamo.");
 
             var model = new PrestamoDevolucionModel
             {
-                IdPrestamo = prestamo.id,
+                IdPrestamo = response.Data.id,
                 FechaDevolucion = DateTime.Now
             };
 
             return View(model);
         }
 
-
-        // POST: PrestamoController/Devolver
+        // POST: Prestamo/Devolver
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Devolver(PrestamoDevolucionModel model)
@@ -280,38 +150,19 @@ namespace SGB.Presentation.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            try
+            var response = await _prestamoHttpService.RegistrarDevolucionAsync(model);
+
+            if (response.IsSuccess)
             {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri(_baseApiUrl);
-
-                var dto = new
-                {
-                    idPrestamo = model.IdPrestamo,
-                    fechaDevolucion = model.FechaDevolucion
-                };
-
-                var jsonContent = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync("Prestamo/Registrar-devolucion", jsonContent);
-
-                if (response.IsSuccessStatusCode)
-                    return RedirectToAction(nameof(Index));
-
-                ModelState.AddModelError("", "Error al registrar la devolución.");
+                TempData["SuccessMessage"] = "Devolución registrada exitosamente.";
+                return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                ModelState.AddModelError("", "Error inesperado al devolver el préstamo.");
-            }
+
+            ModelState.AddModelError(string.Empty, response.Message ?? "Error al registrar la devolución.");
+            _logger.LogWarning("Error devolviendo préstamo ID {ID}: {Message}", model.IdPrestamo, response.Message);
 
             return View(model);
         }
-
-
-
-
-
-
 
 
 
@@ -353,6 +204,9 @@ namespace SGB.Presentation.Controllers
         {
             return View();
         }
+
+
+
 
         // POST: PrestamoController/Delete/5
         [HttpPost]
