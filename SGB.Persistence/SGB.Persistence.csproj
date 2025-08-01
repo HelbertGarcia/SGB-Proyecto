@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SGB.Application\SGB.Application.csproj" />
-    <ProjectReference Include="..\SGB.Domain\SGB.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

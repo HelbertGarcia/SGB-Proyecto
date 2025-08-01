@@ -141,7 +141,7 @@ namespace SGB.Api.Test.IntegrationTests
             var protegidaResult = await service.AddAsync(protegida);
             var deleteResult = await service.DeleteAsync(protegidaResult.Data.IDConfiguracion);
             Assert.False(deleteResult.IsSuccess);
-            Assert.Equal("Esta configuración es protegida y no puede eliminarse.", deleteResult.Message);
+            Assert.Equal("Esta configuración es protegida y no puede deshabilitarse.", deleteResult.Message);
         }
     }
 }

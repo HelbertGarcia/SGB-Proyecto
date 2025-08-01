@@ -94,7 +94,7 @@ namespace SGB.Persistence.Repositories
                 }
                 if (configParaEliminar.Nombre == "config_sistema_base")
                 {
-                    var msg = "Esta configuración es protegida y no puede eliminarse.";
+                    var msg = "Esta configuración es protegida y no puede deshabilitarse.";
                     _logger.Error(msg + " - ID: {0}", id);
                     return OperationResult<bool>.Failure(msg);
                 }
@@ -105,8 +105,8 @@ namespace SGB.Persistence.Repositories
             catch (Exception ex)
             {
                 var errorMessage = _configuration["ErrorMessages:BaseRepository:DeleteError"];
-                _logger.Error(ex, "{0} - ID: {1}", errorMessage ?? "Error al eliminar configuración", id);
-                return OperationResult<bool>.Failure(errorMessage ?? "Ocurrió un error al eliminar la configuración.");
+                _logger.Error(ex, "{0} - ID: {1}", errorMessage ?? "Error al deshabilitar configuración", id);
+                return OperationResult<bool>.Failure(errorMessage ?? "Ocurrió un error al deshabilitar la configuración.");
             }
         }
 

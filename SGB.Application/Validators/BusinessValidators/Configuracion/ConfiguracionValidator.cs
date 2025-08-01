@@ -43,10 +43,10 @@ namespace SGB.Api.Validators.BusinessValidators.Configuracion
         {
             var actual = await _configuracionRepository.GetByIdAsync(id);
             if (!actual.IsSuccess || actual.Data == null)
-            return OperationResult<bool>.Failure("La configuración que desea eliminar no existe.");
+            return OperationResult<bool>.Failure("La configuración que desea deshabilitar no existe.");
             var nombre = actual.Data.Nombre?.ToLowerInvariant() ?? string.Empty;
             if (nombre.Contains("sistema") || nombre.Contains("protegida"))
-            return OperationResult<bool>.Failure("Esta configuración es protegida y no puede eliminarse.");
+            return OperationResult<bool>.Failure("Esta configuración es protegida y no puede deshabilitarse.");
             return OperationResult<bool>.Success(true);
         }
     }

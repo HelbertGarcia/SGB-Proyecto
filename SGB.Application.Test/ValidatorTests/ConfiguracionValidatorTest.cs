@@ -105,7 +105,7 @@ namespace SGB.Api.Test.ValidatorTests
             var result = await _validator.ValidateForDeleteAsync(1);
             // Assert
             Assert.False(result.IsSuccess);
-            Assert.Equal("Esta configuración es protegida y no puede eliminarse.", result.Message);
+            Assert.Equal("Esta configuración es protegida y no puede deshabilitarse.", result.Message);
         }
     }
 }

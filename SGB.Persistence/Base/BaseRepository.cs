@@ -61,7 +61,7 @@ namespace SGB.Persistence.Base
             {
                 var entityToDelete = await Entity.FindAsync(id);
                 if (entityToDelete == null)
-                    return OperationResult<bool>.Failure("Entidad no encontrada para eliminar.");
+                    return OperationResult<bool>.Failure("Entidad no encontrada para deshabilitar.");
 
                 Entity.Remove(entityToDelete);
                 await _context.SaveChangesAsync();

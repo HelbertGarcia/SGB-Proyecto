@@ -85,7 +85,7 @@ namespace SGB.Api.Services.ConfiguracionServices
             var entity = result.Data;
 
             if (entity.Nombre == "config_sistema_base")
-                return OperationResult<bool>.Failure("Esta configuración es protegida y no puede eliminarse.");
+                return OperationResult<bool>.Failure("Esta configuración es protegida y no puede deshabilitarse.");
 
             return await _repo.DeleteAsync(id);
         }

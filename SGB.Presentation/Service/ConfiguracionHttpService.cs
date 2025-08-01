@@ -95,9 +95,6 @@ namespace SGB.Presentation.Service
                 Message = deserialized.Message,
                 Data = deserialized.Data
             };
-        }
-
-        
-        
+        }   
     }
 }

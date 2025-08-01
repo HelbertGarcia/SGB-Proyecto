@@ -66,10 +66,10 @@ namespace SGB.Presentation.Services.Base
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return new ApiResponse<bool> { IsSuccess = true, Data = true, Message = "Eliminado correctamente." };
+                    return new ApiResponse<bool> { IsSuccess = true, Data = true, Message = "Deshabilitando correctamente." };
                 }
                 var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
-                return result ?? new ApiResponse<bool> { IsSuccess = false, Message = $"Error al eliminar: {response.ReasonPhrase}" };
+                return result ?? new ApiResponse<bool> { IsSuccess = false, Message = $"Error al deshabilitar: {response.ReasonPhrase}" };
             }
             catch (Exception ex)
             {
