@@ -1,6 +1,7 @@
-﻿using SGB.Presentation.Models;
+﻿using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Application.Dtos.DashboardDto;
 using SGB.Application.Wrappers;
-using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Presentation.Models;
 
 namespace SGB.Presentation.Handlers
 { 
@@ -10,5 +11,6 @@ namespace SGB.Presentation.Handlers
         Task<ConfiguracionModel?> GetByIdAsync(int id);
         Task<ApiResponse<object>> CreateAsync(AddConfiguracionDto dto);
         Task<ApiResponse<object>> UpdateAsync(UpdateConfiguracionDto dto);
+        Task<DashboardDto?> GetDashboardAsync();
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
+using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Application.Dtos.DashboardDto;
 using SGB.Application.Wrappers;
 using SGB.Presentation.Models;
-using SGB.Api.Dtos.ConfiguracionDto;
 
 namespace SGB.Presentation.Service
 {
@@ -95,6 +96,24 @@ namespace SGB.Presentation.Service
                 Message = deserialized.Message,
                 Data = deserialized.Data
             };
-        }   
+        }
+
+        public async Task<ApiResponse<DashboardDto>> GetDashboardAsync()
+        {
+            var response = await _httpClient.GetAsync("admin/DashboardConfiguracion");
+            if (!response.IsSuccessStatusCode)
+                return new ApiResponse<DashboardDto> { IsSuccess = false, Message = $"Error: {response.StatusCode}" };
+
+            var content = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(content))
+                return new ApiResponse<DashboardDto> { IsSuccess = false, Message = "Respuesta vacía de la API" };
+
+            var deserialized = JsonSerializer.Deserialize<ApiResponse<DashboardDto>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return deserialized ?? new ApiResponse<DashboardDto> { IsSuccess = false, Message = "No se pudo deserializar la respuesta." };
+        }
     }
 }

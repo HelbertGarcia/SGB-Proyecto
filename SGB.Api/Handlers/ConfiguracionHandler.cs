@@ -1,5 +1,6 @@
 ﻿using SGB.Api.Contracts.Service.IConfiguracionService;
 using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Application.Dtos.DashboardDto;
 using SGB.Application.Wrappers;
 using SGB.Domain.Base;
 
@@ -49,6 +50,12 @@ namespace SGB.Api.Handlers
         {
             var result = await _configuracionService.UpdateAsync(id, dto);
             return Respuesta(result, "Configuración actualizada correctamente.");
+        }
+
+        public async Task<ApiResponse<DashboardDto>> ObtenerDatosDashboardAsync()
+        {
+            var result = await _configuracionService.ObtenerDatosDashboardAsync();
+            return Respuesta(result, "Dashboard generado correctamente.");
         }
 
         public async Task<ApiResponse<object>> DeleteAsync(int id)

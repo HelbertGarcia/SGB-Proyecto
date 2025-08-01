@@ -137,5 +137,23 @@ namespace SGB.Persistence.Repositories
                 return OperationResult<Configuracion>.Failure(errorMessage ?? "Error al obtener configuración por nombre.");
             }
         }
+
+        public async Task<OperationResult<IEnumerable<Configuracion>>> GetAllSinFiltroAsync()
+        {
+            try
+            {
+                var configs = await Entity
+                    .AsNoTracking()
+                    .ToListAsync(); 
+                return OperationResult<IEnumerable<Configuracion>>.Success(configs);
+            }
+            catch (Exception ex)
+            {
+                var msg = _configuration["ErrorMessages:Configuracion:GetAll"];
+                _logger.Error(ex, "{0}", msg);
+                return OperationResult<IEnumerable<Configuracion>>.Failure(msg ?? "Error al obtener configuraciones.");
+            }
+        }
+
     }
 }

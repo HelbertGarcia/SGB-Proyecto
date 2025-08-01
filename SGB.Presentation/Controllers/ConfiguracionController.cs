@@ -99,5 +99,22 @@ namespace SGB.Presentation.Controllers
             ModelState.AddModelError(string.Empty, response.Message ?? "Error al actualizar la configuración.");
             return View(model);
         }
+
+        public async Task<IActionResult> Dashboard()
+        {
+            var dashboardDto = await _handler.GetDashboardAsync();
+            if (dashboardDto == null)
+            {
+                TempData["ErrorMessage"] = "No se pudo cargar el dashboard.";
+                return RedirectToAction(nameof(Index));
+            }
+            var model = new DashboardModel
+            {
+                TotalConfiguraciones = dashboardDto.TotalConfiguraciones,
+                ConfiguracionesActivas = dashboardDto.ConfiguracionesActivas,
+                ConfiguracionesInactivas = dashboardDto.ConfiguracionesInactivas
+            };
+            return View("~/Views/Dashboard/Dashboard.cshtml", model);
+        }
     }
 }

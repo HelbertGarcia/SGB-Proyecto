@@ -1,7 +1,8 @@
-﻿using SGB.Presentation.Models;
+﻿using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Application.Dtos.DashboardDto;
 using SGB.Application.Wrappers;
+using SGB.Presentation.Models;
 using SGB.Presentation.Service;
-using SGB.Api.Dtos.ConfiguracionDto;
 
 namespace SGB.Presentation.Handlers
 {
@@ -33,5 +34,12 @@ namespace SGB.Presentation.Handlers
         {
             return await _httpService.UpdateAsync(dto);
         }
+
+        public async Task<DashboardDto?> GetDashboardAsync()
+        {
+            var response = await _httpService.GetDashboardAsync();
+            return response.IsSuccess ? response.Data : null;
+        }
+
     }
 }

@@ -1,5 +1,6 @@
-﻿using SGB.Application.Wrappers;
-using SGB.Api.Dtos.ConfiguracionDto;
+﻿using SGB.Api.Dtos.ConfiguracionDto;
+using SGB.Application.Dtos.DashboardDto;
+using SGB.Application.Wrappers;
 
 namespace SGB.Api.Handlers
 {
@@ -11,5 +12,6 @@ namespace SGB.Api.Handlers
         Task<ApiResponse<ConfiguracionDto>> GetByNameAsync(string name);
         Task<ApiResponse<ConfiguracionDto>> CreateAsync(AddConfiguracionDto dto);
         Task<ApiResponse<ConfiguracionDto>> UpdateAsync(int id, UpdateConfiguracionDto dto);
+        Task<ApiResponse<DashboardDto>> ObtenerDatosDashboardAsync();
     }
 }

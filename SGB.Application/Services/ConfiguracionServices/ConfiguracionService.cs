@@ -1,11 +1,12 @@
-﻿using SGB.Domain.Base;
-using SGB.Domain.Entities.Configuracion;
-using SGB.Api.Dtos.ConfiguracionDto;
+﻿using Microsoft.Extensions.Configuration;
 using SGB.Api.Contracts.Mappers;
 using SGB.Api.Contracts.Repository.Interfaces;
 using SGB.Api.Contracts.Service.IConfiguracionService;
+using SGB.Api.Dtos.ConfiguracionDto;
 using SGB.Api.Validators.BusinessValidators.Configuracion;
-using Microsoft.Extensions.Configuration;
+using SGB.Application.Dtos.DashboardDto;
+using SGB.Domain.Base;
+using SGB.Domain.Entities.Configuracion;
 using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Api.Services.ConfiguracionServices
@@ -132,6 +133,24 @@ namespace SGB.Api.Services.ConfiguracionServices
             _logger.Info("Se obtuvieron {0} configuraciones activas.", dtoList.Count);
 
             return OperationResult<IEnumerable<ConfiguracionDto>>.Success(dtoList, "Lista obtenida correctamente.");
+        }
+        public async Task<OperationResult<DashboardDto>> ObtenerDatosDashboardAsync()
+        {
+            var result = await _repo.GetAllSinFiltroAsync();
+
+            if (!result.IsSuccess || result.Data == null)
+            {
+                return OperationResult<DashboardDto>.Failure(result.Message ?? "No se pudo obtener la información del dashboard.");
+            }
+            var configuraciones = result.Data.ToList();
+            var dto = new DashboardDto
+            {
+                TotalConfiguraciones = configuraciones.Count,
+                ConfiguracionesActivas = configuraciones.Count(c => c.EstaActivo),
+                ConfiguracionesInactivas = configuraciones.Count(c => !c.EstaActivo),
+                Configuraciones = configuraciones.Select(_mapper.MapToDto).ToList()
+            };
+            return OperationResult<DashboardDto>.Success(dto, "Dashboard generado correctamente.");
         }
     }
 }

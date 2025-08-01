@@ -35,4 +35,11 @@ public class AdminController : ControllerBase
     [HttpDelete("DeleteConfiguration")]
     public async Task<IActionResult> DeleteAsync(int id) =>
         Ok(await _handler.DeleteAsync(id));
+
+    [HttpGet("DashboardConfiguracion")]
+    public async Task<IActionResult> ObtenerDashboardConfiguracion()
+    {
+        var dashboard = await _handler.ObtenerDatosDashboardAsync();
+        return Ok(dashboard);
+    }
 }
