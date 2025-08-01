@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SGB.Api.Dtos.ConfiguracionDto;
 
-
 [ApiController]
 [Route("api/[controller]")]
 public class AdminController : ControllerBase

@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Text.Json;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using static SGB.Api.Extensions.Loggin.LoggerExtensions;
 
 namespace SGB.Infraestructure.Loggers
@@ -50,10 +50,8 @@ namespace SGB.Infraestructure.Loggers
         {
             if (string.IsNullOrEmpty(message))
                 return string.Empty;
-
             if (args == null || args.Length == 0)
                 return message;
-
             try
             {
                 var serializedArgs = args.Select(SafeSerialize).ToArray();
@@ -78,7 +76,6 @@ namespace SGB.Infraestructure.Loggers
         {
             if (obj == null)
                 return "null";
-
             try
             {
                 if (obj is string || obj.GetType().IsPrimitive || obj is decimal || obj is DateTime)
@@ -88,17 +85,14 @@ namespace SGB.Infraestructure.Loggers
                     WriteIndented = false,
                     MaxDepth = 3 
                 };
-
                 return JsonSerializer.Serialize(obj, options);
             }
             catch (JsonException)
             {
-
                 return obj.ToString() ?? obj.GetType().Name;
             }
             catch (Exception)
             {
-
                 return $"[{obj.GetType().Name}]";
             }
         }

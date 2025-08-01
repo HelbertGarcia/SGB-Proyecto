@@ -1,11 +1,8 @@
 ﻿using SGB.Domain.Base;
 using SGB.Domain.Entities.Rol;
 
-using System.Threading.Tasks;
-
 namespace SGB.Api.Contracts.Repository.Interfaces
 {
-
     public interface IRolRepository : IBaseRepository<Rol>
     {
         Task<OperationResult<Rol>> ObtenerPorNombreAsync(string nombre);

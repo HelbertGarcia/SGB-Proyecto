@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿/*using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SGB.Api.Contracts.Repository.Interfaces;
@@ -32,7 +32,7 @@ namespace SGB.Persistence.Repositories
 
         #region "Implementation of IPrestamoRepository"
 
-        public async Task<OperationResult<DateTime?>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId)
+       /* public async Task<OperationResult<DateTime?>> GetFechaVencimientoByPrestamoIdAsync(int prestamoId)
         {
             if (prestamoId <= 0)
             {
@@ -77,4 +77,6 @@ namespace SGB.Persistence.Repositories
 
         #endregion
     }
-}
+} 
+
+*/

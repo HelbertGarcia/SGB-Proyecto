@@ -1,7 +1,6 @@
 ﻿using SGB.Domain.Base;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,8 +9,7 @@ namespace SGB.Domain.Entities.Rol
 {
     public class Rol : BaseEntityFecha, IEstaActivo
     {
-        [Key]
-        public int Id { get; private set; }
+        public int id { get; set; }
         public string Nombre { get; private set; }
         public string Descripcion { get; private set; }
         public bool EstaActivo { get; set; }

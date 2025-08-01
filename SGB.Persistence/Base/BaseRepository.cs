@@ -2,13 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SGB.Domain.Base;
-using SGB.Api.Contracts.Repository.Interfaces;
 using SGB.Persistence.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using SGB.Api.Contracts.Repository;
 
 namespace SGB.Persistence.Base

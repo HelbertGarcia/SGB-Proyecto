@@ -1,11 +1,6 @@
 ﻿using SGB.Domain.Entities.Libro;
-using SGB.Domain.Entities.Prestamos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SGB.Domain.Base;
+using SGB.Domain.Entities.Prestamos;
 
 namespace SGB.Api.Contracts.Repository.Interfaces
 {

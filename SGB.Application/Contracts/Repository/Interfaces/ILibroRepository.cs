@@ -1,8 +1,6 @@
 ﻿using SGB.Api.Dtos.LibrosDto.LibroDto;
 using SGB.Domain.Base;
 using SGB.Domain.Entities.Libro;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SGB.Api.Contracts.Repository.Interfaces
 {

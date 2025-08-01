@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using SGB.Domain.Base;
 
-
 namespace SGB.Api.Contracts.Repository
 {
     public interface IBaseRepository<T> where T : class

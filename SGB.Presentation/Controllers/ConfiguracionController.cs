@@ -25,10 +25,16 @@ namespace SGB.Presentation.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var configuracion = await _handler.GetByIdAsync(id);
+
             if (configuracion == null)
-                return NotFound();
-           return View(configuracion);
+            {
+                TempData["ErrorMessage"] = $"No se encontró la configuración con ID {id}.";
+                return RedirectToAction("Index");
+            }
+
+            return View(configuracion);
         }
+
 
         public IActionResult Create() => View();
 
@@ -64,7 +70,6 @@ namespace SGB.Presentation.Controllers
             };
             return View(model);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]

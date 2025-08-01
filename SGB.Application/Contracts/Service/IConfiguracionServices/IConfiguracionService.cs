@@ -1,5 +1,5 @@
-﻿using SGB.Domain.Base;
-using SGB.Api.Base;
+﻿using SGB.Api.Base;
+using SGB.Domain.Base;
 using SGB.Api.Dtos.ConfiguracionDto;
 
 namespace SGB.Api.Contracts.Service.IConfiguracionService

@@ -9,6 +9,6 @@ namespace SGB.Presentation.Service
         Task<List<ConfiguracionModel>> GetAllAsync();
         Task<ConfiguracionModel?> GetByIdAsync(int id);
         Task<ApiResponse<object>> CreateAsync(AddConfiguracionDto dto);
-        Task<ApiResponse<object>> UpdateAsync(int id, UpdateConfiguracionDto dto);
+        Task<ApiResponse<object>> UpdateAsync(UpdateConfiguracionDto dto);
     }
 }

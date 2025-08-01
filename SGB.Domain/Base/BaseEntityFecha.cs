@@ -7,11 +7,8 @@
             FechaCreacion = DateTime.UtcNow;
             FechaActualizacion = DateTime.UtcNow;
         }
-
         public DateTime FechaCreacion { get; protected set; }
-
         public DateTime FechaActualizacion { get; protected set; }
-
         protected void ActualizarFechaModificacion()
         {
             FechaActualizacion = DateTime.UtcNow;

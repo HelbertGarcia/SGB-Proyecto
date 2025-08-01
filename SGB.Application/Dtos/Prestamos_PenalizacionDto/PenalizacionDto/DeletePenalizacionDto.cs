@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SGB.Api.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
+﻿namespace SGB.Api.Dtos.Prestamos_PenalizacionDto.PenalizacionDto
 {
     public record DeletePenalizacionDto
     {
-
         public int IdPrestamo { get; set; }
-
-      
-
-
     }
 }

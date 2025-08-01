@@ -133,7 +133,5 @@ namespace SGB.Api.Services.ConfiguracionServices
 
             return OperationResult<IEnumerable<ConfiguracionDto>>.Success(dtoList, "Lista obtenida correctamente.");
         }
-
-
     }
 }

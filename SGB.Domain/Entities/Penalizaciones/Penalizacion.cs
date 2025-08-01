@@ -1,95 +1,99 @@
 ﻿using SGB.Domain.Base;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SGB.Domain.Entities.Penalizaciones
 {
+    [Table("Penalizaciones")]
     public class Penalizacion : BaseEntityFecha, IEstaActivo
     {
         [Key]
-        public int Id { get; private set; }
-        public int IDUsuario { get; private set; }
-        public string Motivo { get; private set; }
-        public DateTime FechaInicio { get; private set; }
-        public DateTime FechaFin { get; private set; }
-        public bool EstaActivo { get; set; }
+        [Column("IDPenalizacion")]
+        public int Id { get; set; }
 
+        [Required]
+        [Column("IDUsuario")]
+        public int IDUsuario { get; set; }
+
+        [Required]
+        [MaxLength(200)]
+        [Column("Motivo")]
+        public string Motivo { get; private set; } = string.Empty;
+
+        [Required]
+        [Column("FechaInicio")]
+        public DateTime FechaInicio { get; set; }
+
+        [Required]
+        [Column("FechaFin")]
+        public DateTime FechaFin { get; private set; }
+
+        [Column("Monto")]
+        public decimal Monto { get; set; }
+
+        [Column("IDPrestamo")]
+        public int IDPrestamo { get; set; }
+
+        [Column("EstaActiva")]
+        public bool EstaActivo { get; set; } = true;
+
+        // Constructor sin parámetros requerido por EF Core
         private Penalizacion() { }
 
-        public Penalizacion(int idUsuario, string motivo, DateTime fechaInicio, DateTime fechaFin)
+        public Penalizacion(int idUsuario, string motivo, DateTime fechaInicio, DateTime fechaFin, int idPrestamo, decimal monto)
         {
-            ValidarYAsignarIdUsuario(idUsuario);
-            ValidarYAsignarMotivo(motivo);
-            ValidarFechas(fechaInicio, fechaFin);
+            // Asignar sin validar ni lanzar excepción
+            IDUsuario = idUsuario;
+            Motivo = motivo ?? string.Empty;
+            FechaInicio = fechaInicio;
+            FechaFin = fechaFin;
+            Monto = monto;
+            IDPrestamo = idPrestamo;
 
             Habilitar();
-            FechaActualizacion = DateTime.UtcNow;
+            ActualizarFechaModificacion();
         }
+
+        #region Comportamientos de dominio
 
         public void DesactivarPenalizacion()
         {
             if (!EstaActivo)
-            {
                 throw new InvalidOperationException("La penalización ya está inactiva.");
-            }
+
             Deshabilitar();
             ActualizarFechaModificacion();
         }
 
         public void ExtenderPenalizacion(DateTime nuevaFechaFin)
         {
-            ValidarFechas(this.FechaInicio, nuevaFechaFin);
             if (nuevaFechaFin <= FechaFin)
-            {
-                throw new ArgumentException("La nueva fecha de fin debe ser posterior a la fecha de fin actual.", nameof(nuevaFechaFin));
-            }
+                throw new ArgumentException("La nueva fecha debe ser posterior a la actual.", nameof(nuevaFechaFin));
+
             FechaFin = nuevaFechaFin;
             ActualizarFechaModificacion();
         }
 
         public void CambiarMotivo(string nuevoMotivo)
         {
-            ValidarYAsignarMotivo(nuevoMotivo);
+            Motivo = nuevoMotivo ?? string.Empty;
             ActualizarFechaModificacion();
         }
-
-        private void ActualizarFechaModificacion()
+        public void CambiarMonto(decimal nuevoMonto)
         {
-            FechaActualizacion = DateTime.UtcNow;
+            if (nuevoMonto <= 0)
+                throw new ArgumentException("El monto debe ser mayor a cero.");
+
+            Monto = nuevoMonto;
         }
 
-        private void ValidarYAsignarIdUsuario(int idUsuario)
-        {
-            if (idUsuario <= 0)
-                throw new ArgumentException("El ID de usuario no es válido.", nameof(idUsuario));
-            IDUsuario = idUsuario;
-        }
+        public void Deshabilitar() => EstaActivo = false;
 
-        private void ValidarYAsignarMotivo(string motivo)
-        {
-            if (string.IsNullOrWhiteSpace(motivo) || motivo.Length > 200)
-                throw new ArgumentException("El motivo de la penalización es inválido.", nameof(motivo));
-            Motivo = motivo;
-        }
+        public void Habilitar() => EstaActivo = true;
 
-        private void ValidarFechas(DateTime fechaInicio, DateTime fechaFin)
-        {
-            if (fechaInicio >= fechaFin)
-                throw new ArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.", nameof(fechaInicio));
-        }
+        #endregion
 
-        public void Deshabilitar()
-        {
-            EstaActivo = false;
-        }
-
-        public void Habilitar()
-        {
-            EstaActivo = true;
-        }
+        // Quité métodos privados de validación ya que no se usan
     }
 }

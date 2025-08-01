@@ -31,7 +31,7 @@ namespace SGB.Presentation.Handlers
 
         public async Task<ApiResponse<object>> UpdateAsync(UpdateConfiguracionDto dto)
         {
-            return await _httpService.UpdateAsync(dto.IDConfiguracion, dto);
+            return await _httpService.UpdateAsync(dto);
         }
     }
 }

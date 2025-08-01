@@ -42,12 +42,15 @@ namespace SGB.Presentation.Service
             if (!response.IsSuccessStatusCode)
                 return null;
             var content = await response.Content.ReadAsStringAsync();
-            var dto = JsonSerializer.Deserialize<ConfiguracionDto>(content, new JsonSerializerOptions
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<ConfiguracionDto>>(content, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+
+            var dto = apiResponse?.Data;
             if (dto == null)
                 return null;
+
             return new ConfiguracionModel
             {
                 IDConfiguracion = dto.IDConfiguracion,
@@ -71,16 +74,30 @@ namespace SGB.Presentation.Service
             }) ?? new ApiResponse<object> { IsSuccess = false, Message = "Error desconocido" };
         }
 
-        public async Task<ApiResponse<object>> UpdateAsync(int id, UpdateConfiguracionDto dto)
+        public async Task<ApiResponse<object>> UpdateAsync(UpdateConfiguracionDto dto)
         {
-            var response = await _httpClient.PutAsJsonAsync($"admin/UpdateConfiguration?id={id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"admin/UpdateConfiguration?id={dto.IDConfiguracion}", dto);
             var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+                return new ApiResponse<object> { IsSuccess = false, Message = $"Error: {response.StatusCode}" };
             if (string.IsNullOrWhiteSpace(content))
                 return new ApiResponse<object> { IsSuccess = false, Message = "Respuesta vacía de la API" };
-            return JsonSerializer.Deserialize<ApiResponse<object>>(content, new JsonSerializerOptions
+            var deserialized = JsonSerializer.Deserialize<ApiResponse<ConfiguracionDto>>(content, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            }) ?? new ApiResponse<object> { IsSuccess = false, Message = "Error desconocido" };
+            });
+
+            if (deserialized?.Data == null)
+                return new ApiResponse<object> { IsSuccess = false, Message = "No se pudo deserializar la respuesta." };
+            return new ApiResponse<object>
+            {
+                IsSuccess = deserialized.IsSuccess,
+                Message = deserialized.Message,
+                Data = deserialized.Data
+            };
         }
+
+        
+        
     }
 }

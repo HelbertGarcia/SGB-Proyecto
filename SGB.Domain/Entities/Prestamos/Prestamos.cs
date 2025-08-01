@@ -1,61 +1,108 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 using SGB.Domain.Base;
 
 namespace SGB.Domain.Entities.Prestamos
 {
-    public class Prestamo : BaseEntity
+    [Table("Prestamos")]
+    public class Prestamo : BaseEntityFecha, IEstaActivo
     {
         [Key]
-        public int Id { get; private set; }
-        public string EjemplarId { get; private set; }
-        public int UsuarioId { get; private set; }
-        public DateTime FechaPrestamo { get; private set; }
-        public DateTime FechaVencimiento { get; private set; }
-        public DateTime? FechaDevolucion { get; private set; }
-        public EstadoPrestamo Estado { get; private set; }
+        [Column("IDPrestamo")]
+        public int Id { get; set; }
 
-        private Prestamo() : base() { }
+        [Required]
+        [StringLength(13)]
+        [Column("ISBN")]
+        public string ISBN { get; set; }
 
-        public Prestamo(string ejemplarId, int usuarioId, int diasDePrestamo) : base()
+        [Required]
+        [Column("IDUsuario")]
+        public int UsuarioId { get; set; }
+
+        [Required]
+        [Column("FechaInicio")]
+        public DateTime FechaInicio { get; set; }
+
+        [Required]
+        [Column("FechaFin")]
+        public DateTime FechaFin { get; set; }
+
+        [Column("FechaDevolucion")]
+        public DateTime? FechaDevolucion { get; set; }
+
+        [Required]
+        [Column("Estado", TypeName = "nvarchar(50)")]
+        public EstadoPrestamo Estado { get; set; } = EstadoPrestamo.Activo;
+
+        [Column("EstaActiva")]
+        public bool EstaActivo { get; set; } = true;
+
+
+
+
+
+        // Constructor sin parámetros para EF Core
+
+        public Prestamo() { }
+        public Prestamo(int usuarioId, string isbn, DateTime fechaInicio, DateTime fechaFin)
         {
-            if (string.IsNullOrWhiteSpace(ejemplarId))
-                throw new ArgumentException("El Id del ejemplar es inválido.", nameof(ejemplarId));
 
-            if (usuarioId <= 0)
-                throw new ArgumentException("El Id del usuario es inválido.", nameof(usuarioId));
 
-            if (diasDePrestamo <= 0)
-                throw new ArgumentException("Los días de préstamo deben ser un número positivo.", nameof(diasDePrestamo));
-
-            EjemplarId = ejemplarId;
             UsuarioId = usuarioId;
-            FechaPrestamo = DateTime.UtcNow;
-            FechaVencimiento = DateTime.UtcNow.AddDays(diasDePrestamo);
-            FechaDevolucion = null;
+            ISBN = isbn;
+            FechaInicio = fechaInicio;
+            FechaFin = fechaFin;
             Estado = EstadoPrestamo.Activo;
+            EstaActivo = true;
+            FechaCreacion = DateTime.UtcNow;
+            FechaActualizacion = DateTime.UtcNow;
         }
 
-        public void RegistrarDevolucion()
+        public void RegistrarDevolucion(DateTime fechaDevolucion)
         {
-            if (Estado != EstadoPrestamo.Activo && Estado != EstadoPrestamo.Atrasado)
-                throw new InvalidOperationException("No se puede registrar la devolución de un préstamo que no está activo o atrasado.");
+            if (FechaDevolucion.HasValue)
+                throw new InvalidOperationException("La devolución ya fue registrada.");
 
-            FechaDevolucion = DateTime.UtcNow;
+            FechaDevolucion = fechaDevolucion;
 
-            Estado = FechaDevolucion > FechaVencimiento ? EstadoPrestamo.DevueltoConAtraso : EstadoPrestamo.Devuelto;
+            Estado = FechaDevolucion > FechaFin
+                ? EstadoPrestamo.DevueltoConAtraso
+                : EstadoPrestamo.Devuelto;
+
+            EstaActivo = false; // Marcar como inactivo al devolver
+
+            ActualizarFechaModificacion();
         }
+
 
         public void ActualizarEstadoSiEstaAtrasado()
         {
-            if (Estado == EstadoPrestamo.Activo && DateTime.UtcNow > FechaVencimiento)
+            if (Estado == EstadoPrestamo.Activo && DateTime.UtcNow > FechaFin)
             {
                 Estado = EstadoPrestamo.Atrasado;
+                FechaActualizacion = DateTime.UtcNow;
             }
+        }
+
+
+        public void Deshabilitar()
+        {
+            EstaActivo = false;
+
+            if (!FechaDevolucion.HasValue)
+            {
+                Estado = EstadoPrestamo.Cancelado;
+            }
+
+            FechaActualizacion = DateTime.UtcNow;
+        }
+
+        public void Habilitar()
+        {
+            EstaActivo = true;
+            FechaActualizacion = DateTime.UtcNow;
         }
     }
 
@@ -64,6 +111,8 @@ namespace SGB.Domain.Entities.Prestamos
         Activo,
         Atrasado,
         Devuelto,
-        DevueltoConAtraso
+        DevueltoConAtraso,
+        Cancelado
+
     }
 }
