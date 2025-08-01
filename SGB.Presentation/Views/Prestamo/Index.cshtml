@@ -1,13 +1,13 @@
 ﻿@model IEnumerable<SGB.Presentation.Models.PrestamoModel>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Prestamos";
 }
 
-<h1>Index</h1>
+<h1>Lista de Prestamos</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Create nuevo Prestamo</a>
 </p>
 <table class="table">
     <thead>
@@ -66,17 +66,16 @@
             <td>
                 @Html.DisplayFor(modelItem => item.isbn)
             </td>
-            <td>
-                @Html.ActionLink("Edit", "Edit", new {  id=item.id }) |
-                @Html.ActionLink("Details", "Details", new {  id=item.id  }) |
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.id" class="btn btn-sm btn-primary me-2">Editar</a>
+                    <a asp-action="Details" asp-route-id="@item.id" class="btn btn-sm btn-info me-2">Detalles</a>
+
                     @if (item.estaActivo)
                     {
-                        @: |
-                        @Html.ActionLink("Devolver", "Devolver", new { id = item.id })
+                        <a asp-action="Delete" asp-route-id="@item.id" class="btn btn-sm btn-danger me-2">Eliminar</a>
+                        <a asp-action="Devolver" asp-route-id="@item.id" class="btn btn-sm btn-warning">Devolver</a>
                     }
-
-             
-            </td>
+                </td>
         </tr>
 }
     </tbody>

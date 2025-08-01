@@ -2,8 +2,7 @@
 using SGB.Presentation.Models;
 using SGB.Presentation.Models.PrestamoModels;
 using SGB.Presentation.Services;
-using System.Text;
-using System.Text.Json;
+
 
 
 namespace SGB.Presentation.Controllers
@@ -166,61 +165,45 @@ namespace SGB.Presentation.Controllers
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // no lo vamos a nececitar 
-
-        /*
-        
-        // GET: PrestamoController/Delete/5
-        public ActionResult Delete(int id)
+        // GET: Prestamo/Delete/5
+        public async Task<IActionResult> Delete(int id)
         {
-            return View();
+            var response = await _prestamoHttpService.GetPrestamoByIdAsync(id);
+            if (!response.IsSuccess || response.Data == null)
+            {
+                TempData["ErrorMessage"] = response.Message ?? "El préstamo que intentas eliminar no fue encontrado.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(response.Data); 
         }
 
 
 
 
-        // POST: PrestamoController/Delete/5
-        [HttpPost]
+        // POST: Prestamo/Delete/5
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            try
+            var apiResponse = await _prestamoHttpService.DeletePrestamoAsync(id);
+            if (!apiResponse.IsSuccess)
             {
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = apiResponse.Message ?? "Ocurrió un error al eliminar el préstamo.";
             }
-            catch
+            else
             {
-                return View();
+                TempData["SuccessMessage"] = "Préstamo eliminado correctamente.";
             }
-        }*/
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
+
+
+
     }
 }
+
+

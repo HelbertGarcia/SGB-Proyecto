@@ -1,15 +1,14 @@
 ﻿@model SGB.Presentation.Models.PrestamoModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Delete";
 }
 
-<h1>Details del prestamo </h1>
+<h1>Desactivar Prestamo</h1>
 
-<h4> Informacion del Prestamo</h4>
-
+<h3>Estas seguro que quieres desactivar este prestamo? </h3>
 <div>
-  
+    
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -60,9 +59,12 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.isbn)
         </dd>
+
     </dl>
+
+    <form asp-action="Delete" asp-route-id="@Model.id" method="post">
+        <input type="submit" value="Cancelar Préstamo" class="btn btn-danger" />
+        <a asp-action="Index" class="btn btn-secondary ms-2">Volver</a>
+    </form>
 </div>
-<div class="mt-3">
-    <a asp-action="Edit" asp-route-id="@Model.id" class="btn btn-primary me-2">Editar</a>
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
-</div>
+  

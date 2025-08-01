@@ -1,13 +1,14 @@
 ﻿@model SGB.Presentation.Models.PenalizacionModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Delete";
 }
 
-<h1>Details Penalizacion</h1>
+<h1>Desactivar Penalizacion</h1>
 
+<h3>Seguro que quieres desactivar  la penalizacion?</h3>
 <div>
-    <h4>Informacion de la Penalizacion</h4>
+    
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -59,9 +60,9 @@
             @Html.DisplayFor(model => model.usuarioId)
         </dd>
     </dl>
+
+    <form asp-action="Delete">
+        <input type="submit" value="Delete" class="btn btn-danger me-2" /> |
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </form>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.idPenalizacion" class="btn btn-sm btn-primary me-2">Editar</a> |
-    <a asp-action="Index" class="btn btn-sm btn-secondary">Back to List</a>
-</div>
- 

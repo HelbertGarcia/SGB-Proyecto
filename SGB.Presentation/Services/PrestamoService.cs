@@ -1,8 +1,11 @@
-﻿using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
+﻿
+using SGB.Application.Dtos.Prestamos_PenalizacionDto.PrestamoDto;
 using SGB.Presentation.Models.PrestamoModels;
 using SGB.Presentation.Models;
 using SGB.Presentation.Services.Base;
 using SGB.Application.Wrappers;
+
+using SGB.Presentation.Services.Mappers.SGB.Presentation.Mappers;
 
 namespace SGB.Presentation.Services
 {
@@ -28,43 +31,35 @@ namespace SGB.Presentation.Services
             return response;
         }
 
-        public async Task<ApiResponse<PrestamoDto>> CreatePrestamoAsync(PrestamoCreateModel model)
+        public async Task<ApiResponse<PrestamoResponseDto>> CreatePrestamoAsync(PrestamoCreateModel model)
         {
-            var dto = new
-            {
-                UsuarioId = model.UsuarioId,
-                ISBN = model.ISBN,
-                FechaInicio = model.FechaInicio,
-                FechaFin = model.FechaFin
-            };
-
-            var response = await _httpService.PostAsJsonAsync<object, PrestamoDto>($"{CONTROLLER_NAME}/AddPrestamo", dto);
+            var dto = PrestamoMapper.ToAddPrestamoDto(model);
+            var response = await _httpService.PostAsJsonAsync<AddPrestamoDto, PrestamoResponseDto>($"{CONTROLLER_NAME}/AddPrestamo", dto);
             return response;
         }
 
-        public async Task<ApiResponse<object>> UpdatePrestamoAsync(PrestamoEditModel model)
+        public async Task<ApiResponse<PrestamoResponseDto>> UpdatePrestamoAsync(PrestamoEditModel model)
         {
-            var dto = new
-            {
-                IDPrestamo = model.IDPrestamo,
-                FechaInicio = model.FechaInicio,
-                FechaFin = model.FechaFin
-            };
-
-            var response = await _httpService.PutAsJsonAsync<object, object>($"{CONTROLLER_NAME}/UpdatePrestamo?id={model.IDPrestamo}", dto);
+            var dto = PrestamoMapper.ToUpdatePrestamoDto(model);
+            var response = await _httpService.PutAsJsonAsync<UpdatePrestamoDto, PrestamoResponseDto>($"{CONTROLLER_NAME}/UpdatePrestamo?id={model.IDPrestamo}", dto);
             return response;
         }
 
         public async Task<ApiResponse<bool>> RegistrarDevolucionAsync(PrestamoDevolucionModel model)
         {
-            var dto = new
-            {
-                idPrestamo = model.IdPrestamo,
-                fechaDevolucion = model.FechaDevolucion
-            };
-
-            var response = await _httpService.PostAsJsonAsync<object, bool>($"{CONTROLLER_NAME}/Registrar-devolucion", dto);
+            var dto = PrestamoMapper.ToRegistrarDevolucionDto(model);
+            var response = await _httpService.PostAsJsonAsync<RegistrarDevolucionDto, bool>($"{CONTROLLER_NAME}/Registrar-devolucion", dto);
             return response;
         }
+
+
+        public async Task<ApiResponse<bool>> DeletePrestamoAsync(int id)
+        {
+            return await _httpService.DeleteAsync<bool>($"{CONTROLLER_NAME}/DisablePrestamo?id={id}");
+        }
+
+
+
+
     }
 }

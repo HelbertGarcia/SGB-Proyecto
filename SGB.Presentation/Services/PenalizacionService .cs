@@ -3,6 +3,7 @@ using SGB.Application.Wrappers;
 using SGB.Presentation.Models;
 using SGB.Presentation.Models.PenalizacionModels;
 using SGB.Presentation.Services.Base;
+using SGB.Presentation.Services.Mappers;
 
 
 namespace SGB.Presentation.Services
@@ -17,6 +18,7 @@ namespace SGB.Presentation.Services
             _httpService = httpService;
         }
 
+
         public async Task<ApiResponse<List<PenalizacionModel>>> GetPenalizacionesAsync()
         {
             return await _httpService.GetAsync<List<PenalizacionModel>>($"{CONTROLLER_NAME}/GetPenalizaciones");
@@ -27,38 +29,27 @@ namespace SGB.Presentation.Services
             return await _httpService.GetAsync<PenalizacionModel>($"{CONTROLLER_NAME}/GetPenalizacionById?idPenalizacion={id}");
         }
 
-        public async Task<ApiResponse<PenalizacionDto>> CreatePenalizacionAsync(PenalizacionCreateModel model)
+        public async Task<ApiResponse<PenalizacionResponseDto>> CreatePenalizacionAsync(PenalizacionCreateModel model)
         {
-            var dto = new
-            {
-                UsuarioId = model.UsuarioId,
-                IDPrestamo = model.IDPrestamo,
-                FechaInicio = model.FechaInicio,
-                FechaFin = model.FechaFin,
-                Monto = model.Monto,
-                Motivo = model.Motivo
-            };
-
-            return await _httpService.PostAsJsonAsync<object, PenalizacionDto>($"{CONTROLLER_NAME}/AddPenalizacion", dto);
+            var dto = PenalizacionMapper.ToAddPenalizacionDto(model);
+            return await _httpService.PostAsJsonAsync<AddPenalizacionDto, PenalizacionResponseDto>($"{CONTROLLER_NAME}/AddPenalizacion", dto);
         }
 
-        public async Task<ApiResponse<object>> UpdatePenalizacionAsync(PenalizacionEditModel model)
+        public async Task<ApiResponse<PenalizacionResponseDto>> UpdatePenalizacionAsync(PenalizacionEditModel model)
         {
-            var dto = new
-            {
-                IDPenalizacion = model.IDPenalizacion,
-                FechaFin = model.FechaFin,
-                Monto = model.Monto,
-                Motivo = model.Motivo
-            };
-
-            return await _httpService.PutAsJsonAsync<object, object>($"{CONTROLLER_NAME}/UpdatePenalizacion?idPenalizacion={model.IDPenalizacion}", dto);
+            var dto = PenalizacionMapper.ToUpdatePenalizacionDto(model);
+            return await _httpService.PutAsJsonAsync<UpdatePenalizacionDto, PenalizacionResponseDto>($"{CONTROLLER_NAME}/UpdatePenalizacion?idPenalizacion={model.IDPenalizacion}", dto);
         }
 
-        /*public async Task<ApiResponse<object>> DisablePenalizacionAsync(int id)
+        public async Task<ApiResponse<bool>> DeletePenalizacionAsync(int id)
         {
-            return await _httpService.PutAsJsonAsync<object, object>($"{CONTROLLER_NAME}/DisablePenalizacion?idPenalizacion={id}", new { });
+            return await _httpService.DeleteAsync<bool>($"{CONTROLLER_NAME}/DisablePenalizacion?id={id}");
         }
-        */
+
+
+
     }
+
+
 }
+

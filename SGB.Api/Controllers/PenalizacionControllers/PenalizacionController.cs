@@ -125,18 +125,13 @@ namespace SGB.Api.Controllers.PenalizacionControllers
             });
         }
 
-         [HttpDelete("DisablePenalizacion")]
-        public async Task<IActionResult> DisablePenalizacion([FromBody] DisablePenalizacionDto disableDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(new ApiResponse<object>
-                {
-                    IsSuccess = false,
-                    Message = "Datos inválidos",
-                    Data = ModelState
-                });
 
-            var result = await _penalizacionService.DeleteAsync(disableDto);
+        // DELETE
+        [HttpDelete("DisablePenalizacion")]
+        public async Task<IActionResult> DisablePenalizacion([FromQuery] int id)
+        {
+            var dto = new DisablePenalizacionDto { IDPenalizacion = id };
+            var result = await _penalizacionService.DeleteAsync(dto);
 
             if (!result.IsSuccess)
                 return BadRequest(new ApiResponse<object>
@@ -151,6 +146,9 @@ namespace SGB.Api.Controllers.PenalizacionControllers
                 Message = "Penalización desactivada correctamente"
             });
         }
+
+
+
 
     }
 }

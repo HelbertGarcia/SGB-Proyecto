@@ -21,9 +21,9 @@ namespace SGB.Presentation.Services.Base
       
         Task<ApiResponse<TResponse>> PutAsJsonAsync<TRequest, TResponse>(string uri, TRequest data);
 
-     
+
         /// Realiza una petición DELETE a la URI especificada.
-        
-       // Task<ApiResponse<bool>> DeleteAsync(string uri);
+
+        Task<ApiResponse<T>> DeleteAsync<T>(string uri);
     }
 }

@@ -15,6 +15,9 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto.Validat
                 .GreaterThan(0)
                 .WithMessage("El ID de la penalización debe ser mayor a cero.");
 
+
+          
+
             RuleFor(x => x.Motivo)
                
                 .MaximumLength(200).WithMessage("El motivo no debe superar los 200 caracteres.");
@@ -22,6 +25,9 @@ namespace SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto.Validat
             RuleFor(x => x.FechaFin)
                 
                 .GreaterThan(DateTime.MinValue).WithMessage("La fecha de fin debe ser válida.");
+
+          
+
 
             RuleFor(x => x.Monto)
                 .GreaterThan(0).WithMessage("El monto debe ser mayor a cero.");

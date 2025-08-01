@@ -89,7 +89,6 @@ namespace SGB.Api.Controllers
             });
         }
 
-        // POST: api/Prestamo/Registrar-devolucion
         [HttpPost("Registrar-devolucion")]
         public async Task<IActionResult> RegistrarDevolucion([FromBody] RegistrarDevolucionDto dto)
         {
@@ -97,19 +96,19 @@ namespace SGB.Api.Controllers
 
             if (!result.IsSuccess)
             {
-                return BadRequest(new ApiResponse<string>
+                return BadRequest(new ApiResponse<bool>
                 {
                     IsSuccess = false,
                     Message = result.Message,
-                    Data = null
+                    Data = false
                 });
             }
 
-            return Ok(new ApiResponse<string>
+            return Ok(new ApiResponse<bool>
             {
                 IsSuccess = true,
-                Message = result.Message,  
-                Data = null
+                Message = result.Message,
+                Data = true
             });
         }
 
@@ -150,6 +149,8 @@ namespace SGB.Api.Controllers
                 Data = resultado.Data
             });
         }
+
+
 
         // DELETE: api/Prestamo/DisablePrestamo?id=1
         [HttpDelete("DisablePrestamo")]

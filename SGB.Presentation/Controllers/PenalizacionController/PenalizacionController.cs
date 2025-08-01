@@ -52,6 +52,9 @@ namespace SGB.Presentation.Controllers
         // GET: Penalizacion/Create
         public IActionResult Create() => View();
 
+
+
+
         // POST: Penalizacion/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -73,6 +76,8 @@ namespace SGB.Presentation.Controllers
 
             return View(model);
         }
+
+
 
         // GET: Penalizacion/Edit/5
         public async Task<IActionResult> Edit(int id)
@@ -98,6 +103,8 @@ namespace SGB.Presentation.Controllers
             return View(editModel);
         }
 
+
+
         // POST: Penalizacion/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -120,27 +127,42 @@ namespace SGB.Presentation.Controllers
             return View(model);
         }
 
-        // Opcional: si implementas deshabilitar penalización
-        /*
-        // POST: Penalizacion/Disable/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Disable(int id)
-        {
-            var response = await _penalizacionHttpService.DisablePenalizacionAsync(id);
 
-            if (response.IsSuccess)
+
+
+
+        // GET: Penalizacion/Delete/5
+        public async Task<IActionResult> Delete(int id)
+        {
+            var response = await _penalizacionHttpService.GetPenalizacionByIdAsync(id);
+            if (!response.IsSuccess || response.Data == null)
             {
-                TempData["SuccessMessage"] = "Penalización desactivada correctamente.";
+                TempData["ErrorMessage"] = response.Message ?? "Penalización no encontrada.";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(response.Data);
+        }
+
+
+
+
+        // POST: Penalizacion/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var response = await _penalizacionHttpService.DeletePenalizacionAsync(id);
+
+            if (!response.IsSuccess)
+            {
+                TempData["ErrorMessage"] = response.Message ?? "Error al eliminar la penalización.";
+                _logger.LogWarning("Error al eliminar penalización ID {ID}: {Message}", id, response.Message);
             }
             else
             {
-                TempData["ErrorMessage"] = response.Message ?? "Error al desactivar la penalización.";
-                _logger.LogWarning("Error al desactivar penalización ID {ID}: {Message}", id, response.Message);
+                TempData["SuccessMessage"] = "Penalización eliminada correctamente.";
             }
-
             return RedirectToAction(nameof(Index));
         }
-        */
     }
 }

@@ -41,6 +41,7 @@ public class PenalizacionBusinessValidator : IPenalizacionBusinessValidator
         return OperationResult<string>.Success("Validación exitosa.");
     }
 
+
     // Valida la actualización de una penalización
     public async Task<OperationResult<string>> ValidateForUpdateAsync(UpdatePenalizacionDto dto)
     {
@@ -51,8 +52,17 @@ public class PenalizacionBusinessValidator : IPenalizacionBusinessValidator
         if (!penalizacionResult.IsSuccess || penalizacionResult.Data == null)
             return OperationResult<string>.Failure("Penalización no encontrada.");
 
+        var penalizacion = penalizacionResult.Data;
+
+        if (!penalizacion.EstaActivo)
+            return OperationResult<string>.Failure("No se puede actualizar una penalización que está desactivada.");
+
+        if (dto.FechaFin.HasValue && dto.FechaFin.Value <= penalizacion.FechaInicio)
+            return OperationResult<string>.Failure("La fecha de fin debe ser posterior a la fecha de inicio original de la penalización.");
+
         return OperationResult<string>.Success("Validación exitosa.");
     }
+
 
     // Valida la desactivación de una penalización
     public async Task<OperationResult<string>> ValidateForDisableAsync(DisablePenalizacionDto dto)

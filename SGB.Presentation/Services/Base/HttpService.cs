@@ -9,16 +9,20 @@ namespace SGB.Presentation.Services.Base
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<HttpService> _logger;
 
+
         private readonly JsonSerializerOptions _jsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
         };
+
+
 
         public HttpService(IHttpClientFactory httpClientFactory, ILogger<HttpService> logger)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
         }
+
 
         private HttpClient CreateClient() => _httpClientFactory.CreateClient("ApiSGB");
 
@@ -103,5 +107,37 @@ namespace SGB.Presentation.Services.Base
                 return new ApiResponse<TResponse> { IsSuccess = false, Message = $"Error: {ex.Message}" };
             }
         }
+
+        public async Task<ApiResponse<T>> DeleteAsync<T>(string uri)
+        {
+            try
+            {
+                var client = CreateClient();
+                var response = await client.DeleteAsync(uri);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return new ApiResponse<T>
+                    {
+                        IsSuccess = false,
+                        Message = $"Error {response.StatusCode}: {error}",
+                        Data = default
+                    };
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<T>>(_jsonOptions);
+                return result ?? new ApiResponse<T> { IsSuccess = false, Message = "Respuesta vacía" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consumir DELETE {Uri}", uri);
+                return new ApiResponse<T> { IsSuccess = false, Message = $"Error: {ex.Message}" };
+            }
+        }
+
+
+
+
     }
 }
