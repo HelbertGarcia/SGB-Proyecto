@@ -13,7 +13,6 @@ namespace SGB.Presentation.Services
         Task<ApiResponse<PrestamoResponseDto>> CreatePrestamoAsync(PrestamoCreateModel model);
         Task<ApiResponse<PrestamoResponseDto>> UpdatePrestamoAsync(PrestamoEditModel model);
         Task<ApiResponse<bool>> RegistrarDevolucionAsync(PrestamoDevolucionModel model);
-
         Task<ApiResponse<bool>> DeletePrestamoAsync(int id);
     }
 }

@@ -7,7 +7,7 @@ namespace SGB.Presentation.Services.Base
     public interface IHttpService
     {
        
-        /// Realiza una petición GET a la URI especificada.
+        /// peticion GET a la URI 
        
         Task<ApiResponse<T>> GetAsync<T>(string uri);
 

@@ -1,5 +1,9 @@
 using SGB.Presentation.Services.Base;
 using SGB.Presentation.Services;
+using SGB.Presentation.Endpoints.EndpointsPrestamo;
+using SGB.Presentation.Endpoints.EndpointsPenalizacion;
+
+
 
 namespace SGB.Presentation
 {
@@ -16,9 +20,18 @@ namespace SGB.Presentation
                 client.Timeout = TimeSpan.FromSeconds(30);
             });
 
+
+            // Servicios base y HTTP
             builder.Services.AddScoped<IHttpService, HttpService>();
+
+        
             builder.Services.AddScoped<IPrestamoHttpService, PrestamoHttpService>();
             builder.Services.AddScoped<IPenalizacionHttpService, PenalizacionHttpService>();
+
+            // Endpoints personalizados
+            builder.Services.AddScoped<IPrestamoEndpoints, PrestamoEndpoints>();
+            builder.Services.AddScoped<IPenalizacionEndpoints, PenalizacionEndpoints>();
+
 
 
             // Add services to the container.

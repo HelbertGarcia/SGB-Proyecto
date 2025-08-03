@@ -1,8 +1,7 @@
 ﻿using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
-using SGB.Presentation.Models.PenalizacionModels;
-using SGB.Presentation.Models;
-
 using SGB.Application.Wrappers;
+using SGB.Presentation.Models;
+using SGB.Presentation.Models.PenalizacionModels;
 
 namespace SGB.Presentation.Services
 {

@@ -175,7 +175,7 @@ namespace SGB.Presentation.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(response.Data); 
+            return View(response.Data);
         }
 
 

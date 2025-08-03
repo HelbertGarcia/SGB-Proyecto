@@ -1,5 +1,4 @@
 ﻿using SGB.Application.Wrappers;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace SGB.Presentation.Services.Base

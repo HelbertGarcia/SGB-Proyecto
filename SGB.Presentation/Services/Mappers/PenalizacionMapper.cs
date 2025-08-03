@@ -29,7 +29,7 @@ namespace SGB.Presentation.Services.Mappers
             };
         }
 
-      
+
     }
 }
 
