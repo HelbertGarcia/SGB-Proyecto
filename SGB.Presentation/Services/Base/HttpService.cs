@@ -8,13 +8,10 @@ namespace SGB.Presentation.Services.Base
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<HttpService> _logger;
 
-
         private readonly JsonSerializerOptions _jsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
         };
-
-
 
         public HttpService(IHttpClientFactory httpClientFactory, ILogger<HttpService> logger)
         {
@@ -22,34 +19,32 @@ namespace SGB.Presentation.Services.Base
             _logger = logger;
         }
 
-
         private HttpClient CreateClient() => _httpClientFactory.CreateClient("ApiSGB");
 
         public async Task<ApiResponse<T>> GetAsync<T>(string uri)
         {
             try
             {
-                var client = CreateClient();
-                var response = await client.GetAsync(uri);
+                var response = await CreateClient().GetAsync(uri);
+
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var error = await response.Content.ReadAsStringAsync();
                     return new ApiResponse<T>
                     {
                         IsSuccess = false,
-                        Message = $"Error {response.StatusCode}: {error}",
-                        Data = default
+                        Message = $"Error {response.StatusCode}: {content}"
                     };
                 }
 
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<T>>(_jsonOptions);
+                var result = JsonSerializer.Deserialize<ApiResponse<T>>(content, _jsonOptions);
                 return result ?? new ApiResponse<T> { IsSuccess = false, Message = "Respuesta vacía" };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al consumir GET {Uri}", uri);
-                return new ApiResponse<T> { IsSuccess = false, Message = $"Error: {ex.Message}" };
+                return new ApiResponse<T> { IsSuccess = false, Message = $"Excepción: {ex.Message}" };
             }
         }
 
@@ -57,26 +52,25 @@ namespace SGB.Presentation.Services.Base
         {
             try
             {
-                var client = CreateClient();
-                var response = await client.PostAsJsonAsync(uri, data);
+                var response = await CreateClient().PostAsJsonAsync(uri, data);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var error = await response.Content.ReadAsStringAsync();
                     return new ApiResponse<TResponse>
                     {
                         IsSuccess = false,
-                        Message = $"Error {response.StatusCode}: {error}"
+                        Message = $"Error {response.StatusCode}: {content}"
                     };
                 }
 
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<TResponse>>(_jsonOptions);
+                var result = JsonSerializer.Deserialize<ApiResponse<TResponse>>(content, _jsonOptions);
                 return result ?? new ApiResponse<TResponse> { IsSuccess = false, Message = "Respuesta vacía" };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al consumir POST {Uri}", uri);
-                return new ApiResponse<TResponse> { IsSuccess = false, Message = $"Error: {ex.Message}" };
+                return new ApiResponse<TResponse> { IsSuccess = false, Message = $"Excepción: {ex.Message}" };
             }
         }
 
@@ -84,26 +78,25 @@ namespace SGB.Presentation.Services.Base
         {
             try
             {
-                var client = CreateClient();
-                var response = await client.PutAsJsonAsync(uri, data);
+                var response = await CreateClient().PutAsJsonAsync(uri, data);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var error = await response.Content.ReadAsStringAsync();
                     return new ApiResponse<TResponse>
                     {
                         IsSuccess = false,
-                        Message = $"Error {response.StatusCode}: {error}"
+                        Message = $"Error {response.StatusCode}: {content}"
                     };
                 }
 
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<TResponse>>(_jsonOptions);
+                var result = JsonSerializer.Deserialize<ApiResponse<TResponse>>(content, _jsonOptions);
                 return result ?? new ApiResponse<TResponse> { IsSuccess = false, Message = "Respuesta vacía" };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al consumir PUT {Uri}", uri);
-                return new ApiResponse<TResponse> { IsSuccess = false, Message = $"Error: {ex.Message}" };
+                return new ApiResponse<TResponse> { IsSuccess = false, Message = $"Excepción: {ex.Message}" };
             }
         }
 
@@ -111,32 +104,27 @@ namespace SGB.Presentation.Services.Base
         {
             try
             {
-                var client = CreateClient();
-                var response = await client.DeleteAsync(uri);
+                var response = await CreateClient().DeleteAsync(uri);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var error = await response.Content.ReadAsStringAsync();
                     return new ApiResponse<T>
                     {
                         IsSuccess = false,
-                        Message = $"Error {response.StatusCode}: {error}",
-                        Data = default
+                        Message = $"Error {response.StatusCode}: {content}"
                     };
                 }
 
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<T>>(_jsonOptions);
+                var result = JsonSerializer.Deserialize<ApiResponse<T>>(content, _jsonOptions);
                 return result ?? new ApiResponse<T> { IsSuccess = false, Message = "Respuesta vacía" };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al consumir DELETE {Uri}", uri);
-                return new ApiResponse<T> { IsSuccess = false, Message = $"Error: {ex.Message}" };
+                return new ApiResponse<T> { IsSuccess = false, Message = $"Excepción: {ex.Message}" };
             }
         }
-
-
-
-
     }
 }
+

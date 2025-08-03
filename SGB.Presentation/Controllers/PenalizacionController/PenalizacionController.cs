@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using SGB.Presentation.Models;
 using SGB.Presentation.Models.PenalizacionModels;
 using SGB.Presentation.Services;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
 
 namespace SGB.Presentation.Controllers
 {
