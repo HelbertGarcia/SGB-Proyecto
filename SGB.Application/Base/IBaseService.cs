@@ -1,14 +1,5 @@
 ﻿
 using SGB.Domain.Base;
-
-
-using SGB.Domain.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace SGB.Application.Base
 {
     public interface IBaseService<TAddDto, TUpdateDto, TDtoDelete , TDto>

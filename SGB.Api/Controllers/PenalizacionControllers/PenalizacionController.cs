@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 using SGB.Application.Dtos.Prestamos_PenalizacionDto.PenalizacionDto;
 using SGB.Application.Wrappers;
-using SGB.Application.Contracts.Interfaces;
+
 
 namespace SGB.Api.Controllers.PenalizacionControllers
 {

@@ -86,14 +86,18 @@ namespace SGB.Presentation.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            var prestamo = response.Data;
+
             var editModel = new PrestamoEditModel
             {
-                IDPrestamo = response.Data.id,
-                FechaInicio = response.Data.fechaInicio,
-                FechaFin = response.Data.fechaFin
+                IDPrestamo = prestamo.id,
+                FechaInicio = prestamo.fechaInicio,
+                FechaFin = prestamo.fechaFin
             };
 
             return View(editModel);
+
+
         }
 
         // POST: Prestamo/Edit
@@ -121,9 +125,7 @@ namespace SGB.Presentation.Controllers
         // GET: Prestamo/Devolver/5
         public async Task<IActionResult> Devolver(int id)
         {
-            if (id <= 0)
-                return BadRequest("ID inválido");
-
+          
             var response = await _prestamoHttpService.GetPrestamoByIdAsync(id);
 
             if (!response.IsSuccess || response.Data == null)
